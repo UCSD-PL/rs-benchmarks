@@ -1,8 +1,8 @@
 /// <reference path="../../d3.d.ts" />
 /// <reference path="ascending.ts" />
-function d3_bisector(compare) {
+function d3_bisector(compare: (data: any, index: number) => any): any {
     return {
-        left: function (a, x, lo, hi) {
+    left<T>: function (a: T[], x: T, lo?: number, hi?: number): number {
             if (arguments.length < 3)
                 lo = 0;
             if (arguments.length < 4)
@@ -16,7 +16,7 @@ function d3_bisector(compare) {
             }
             return lo;
         },
-        right: function (a, x, lo, hi) {
+        right<T>: function (a:T[], x:T, lo?: number, hi?: number): number {
             if (arguments.length < 3)
                 lo = 0;
             if (arguments.length < 4)
@@ -37,7 +37,7 @@ var d3_bisect = d3_bisector(d3_ascending);
 d3.bisectLeft = d3_bisect.left;
 d3.bisect = d3.bisectRight = d3_bisect.right;
 
-d3.bisector = function (f) {
+d3.bisector = function (f: (data: any, index: number) => any): any {
     return d3_bisector(f.length === 1 ? function (d, x) {
         return d3_ascending(f(d), x);
     } : f);
