@@ -8,4 +8,3 @@ nest.js		// Strange and large requires greater familiarity with ts
 pairs.js	// Missing from provided d3
 set.js		// dependency on core class.ts
 sum.js		// difficulty with overloaded functions
-
