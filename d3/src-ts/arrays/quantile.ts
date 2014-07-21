@@ -1,5 +1,6 @@
 // R-7 per <http://en.wikipedia.org/wiki/Quantile>
 /// <reference path="../../d3.d.ts" />
+
 d3.quantile = function(values:number[], p:number): number {
   var H = (values.length - 1) * p + 1,
       h:number = Math.floor(H),

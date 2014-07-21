@@ -1,10 +1,8 @@
-extent.js	// difficulty with overloaded functions
+extent.js	// dynamic check on the number of arguments
 map.js		// Strange and large requires greater familiarity with ts
-median.js	// difficulty with overloaded functions and dependcies on math libs
-range.js	// dependency on math lib
+median.js	// dynamic check on the number of arguments 
 index.js	// multiple imports dependent on functionality of unstable files
 min.js		// difficulty with overloaded functions
 nest.js		// Strange and large requires greater familiarity with ts
-pairs.js	// Missing from provided d3
 set.js		// dependency on core class.ts
-sum.js		// difficulty with overloaded functions
+sum.js		// dynamic check on the number of arguments
