@@ -91,11 +91,12 @@ module _Implementation {
       return this.createCallback4(func, context);
     }
 
+    //TODO: is each func.call an implicit any?
     // Creates a callback bound to its context if supplied
     private createCallback1<X, TResult>(func: (x:X) => TResult, context: any): (x:X) => TResult {
       if (context === void 0) return func;
       return function(value) {
-          return func.call(context, value);
+        return func.call(context, value);
       };
     }
 
@@ -109,7 +110,7 @@ module _Implementation {
     private createCallback4<X, Y, Z, W, TResult>(func: (x:X, y:Y, z:Z, w:W) => TResult, context: any): (x:X, y:Y, z:Z, w:W) => TResult {
       if (context === void 0) return func;
       return function(accumulator, value, index, collection) {
-          return func.call(context, accumulator, value, index, collection);
+        return func.call(context, accumulator, value, index, collection);
       };
     }
 
@@ -181,12 +182,19 @@ module _Implementation {
 
     // **Reduce** builds up a single result from a list of values, aka `inject`,
     // or `foldl`.
-    public reduce<T, TResult>(obj: _.List<T>, iterator: _.MemoIterator<T, TResult>, memo: TResult, context?: any): TResult;
-    public reduce<T>(obj: _.List<T>, iterator: _.MemoIterator<T, T>, memo?: T, context?: any): T;
-    public reduce<T>(obj: _.List<T>, iterator: any, memo?: any, context?: any): any {
-      var initial = arguments.length > 2;
+    public reduce<T, TResult>(obj: _.List<T>, iterator: _.MemoIterator<T, TResult>, memo: TResult, context?: any): TResult {
       if (obj == null) obj = [];
       iterator = this.createCallback4(iterator, context);
+      this.each(obj, function(value:T, index:number, list:_.List<T>) {
+        memo = iterator(memo, value, index, list);
+      });
+      return memo;
+    }
+
+    // A version of reduce where you do not give an initial value; must be called with a non-empty list.
+    public reduceD<T>(obj: _.List<T>, iterator: _.MemoIterator<T, T>): T {
+      var initial = false, memo:T;
+      if (obj == null || obj.length == 0) throw TypeError(this.reduceError);
       this.each(obj, function(value:T, index:number, list:_.List<T>) {
         if (!initial) {
           memo = value;
@@ -195,19 +203,14 @@ module _Implementation {
           memo = iterator(memo, value, index, list);
         }
       });
-      if (!initial) throw TypeError(this.reduceError);
       return memo;
     }
 
-    public inject<T, TResult>(obj: _.List<T>, iterator: _.MemoIterator<T, TResult>, memo: TResult, context?: any): TResult;
-    public inject<T>(obj: _.List<T>, iterator: _.MemoIterator<T, T>, memo?: T, context?: any): T;
-    public inject<T>(obj: _.List<T>, iterator: any, memo?: any, context?: any): any {
+    public inject<T, TResult>(obj: _.List<T>, iterator: _.MemoIterator<T, TResult>, memo: TResult, context?: any): TResult {
       return this.reduce(obj, iterator, memo, context);
     }
 
-    public foldl<T, TResult>(obj: _.List<T>, iterator: _.MemoIterator<T, TResult>, memo: TResult, context?: any): TResult;
-    public foldl<T>(obj: _.List<T>, iterator: _.MemoIterator<T, T>, memo?: T, context?: any): T;
-    public foldl<T>(obj: _.List<T>, iterator: any, memo?: any, context?: any): any {
+    public foldl<T, TResult>(obj: _.List<T>, iterator: _.MemoIterator<T, TResult>, memo: TResult, context?: any): TResult {
       return this.reduce(obj, iterator, memo, context);
     }
 
@@ -426,34 +429,29 @@ module _Implementation {
     }
 
     // Return the maximum element (or element-based computation).
-    public max(list: _.List<number>): number;
-    public max<T>(list: _.List<T>, iterator?: _.ListIterator<T, number>, context?: any): T;
-    public max<T>(obj: _.List<any>, iterator?: _.ListIterator<T, number>, context?: any): any {
-      var result = -Infinity, lastComputed = -Infinity,
+    public max(list: _.List<number>): number {
+      return this.maxD(list, this.identity);
+    }
+
+    // Return the maximum element (or element-based computation).
+    public maxD<T>(list: _.List<T>, iterator: _.ListIterator<T, number>, context?: any): T {
+      var empty = true, result:T, lastComputed:number,
           value:number, computed:number;
-      if (!iterator && this.isArray(obj)) {
-        for (var i = 0, length = obj.length; i < length; i++) {
-          value = obj[i];
-          if (value > result) {
-            result = value;
-          }
+      iterator = this.lookupIterator3(iterator, context);
+      this.each(list, function(value, index, list) {
+        computed = iterator(value, index, list);
+        if (computed > lastComputed || empty) {
+          empty = false;
+          result = value;
+          lastComputed = computed;
         }
-      } else {
-        iterator = this.lookupIterator3(iterator, context);
-        this.each(obj, function(value, index, list) {
-          computed = iterator(value, index, list);
-          if (computed > lastComputed || computed === -Infinity && result === -Infinity) {
-            result = value;
-            lastComputed = computed;
-          }
-        });
-      }
+      });
       return result;
     }
 
     // Return the minimum element (or element-based computation).
     public min(list: _.List<number>): number;
-    public min<T>(list: _.List<T>, iterator?: _.ListIterator<T, number>, context?: any): T;
+    public min<T>(list: _.List<T>, iterator: _.ListIterator<T, number>, context?: any): T;
     public min<T>(obj: _.List<any>, iterator?: _.ListIterator<T, number>, context?: any): any {
       var result = Infinity, lastComputed = Infinity,
         value:number, computed:number;
@@ -483,7 +481,7 @@ module _Implementation {
       var rand:number;
       var index = 0;
       var shuffled:T[] = [];
-      this.each(obj, function(value) {
+      this.each(obj, (value) => {
         rand = this.random(index++);
         shuffled[index - 1] = shuffled[rand];
         shuffled[rand] = value;
@@ -528,7 +526,7 @@ module _Implementation {
 
     // An internal function used for aggregate "group by" operations.
     private group<T, TResult>(behavior: (result:_.Dictionary<TResult>, value: T, key:string) => void) {
-      return function(obj: _.List<T>, iterator: _.ListIterator<T, any>, context: any) {
+      return (obj: _.List<T>, iterator: _.ListIterator<T, any>, context: any) => {
         var result: _.Dictionary<TResult> = {};
         iterator = this.lookupIterator3(iterator, context);
         this.each(obj, function(value:T, index:number) {
@@ -542,7 +540,7 @@ module _Implementation {
     // Groups the object's values by a criterion. Pass either a string attribute
     // to group by, or a function that returns the criterion.
     public groupBy<T>(list: _.List<T>, iterator?: _.ListIterator<T, any>, context?: any): _.Dictionary<T[]> {
-      return this.group<T, T[]>(function(result, value, key) { if (this.has(result, key)) result[key].push(value); else result[key] = [value]; })(list, iterator, context);
+      return this.group<T, T[]>((result, value, key) => { if (this.has(result, key)) result[key].push(value); else result[key] = [value]; })(list, iterator, context);
     }
 
     // Indexes the object's values by a criterion, similar to `groupBy`, but for
@@ -555,7 +553,7 @@ module _Implementation {
     // either a string attribute to count by, or a function that returns the
     // criterion.
     public countBy<T>(list: _.List<T>, iterator?: _.ListIterator<T, any>, context?: any): _.Dictionary<number> {
-      return this.group<T, number>(function(result, value, key) { if (this.has(result, key)) result[key]++; else result[key] = 1; })(list, iterator, context);
+      return this.group<T, number>((result, value, key) => { if (this.has(result, key)) result[key]++; else result[key] = 1; })(list, iterator, context);
     }
 
     // TODO: formerly not restricted to comparing numbers; needs Comparable interface?
@@ -768,7 +766,7 @@ module _Implementation {
     // Only the elements present in just the first array will remain.
     public difference<T>(array: _.List<T>, ...others: _.List<T>[]): T[] {
       var rest = this.flattenInternal(others, true, true, []);
-      return this.filter(array, function(value) {
+      return this.filter(array, (value) => {
         return !this.contains(rest, value);
       });
     }
@@ -777,7 +775,7 @@ module _Implementation {
     // an index go together.
     public zip(...array: _.List<any>[]): any[] {
       if (array == null) return [];
-      var length = _.max(array, function(arg, x, y) { return arg.length }).length; //TODO: this looked nicer when it was just 'length'
+      var length = _.maxD(array, function(arg, x, y) { return arg.length }).length; //TODO: this looked nicer when it was just 'length'
       var results = Array(length);
       for (var i = 0; i < length; i++) {
         results[i] = this.map(array, function(x) { return x[i] }); //TODO: nicer with 'pluck'?
@@ -979,7 +977,7 @@ module _Implementation {
     public debounce(func: Function, wait: number, immediate?: boolean): Function {
       var timeout:number, args:any, context:any, timestamp:number, result:Function;
 
-      var later = function() {
+      var later = () => {
         var last = this.now() - timestamp;
 
         if (last < wait && last > 0) {
@@ -994,7 +992,7 @@ module _Implementation {
       };
 
       return function() {
-        context = this;
+        context = this; //TODO: is 'this' correct?
         args = arguments;
         timestamp = this.now();
         var callNow = immediate && !timeout;
@@ -1453,8 +1451,8 @@ module _Implementation {
 
     private escapeOrUnescape(str: string, direction: string): string {
       if (str == null) return '';
-      return ('' + str).replace(this.entityRegexes[direction], function(match) {
-        return this._entityMap[direction][match];
+      return ('' + str).replace(this.entityRegexes[direction], (match) => {
+        return (<any>this._entityMap)[direction][match];
       });
     }
 
@@ -1520,7 +1518,7 @@ module _Implementation {
       // Compile the template source, escaping string literals appropriately.
       var index = 0;
       var source = "__p+='";
-      text.replace(matcher, function(match, escape, interpolate, evaluate, offset) {
+      text.replace(matcher, (match, escape, interpolate, evaluate, offset) => {
         source += text.slice(index, offset).replace(this.escaper, this.escapeChar);
         index = offset + match.length;
 

@@ -197,6 +197,8 @@ interface UnderscoreStatic {
 		memo: TResult,
 		context?: any): TResult;
 
+	reduceD<T>(obj: _.List<T>, iterator: _.MemoIterator<T, T>): T;
+
 	/**
 	* @see _.reduce
 	**/
@@ -502,9 +504,9 @@ interface UnderscoreStatic {
 	* @param context `this` object in `iterator`, optional.
 	* @return The maximum element within `list`.
 	**/
-	max<T>(
+	maxD<T>(
 		list: _.List<T>,
-		iterator?: _.ListIterator<T, number>,
+		iterator: _.ListIterator<T, number>,
 		context?: any): T;
 
 	/**
@@ -524,7 +526,7 @@ interface UnderscoreStatic {
 	**/
 	min<T>(
 		list: _.List<T>,
-		iterator?: _.ListIterator<T, number>,
+		iterator: _.ListIterator<T, number>,
 		context?: any): T;
 
 	/**
