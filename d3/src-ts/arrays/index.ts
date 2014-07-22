@@ -1,23 +1,24 @@
-import "ascending";
-import "descending";
-import "min";
-import "max";
-import "extent";
-import "sum";
-import "mean";
-import "median";
-import "quantile";
-import "bisect";
-import "shuffle";
-import "permute";
-import "pairs";
-import "zip";
-import "transpose";
-import "keys";
-import "values";
-import "entries";
-import "merge";
-import "range";
-import "nest";
-import "map";
-import "set";
+/// <reference path="../../d3.d.ts" />
+/// <reference path="ascending.ts" />
+/// <reference path="descending.ts" />
+/// <reference path="min.ts" />
+/// <reference path="max.ts" />
+/// <reference path="extent.ts" />
+/// <reference path="sum.ts" />
+/// <reference path="mean.ts" />
+/// <reference path="median.ts" />
+/// <reference path="quantile.ts" />
+/// <reference path="bisect.ts" />
+/// <reference path="shuffle.ts" />
+/// <reference path="permute.ts" />
+/// <reference path="pairs.ts" />
+/// <reference path="zip.ts" />
+/// <reference path="transpose.ts" />
+/// <reference path="keys.ts" />
+/// <reference path="values.ts" />
+/// <reference path="entries.ts" />
+/// <reference path="merge.ts" />
+/// <reference path="range.ts" />
+/// <reference path="nest.ts" />
+/// <reference path="map.ts" />
+/// <reference path="set.ts" />
