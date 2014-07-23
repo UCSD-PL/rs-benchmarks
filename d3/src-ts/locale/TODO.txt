@@ -1,0 +1,12 @@
+ca-ES.ts
+en-GB.ts
+en-US.ts
+es-ES.ts
+fi-FI.ts
+locale.ts
+number-format.ts
+pt-BR.ts
+ru-RU.ts
+time-format.ts
+time-scale.ts
+zh-CN.ts

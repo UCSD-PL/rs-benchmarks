@@ -1,0 +1,7 @@
+abs.ts
+adder.ts
+index.ts
+number.ts
+random.ts
+transform.ts
+trigonometry.ts
