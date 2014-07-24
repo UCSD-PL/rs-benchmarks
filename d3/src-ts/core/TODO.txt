@@ -1,14 +1,9 @@
-array.ts
+array.ts		// dynamically redefines funciton (see document.ts)
 class.ts
-document.ts
+document.ts		// dynamically redefines function (see array.ts)
 functor.ts
-identity.ts
 index.ts
-noop.ts
-ns.ts
+ns.ts			// needs to understand that d3_nsPrefix.hasOwnProperty(prefix) implies d3_nsPrefix[prefix] is defined; also qualify's return type does not match DT
 rebind.ts
-source.ts
-subclass.ts
-target.ts
-true.ts
+subclass.ts		// prototype stuff
 vendor.ts

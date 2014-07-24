@@ -5,5 +5,6 @@ index.js	// multiple imports dependent on functionality of unstable files
 min.js		// difficulty with overloaded functions
 nest.js		// Strange and large requires greater familiarity with ts
 set.js		// dependency on core class.ts
-sum.js		// dynamic check on the number of argumentsmax.ts
+sum.js		// dynamic check on the number of arguments
+max.ts
 mean.ts
