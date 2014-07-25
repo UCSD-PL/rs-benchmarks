@@ -1,6 +1,6 @@
 /// <reference path="../../d3.d.ts" />
-/// <reference path= "../core/class.ts" />
-//  <reference paht="map.ts" />
+/// <reference path="../core/class.ts" />
+/// <reference path="map.ts" />
 
 d3.set = function(array) {
   var set = new d3_Set;
