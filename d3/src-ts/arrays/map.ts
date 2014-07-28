@@ -1,14 +1,14 @@
 /// <reference path="../../d3.d.ts" />
 /// <reference path="../core/class.ts" />
 
-d3.map = function(object?: any):Map {
-  var map:Map = new d3_Map;
+d3.map = function(object?: any):D3.Map {
+  var map:D3.Map = new d3_Map;
   if (object instanceof d3_Map) object.forEach(function(key, value) { map.set(key, value); });
   else for (var key in object) map.set(key, object[key]);
   return map;
 };
 
-function d3_Map():Map {}
+function d3_Map():D3.Map {}
 
 d3_class(d3_Map, {
   has: d3_map_has,
@@ -25,7 +25,7 @@ d3_class(d3_Map, {
     this.forEach(function(key, value) { values.push(value); });
     return values;
   },
-  entries: function():Array:<any> {
+  entries: function():Array<any> {
     var entries:Array<any> = [];
     this.forEach(function(key, value) { entries.push({key: key, value: value}); });
     return entries;

@@ -2,8 +2,8 @@
 /// <reference path="map.ts" />
 
 
-d3.nest = function():Nest {
-  var nest = {},
+d3.nest = function():D3.Nest {
+  var nest:any = {},
       keys = [],
       sortKeys = [],
       sortValues,
