@@ -28,6 +28,8 @@ class LABImpl implements D3.Color.LABColor {
   rgb() {
    return d3_lab_rgb(this.l, this.a, this.b);
   }
+
+  toString() { return this.rgb() + ""; }
 }
 
 // Corresponds roughly to RGB brighter/darker
@@ -38,7 +40,7 @@ var d3_lab_X = 0.950470,
     d3_lab_Y = 1,
     d3_lab_Z = 1.088830;
 
-function d3_lab_rgb(l, a, b) {
+function d3_lab_rgb(l:number, a:number, b:number) {
   var y = (l + 16) / 116,
       x = y + a / 500,
       z = y - b / 200;
@@ -52,12 +54,12 @@ function d3_lab_rgb(l, a, b) {
   );
 }
 
-function d3_lab_hcl(l, a, b) {
+function d3_lab_hcl(l:number, a:number, b:number) {
   return l > 0
       ? new HCLImpl(Math.atan2(b, a) * d3_degrees, Math.sqrt(a * a + b * b), l)
       : new HCLImpl(NaN, NaN, l);
 }
 
-function d3_lab_xyz(x) {
+function d3_lab_xyz(x:number) {
   return x > 0.206893034 ? x * x * x : (x - 4 / 29) / 7.787037;
 }

@@ -29,9 +29,10 @@ class HCLImpl implements D3.Color.HCLColor {
     return d3_hcl_lab(this.h, this.c, this.l).rgb();
   }
 
+  toString() { return this.rgb() + ""; }
 };
 
-function d3_hcl_lab(h, c, l) {
+function d3_hcl_lab(h:number, c:number, l:number) {
   if (isNaN(h)) h = 0;
   if (isNaN(c)) c = 0;
   return new LABImpl(l, Math.cos(h *= d3_radians) * c, Math.sin(h) * c);

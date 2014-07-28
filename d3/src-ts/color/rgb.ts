@@ -45,23 +45,21 @@ class RGBImpl implements D3.Color.RGBColor {
   }
 }
 
-
-
-function d3_rgbNumber(value) {
+function d3_rgbNumber(value:number) {
   return new RGBImpl(value >> 16, value >> 8 & 0xff, value & 0xff);
 }
 
-function d3_rgbString(value) {
+function d3_rgbString(value:number) {
   return d3_rgbNumber(value) + "";
 }
 
-function d3_rgb_hex(v) {
+function d3_rgb_hex(v:number) {
   return v < 0x10
       ? "0" + Math.max(0, v).toString(16)
       : Math.min(255, v).toString(16);
 }
 
-function d3_rgb_parse(format, rgb, hsl) {
+function d3_rgb_parse(format:string, rgb, hsl) {
   var r = 0, // red channel; int in [0, 255]
       g = 0, // green channel; int in [0, 255]
       b = 0, // blue channel; int in [0, 255]
@@ -110,12 +108,12 @@ function d3_rgb_parse(format, rgb, hsl) {
   return rgb(r, g, b);
 }
 
-function d3_rgb_hsl(r, g, b) {
+function d3_rgb_hsl(r:number, g:number, b:number) {
   var min = Math.min(r /= 255, g /= 255, b /= 255),
       max = Math.max(r, g, b),
       d = max - min,
-      h,
-      s,
+      h:number,
+      s:number,
       l = (max + min) / 2;
   if (d) {
     s = l < .5 ? d / (max + min) : d / (2 - max - min);
@@ -130,7 +128,7 @@ function d3_rgb_hsl(r, g, b) {
   return new HSLImpl(h, s, l);
 }
 
-function d3_rgb_lab(r, g, b) {
+function d3_rgb_lab(r:number, g:number, b:number) {
   r = d3_rgb_xyz(r);
   g = d3_rgb_xyz(g);
   b = d3_rgb_xyz(b);
@@ -140,7 +138,7 @@ function d3_rgb_lab(r, g, b) {
   return new LABImpl(116 * y - 16, 500 * (x - y), 200 * (y - z));
 }
 
-function d3_rgb_xyz(r) {
+function d3_rgb_xyz(r:number) {
   return (r /= 255) <= 0.04045 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4);
 }
 

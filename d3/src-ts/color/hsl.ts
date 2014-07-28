@@ -26,11 +26,11 @@ class HSLImpl implements D3.Color.HSLColor {
   }
 
   rgb() {
-    var h = this.h;
-    var s = this.s;
-    var l = this.l;
-    var m1,
-        m2;
+    var h = this.h,
+        s = this.s,
+        l = this.l,
+        m1:number,
+        m2:number;
 
     /* Some simple corrections for h, s and l. */
     h = isNaN(h) ? 0 : (h %= 360) < 0 ? h + 360 : h;
@@ -41,7 +41,7 @@ class HSLImpl implements D3.Color.HSLColor {
     m2 = l <= .5 ? l * (1 + s) : l + s - l * s;
     m1 = 2 * l - m2;
 
-    function v(h) {
+    function v(h:number) {
       if (h > 360) h -= 360;
       else if (h < 0) h += 360;
       if (h < 60) return m1 + (m2 - m1) * h / 60;
@@ -50,13 +50,14 @@ class HSLImpl implements D3.Color.HSLColor {
       return m1;
     }
 
-    function vv(h) {
+    function vv(h:number) {
       return Math.round(v(h) * 255);
     }
 
     return new RGBImpl(vv(h + 120), vv(h), vv(h - 120));
   }
 
+  toString() { return this.rgb() + ""; }
 }
 
 

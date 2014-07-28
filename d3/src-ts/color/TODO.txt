@@ -3,4 +3,4 @@ hcl.ts
 hsl.ts
 index.ts
 lab.ts
-rgb.ts
+rgb.ts // relies on arrays/map (needs uncommenting when stable)
