@@ -1,8 +1,2 @@
 /// <reference path="../../d3.d.ts" />
-d3.color = d3_color;
-
-function d3_color() {}
-
-d3_color.prototype.toString = function() {
-  return this.rgb() + "";
-};
+// TODO: formerly defined toString here since it is the same for all implemented colors
