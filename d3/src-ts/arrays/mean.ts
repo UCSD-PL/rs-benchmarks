@@ -1,10 +1,10 @@
 /// <reference path="../../d3.d.ts" />
 /// <reference path="../math/number.ts" />
 
-d3.mean = function(array, f) {
+d3.mean = function(array:T[], f?:(v:T)=>number):number {
   var s = 0,
       n = array.length,
-      a,
+      a:number,
       i = -1,
       j = n;
   if (arguments.length === 1) {
