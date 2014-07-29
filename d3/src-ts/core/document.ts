@@ -9,7 +9,7 @@ var d3_document = document,
 try {
   d3_array(d3_documentElement.childNodes)[0].nodeType;
 } catch(e) {
-  d3_array = function(list) {
+  d3_array = function(list:any) {
     var i = list.length, array = new Array(i);
     while (i--) array[i] = list[i];
     return array;

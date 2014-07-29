@@ -102,13 +102,13 @@ declare module D3 {
         * @param arr Array to search
         * @param map Accsessor function
         */
-        max<T, U>(arr: T[], map: (v: T) => U): U;
+        max<T>(arr: T[], map: (v: T) => number): number;
         /**
         * Find the maximum value in an array
         *
         * @param arr Array to search
         */
-        max<T>(arr: T[]): T;
+        max(arr: number[]): number;
         /**
         * Find the minimum and maximum value in an array
         *
@@ -237,19 +237,19 @@ declare module D3 {
         *
         * @param map Array of objects to get the key values from
         */
-        keys(map: any): string[];
+        keys<T>(map:{[k:string]:T}): string[];
         /**
         * List the values of an associative array.
         *
         * @param map Array of objects to get the values from
         */
-        values(map: any[]): any[];
+        values<T>(map:{[k:string]:T}): T[];
         /**
         * List the key-value entries of an associative array.
         *
         * @param map Array of objects to get the key-value pairs from
         */
-        entries(map: any): any[];
+        entries<T>(map: {[k:string]:T}): {key:string; value:T}[];
         /**
         * merge multiple arrays into one array
         *

@@ -1,5 +1,10 @@
 /// <reference path="../../d3.d.ts" />
-d3.max = function<T,U>(array:T[], f?:(v:T)=>U):any {
+
+d3.max = d3_max;
+
+function d3_max(array: number[]): number;
+function d3_max<T>(array: T[], f: (v: T) => number): number;
+function d3_max<T>(array: any[], f?: (v: T) => number): number {
   var i = -1,
       n = array.length,
       a,
