@@ -4,7 +4,16 @@
 /// <reference path="hcl.ts" />
 /// <reference path="rgb.ts" />
 
-//d3.lab = d3_lab;
+d3.lab = d3_lab;
+
+function d3_lab(l: number, a: number, b: number): D3.Color.LABColor;
+function d3_lab(color: string): D3.Color.LABColor;
+function d3_lab(x: any, a?: number, b?: number): D3.Color.LABColor {
+  if (arguments.length === 3)
+    return new LABImpl(x, a, b);
+  var rgb:D3.Color.RGBColor = d3.rgb(x);
+  return d3_rgb_lab(rgb.r, rgb.g, rgb.b);
+}
 
 class LABImpl implements D3.Color.LABColor {
   l:number;

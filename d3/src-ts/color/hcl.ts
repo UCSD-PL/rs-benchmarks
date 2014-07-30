@@ -4,7 +4,17 @@
 /// <reference path="lab.ts" />
 /// <reference path="rgb.ts" />
 
-//d3.hcl = d3_hcl;
+d3.hcl = d3_hcl;
+
+function d3_hcl(h: number, c: number, l: number): D3.Color.HCLColor;
+function d3_hcl(color: string): D3.Color.HCLColor;
+function d3_hcl(x: any, c?: number, l?: number): D3.Color.HCLColor {
+  if (arguments.length === 3)
+    return new HCLImpl(x, c, l);
+  var rgb:D3.Color.RGBColor = d3.rgb(x);
+  var lab:D3.Color.LABColor = d3_rgb_lab(rgb.r, rgb.g, rgb.b);
+  return d3_lab_hcl(lab.l, lab.a, lab.b)
+}
 
 class HCLImpl implements D3.Color.HCLColor {
   h:number;

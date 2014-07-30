@@ -1,6 +1,1 @@
-color.ts
-hcl.ts
-hsl.ts
-index.ts
-lab.ts
-rgb.ts // relies on arrays/map (needs uncommenting when stable)
+rgb.ts // relies on unstable arrays/map
