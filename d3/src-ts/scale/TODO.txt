@@ -8,7 +8,6 @@ nice.ts
 ordinal.ts
 polylinear.ts
 pow.ts
-quantile.ts
 quantize.ts
 scale.ts
 sqrt.ts

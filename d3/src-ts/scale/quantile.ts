@@ -17,7 +17,7 @@ class QuantileScaleImpl implements D3.Scale.QuantileScale {
   constructor(dmn:number[], rng:any[]) {
     this.dmn = dmn;
     this.rng = rng;
-    return this.rescale();
+    rescale();
   }
 
   convert(x:number):any {

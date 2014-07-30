@@ -2608,7 +2608,7 @@ declare module D3 {
             *
             * @param count Aproximate representative values to return
             */
-            tickFormat(count: number): (n: number) => string;
+            tickFormat(count: number, format: string): (n: number) => string;
         }
 
         export interface SqrtScale extends QuantitiveScale { }
