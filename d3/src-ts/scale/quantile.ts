@@ -6,51 +6,61 @@
 /// <reference path="scale.ts" />
 
 d3.scale.quantile = function() {
-  return d3_scale_quantile([], []);
+  return new QuantileScaleImpl([], []);
 };
 
-function d3_scale_quantile(domain, range) {
-  var thresholds;
+class QuantileScaleImpl implements D3.Scale.QuantileScale {
+  dmn:number[];
+  rng:any[];
+  thresholds:number[];
 
-  function rescale() {
+  constructor(dmn:number[], rng:any[]) {
+    this.dmn = dmn;
+    this.rng = rng;
+    return this.rescale();
+  }
+
+  convert(x:number):any {
+    if (!isNaN(x = +x)) return this.rng[d3.bisect(this.thresholds, x)];
+  }
+
+  private rescale() {
     var k = 0,
-        q = range.length;
-    thresholds = [];
-    while (++k < q) thresholds[k - 1] = d3.quantile(domain, k / q);
-    return scale;
+        q = this.rng.length;
+    this.thresholds = [];
+    while (++k < q) this.thresholds[k - 1] = d3.quantile(this.dmn, k / q);
+    return this;
   }
 
-  function scale(x) {
-    if (!isNaN(x = +x)) return range[d3.bisect(thresholds, x)];
+  domain(values:number[]):D3.Scale.QuantileScale;
+  domain():number[];
+  domain(values?:number[]):any {
+    if (!arguments.length) return this.dmn;
+    this.dmn = values.filter(d3_number).sort(d3.ascending);
+    return this.rescale();
   }
 
-  scale.domain = function(x) {
-    if (!arguments.length) return domain;
-    domain = x.filter(d3_number).sort(d3_ascending);
-    return rescale();
-  };
+  range(values:any[]):D3.Scale.QuantileScale;
+  range():any[];
+  range(values?:any[]):any {
+    if (!arguments.length) return this.rng;
+    this.rng = values.filter(d3_number).sort(d3.ascending);
+    return this.rescale();
+  }
 
-  scale.range = function(x) {
-    if (!arguments.length) return range;
-    range = x;
-    return rescale();
-  };
+  quantiles():number[] {
+    return this.thresholds;
+  }
 
-  scale.quantiles = function() {
-    return thresholds;
-  };
-
-  scale.invertExtent = function(y) {
-    y = range.indexOf(y);
+  invertExtent(y:any):number[] {
+    y = this.rng.indexOf(y);
     return y < 0 ? [NaN, NaN] : [
-      y > 0 ? thresholds[y - 1] : domain[0],
-      y < thresholds.length ? thresholds[y] : domain[domain.length - 1]
+      y > 0 ? this.thresholds[y - 1] : this.dmn[0],
+      y < this.thresholds.length ? this.thresholds[y] : this.dmn[this.dmn.length - 1]
     ];
-  };
+  }
 
-  scale.copy = function() {
-    return d3_scale_quantile(domain, range); // copy on write!
-  };
-
-  return rescale();
+  copy() {
+    return new QuantileScaleImpl(this.dmn, this.rng); // copy on write!
+  }
 }

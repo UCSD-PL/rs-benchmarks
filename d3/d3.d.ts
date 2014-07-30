@@ -1635,13 +1635,13 @@ declare module D3 {
                 /**
                 * Gets  the x-scale associated with the brush
                 */
-                (): D3.Scale.Scale;
+                (): D3.Scale.Scale<any,any>;
                 /**
                 * Sets the x-scale associated with the brush
                 *
                 * @param accessor The new Scale
                 */
-                (scale: D3.Scale.Scale): Brush;
+                (scale: D3.Scale.Scale<any,any>): Brush;
             };
             /**
             * Gets or sets the x-scale associated with the brush
@@ -1650,13 +1650,13 @@ declare module D3 {
                 /**
                 * Gets  the x-scale associated with the brush
                 */
-                (): D3.Scale.Scale;
+                (): D3.Scale.Scale<any,any>;
                 /**
                 * Sets the x-scale associated with the brush
                 *
                 * @param accessor The new Scale
                 */
-                (scale: D3.Scale.Scale): Brush;
+                (scale: D3.Scale.Scale<any,any>): Brush;
             };
             /**
             * Gets or sets the current brush extent
@@ -2494,27 +2494,21 @@ declare module D3 {
             threshold(): ThresholdScale;
         }
 
-        export interface Scale {
-            (value: any): any;
+        export interface Scale<T,U> {
+            convert(value: T): U;
             domain: {
-                (values: any[]): Scale;
+                (values: any[]): Scale<T,U>;
                 (): any[];
             };
             range: {
-                (values: any[]): Scale;
+                (values: any[]): Scale<T,U>;
                 (): any[];
             };
-            invertExtent?(y: any): any[];
-            copy(): Scale;
+            invertExtent?(y: U): T[];
+            copy(): Scale<T,U>;
         }
 
-        export interface QuantitiveScale extends Scale {
-            /**
-            * Get the range value corresponding to a given domain value.
-            *
-            * @param value Domain Value
-            */
-            (value: number): number;
+        export interface QuantitiveScale extends Scale<number,number> {
             /**
             * Get the domain value corresponding to a given range value.
             *
@@ -2594,22 +2588,9 @@ declare module D3 {
             copy(): QuantitiveScale;
         }
 
-        export interface LinearScale extends QuantitiveScale {
-            /**
-            * Get the range value corresponding to a given domain value.
-            *
-            * @param value Domain Value
-            */
-            (value: number): number;
-        }
+        export interface LinearScale extends QuantitiveScale { }
 
-        export interface IdentityScale extends Scale {
-            /**
-            * Get the range value corresponding to a given domain value.
-            *
-            * @param value Domain Value
-            */
-            (value: number): number;
+        export interface IdentityScale extends Scale<number,number> {
             /**
             * Get the domain value corresponding to a given range value.
             *
@@ -2630,40 +2611,13 @@ declare module D3 {
             tickFormat(count: number): (n: number) => string;
         }
 
-        export interface SqrtScale extends QuantitiveScale {
-            /**
-            * Get the range value corresponding to a given domain value.
-            *
-            * @param value Domain Value
-            */
-            (value: number): number;
-        }
+        export interface SqrtScale extends QuantitiveScale { }
 
-        export interface PowScale extends QuantitiveScale {
-            /**
-            * Get the range value corresponding to a given domain value.
-            *
-            * @param value Domain Value
-            */
-            (value: number): number;
-        }
+        export interface PowScale extends QuantitiveScale { }
 
-        export interface LogScale extends QuantitiveScale {
-            /**
-            * Get the range value corresponding to a given domain value.
-            *
-            * @param value Domain Value
-            */
-            (value: number): number;
-        }
+        export interface LogScale extends QuantitiveScale { }
 
-        export interface OrdinalScale extends Scale {
-            /**
-            * Get the range value corresponding to a given domain value.
-            *
-            * @param value Domain Value
-            */
-            (value: any): any;
+        export interface OrdinalScale extends Scale<any,any> {
             /**
             * Get or set the scale's input domain.
             */
@@ -2705,8 +2659,7 @@ declare module D3 {
             copy(): OrdinalScale;
         }
 
-        export interface QuantizeScale extends Scale {
-            (value: any): any;
+        export interface QuantizeScale extends Scale<any,any> {
             domain: {
                 (values: number[]): QuantizeScale;
                 (): any[];
@@ -2718,8 +2671,7 @@ declare module D3 {
             copy(): QuantizeScale;
         }
 
-        export interface ThresholdScale extends Scale {
-            (value: any): any;
+        export interface ThresholdScale extends Scale<any,any> {
             domain: {
                 (values: number[]): ThresholdScale;
                 (): any[];
@@ -2731,22 +2683,20 @@ declare module D3 {
             copy(): ThresholdScale;
         }
 
-        export interface QuantileScale extends Scale {
-            (value: any): any;
+        export interface QuantileScale extends Scale<number,any> {
             domain: {
                 (values: number[]): QuantileScale;
-                (): any[];
+                (): number[];
             };
             range: {
                 (values: any[]): QuantileScale;
                 (): any[];
             };
-            quantiles(): any[];
+            quantiles(): number[];
             copy(): QuantileScale;
         }
 
-        export interface TimeScale extends Scale {
-            (value: Date): number;
+        export interface TimeScale extends Scale<Date,number> {
             invert(value: number): Date;
             domain: {
                 (values: any[]): TimeScale;
@@ -2855,13 +2805,13 @@ declare module D3 {
                 /**
                 * Get the X-Scale
                 */
-                (): D3.Scale.Scale;
+                (): D3.Scale.Scale<any,any>;
                 /**
                 * Set the X-Scale to be adjusted
                 *
                 * @param x The X Scale
                 */
-                (x: D3.Scale.Scale): Zoom;
+                (x: D3.Scale.Scale<any,any>): Zoom;
 
             };
 
@@ -2872,13 +2822,13 @@ declare module D3 {
                 /**
                 * Get the Y-Scale
                 */
-                (): D3.Scale.Scale;
+                (): D3.Scale.Scale<any,any>;
                 /**
                 * Set the Y-Scale to be adjusted
                 *
                 * @param y The Y Scale
                 */
-                (y: D3.Scale.Scale): Zoom;
+                (y: D3.Scale.Scale<any,any>): Zoom;
             };
         }
 
