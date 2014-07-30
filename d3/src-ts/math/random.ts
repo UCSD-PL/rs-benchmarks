@@ -1,11 +1,11 @@
 /// <reference path="../../d3.d.ts" />
 d3.random = {
-  normal: function(µ, σ) {
-    var n = arguments.length;
+normal: function(µ?:number, σ?:number):()=>number {
+    var n:number = arguments.length;
     if (n < 2) σ = 1;
     if (n < 1) µ = 0;
     return function() {
-      var x, y, r;
+      var x:number, y:number, r:number;
       do {
         x = Math.random() * 2 - 1;
         y = Math.random() * 2 - 1;
@@ -14,21 +14,21 @@ d3.random = {
       return µ + σ * x * Math.sqrt(-2 * Math.log(r) / r);
     };
   },
-  logNormal: function() {
-    var random = d3.random.normal.apply(d3, arguments);
+  logNormal: function(mean ?: number,deviation ?:number):()=>number {
+  var random:()=>number = d3.random.normal.apply(d3, arguments);
     return function() {
       return Math.exp(random());
     };
   },
-  bates: function(m) {
-    var random = d3.random.irwinHall(m);
+  bates: function(m:number):()=> number {
+  var random:()=>number = d3.random.irwinHall(m);
     return function() {
       return random() / m;
     };
   },
-  irwinHall: function(m) {
+  irwinHall: function(m:number):()=>number {
     return function() {
-      for (var s = 0, j = 0; j < m; j++) s += Math.random();
+      for (var s:number = 0, j:number = 0; j < m; j++) s += Math.random();
       return s;
     };
   }
