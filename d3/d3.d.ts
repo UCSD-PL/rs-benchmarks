@@ -2497,12 +2497,12 @@ declare module D3 {
         export interface Scale<T,U> {
             convert(value: T): U;
             domain: {
-                (values: any[]): Scale<T,U>;
-                (): any[];
+                (values: T[]): Scale<T,U>;
+                (): T[];
             };
             range: {
-                (values: any[]): Scale<T,U>;
-                (): any[];
+                (values: U[]): Scale<T,U>;
+                (): U[];
             };
             invertExtent?(y: U): T[];
             copy(): Scale<T,U>;
@@ -2648,9 +2648,9 @@ declare module D3 {
                 */
                 (): any[];
             };
-            rangePoints(interval: any[], padding?: number): OrdinalScale;
-            rangeBands(interval: any[], padding?: number, outerPadding?: number): OrdinalScale;
-            rangeRoundBands(interval: any[], padding?: number, outerPadding?: number): OrdinalScale;
+            rangePoints(interval: number[], padding?: number): OrdinalScale;
+            rangeBands(interval: number[], padding?: number, outerPadding?: number): OrdinalScale;
+            rangeRoundBands(interval: number[], padding?: number, outerPadding?: number): OrdinalScale;
             rangeBand(): number;
             rangeExtent(): any[];
             /**

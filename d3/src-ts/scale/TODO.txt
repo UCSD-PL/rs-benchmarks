@@ -1,6 +1,5 @@
 bilinear.ts
 category.ts
-identity.ts
 index.ts
 linear.ts
 log.ts
