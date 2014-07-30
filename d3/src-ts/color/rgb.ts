@@ -7,62 +7,76 @@
 
 d3.rgb = d3_rgb;
 
-function d3_rgb(r, g, b) {
-  return this instanceof d3_rgb ? void (this.r = ~~r, this.g = ~~g, this.b = ~~b)
-      : arguments.length < 2 ? (r instanceof d3_rgb ? new d3_rgb(r.r, r.g, r.b)
-      : d3_rgb_parse("" + r, d3_rgb, d3_hsl_rgb))
-      : new d3_rgb(r, g, b);
+function d3_rgb(r: number, g: number, b: number): D3.Color.RGBColor;
+function d3_rgb(color: string): D3.Color.RGBColor;
+function d3_rgb(x:any, g?:number, b?:number): D3.Color.RGBColor {
+  if (arguments.length === 3)
+    return new RGBImpl(x, g, b);
+  return d3_rgb_parse("" + x, d3_rgb, d3_hsl_rgb);
 }
 
-function d3_rgbNumber(value) {
-  return new d3_rgb(value >> 16, value >> 8 & 0xff, value & 0xff);
+class RGBImpl implements D3.Color.RGBColor {
+  r:number;
+  g:number;
+  b:number;
+
+  constructor(r:number, g:number, b:number) {
+    this.r = r;
+    this.g = g;
+    this.b = b;
+  }
+
+  brighter(k?:number) {
+    k = Math.pow(0.7, arguments.length ? k : 1);
+    var r = this.r,
+        g = this.g,
+        b = this.b,
+        i = 30;
+    if (!r && !g && !b) return new RGBImpl(i, i, i);
+    if (r && r < i) r = i;
+    if (g && g < i) g = i;
+    if (b && b < i) b = i;
+    return new RGBImpl(Math.min(255, r / k), Math.min(255, g / k), Math.min(255, b / k));
+  }
+
+  darker(k?:number) {
+    k = Math.pow(0.7, arguments.length ? k : 1);
+    return new RGBImpl(k * this.r, k * this.g, k * this.b);
+  }
+
+  hsl() {
+    return d3_rgb_hsl(this.r, this.g, this.b);
+  }
+
+  toString() {
+    return "#" + d3_rgb_hex(this.r) + d3_rgb_hex(this.g) + d3_rgb_hex(this.b);
+  }
 }
 
-function d3_rgbString(value) {
+function d3_rgbNumber(value:number) {
+  return new RGBImpl(value >> 16, value >> 8 & 0xff, value & 0xff);
+}
+
+function d3_rgbString(value:number) {
   return d3_rgbNumber(value) + "";
 }
 
-var d3_rgbPrototype = d3_rgb.prototype = new d3_color;
-
-d3_rgbPrototype.brighter = function(k) {
-  k = Math.pow(0.7, arguments.length ? k : 1);
-  var r = this.r,
-      g = this.g,
-      b = this.b,
-      i = 30;
-  if (!r && !g && !b) return new d3_rgb(i, i, i);
-  if (r && r < i) r = i;
-  if (g && g < i) g = i;
-  if (b && b < i) b = i;
-  return new d3_rgb(Math.min(255, r / k), Math.min(255, g / k), Math.min(255, b / k));
-};
-
-d3_rgbPrototype.darker = function(k) {
-  k = Math.pow(0.7, arguments.length ? k : 1);
-  return new d3_rgb(k * this.r, k * this.g, k * this.b);
-};
-
-d3_rgbPrototype.hsl = function() {
-  return d3_rgb_hsl(this.r, this.g, this.b);
-};
-
-d3_rgbPrototype.toString = function() {
-  return "#" + d3_rgb_hex(this.r) + d3_rgb_hex(this.g) + d3_rgb_hex(this.b);
-};
-
-function d3_rgb_hex(v) {
+function d3_rgb_hex(v:number) {
   return v < 0x10
       ? "0" + Math.max(0, v).toString(16)
       : Math.min(255, v).toString(16);
 }
 
-function d3_rgb_parse(format, rgb, hsl) {
+function d3_rgb_parse<T>(format:string,
+                         rgb:(r:number, g:number, b:number)=>T,
+                         hsl:(h:number, s:number, l:number)=>T):T {
   var r = 0, // red channel; int in [0, 255]
       g = 0, // green channel; int in [0, 255]
       b = 0, // blue channel; int in [0, 255]
-      m1, // CSS color specification match
-      m2, // CSS color specification type (e.g., rgb)
-      color;
+      m1:RegExpExecArray, // CSS color specification match
+      m2:string[], // CSS color specification type (e.g., rgb)
+      namedColor:RGBImpl,
+      color:number;
 
   /* Handle hsl, rgb. */
   m1 = /([a-z]+)\((.*)\)/i.exec(format);
@@ -87,7 +101,8 @@ function d3_rgb_parse(format, rgb, hsl) {
   }
 
   /* Named colors. */
-  if (color = d3_rgb_names.get(format)) return rgb(color.r, color.g, color.b);
+  if (namedColor = d3_rgb_names.get(format))
+    return rgb(namedColor.r, namedColor.g, namedColor.b);
 
   /* Hexadecimal colors: #rgb and #rrggbb. */
   if (format != null && format.charAt(0) === "#" && !isNaN(color = parseInt(format.substring(1), 16))) {
@@ -105,12 +120,12 @@ function d3_rgb_parse(format, rgb, hsl) {
   return rgb(r, g, b);
 }
 
-function d3_rgb_hsl(r, g, b) {
+function d3_rgb_hsl(r:number, g:number, b:number) {
   var min = Math.min(r /= 255, g /= 255, b /= 255),
       max = Math.max(r, g, b),
       d = max - min,
-      h,
-      s,
+      h:number,
+      s:number,
       l = (max + min) / 2;
   if (d) {
     s = l < .5 ? d / (max + min) : d / (2 - max - min);
@@ -122,27 +137,29 @@ function d3_rgb_hsl(r, g, b) {
     h = NaN;
     s = l > 0 && l < 1 ? 0 : h;
   }
-  return new d3_hsl(h, s, l);
+  return new HSLImpl(h, s, l);
 }
 
-function d3_rgb_lab(r, g, b) {
+function d3_rgb_lab(r:number, g:number, b:number) {
   r = d3_rgb_xyz(r);
   g = d3_rgb_xyz(g);
   b = d3_rgb_xyz(b);
   var x = d3_xyz_lab((0.4124564 * r + 0.3575761 * g + 0.1804375 * b) / d3_lab_X),
       y = d3_xyz_lab((0.2126729 * r + 0.7151522 * g + 0.0721750 * b) / d3_lab_Y),
       z = d3_xyz_lab((0.0193339 * r + 0.1191920 * g + 0.9503041 * b) / d3_lab_Z);
-  return d3_lab(116 * y - 16, 500 * (x - y), 200 * (y - z));
+  return new LABImpl(116 * y - 16, 500 * (x - y), 200 * (y - z));
 }
 
-function d3_rgb_xyz(r) {
+function d3_rgb_xyz(r:number) {
   return (r /= 255) <= 0.04045 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4);
 }
 
-function d3_rgb_parseNumber(c) { // either integer or percentage
+function d3_rgb_parseNumber(c:string) { // either integer or percentage
   var f = parseFloat(c);
   return c.charAt(c.length - 1) === "%" ? Math.round(f * 2.55) : f;
 }
+
+var d3_rgb_names:D3.Map;
 
 var d3_rgb_names = d3.map({
   aliceblue: 0xf0f8ff,
