@@ -15,7 +15,13 @@ function d3_sgn(x:number):number {
 // the 3D cross product in a quadrant I Cartesian coordinate system (+x is
 // right, +y is up). Returns a positive value if ABC is counter-clockwise,
 // negative if clockwise, and zero if the points are collinear.
-function d3_cross2d(a:number[], b:number[], c:number[]i):number {
+
+
+interface D3Vector {
+  0:number;
+  1:number;
+}
+function d3_cross2d(a:D3Vector, b:D3Vector, c:D3Vector):number {
   return (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
 }
 
