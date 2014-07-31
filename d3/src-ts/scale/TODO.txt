@@ -3,11 +3,9 @@ category.ts
 index.ts
 linear.ts
 log.ts
-nice.ts
 ordinal.ts
 polylinear.ts
 pow.ts
 quantize.ts
 scale.ts
 sqrt.ts
-threshold.ts

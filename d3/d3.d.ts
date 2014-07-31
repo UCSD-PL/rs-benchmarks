@@ -393,7 +393,7 @@ declare module D3 {
         /*
         * Interpolate two HSL colors
         */
-        interpolateHsl: Transition.BaseInterpolate;
+        interpolateHsl: Transition.STPInterpolateFactory<Color.HSLColor>;
         /*
         * Interpolate two HCL colors
         */
@@ -958,6 +958,13 @@ declare module D3 {
 
         export interface InterpolateFactory {
             (a?: any, b?: any): BaseInterpolate;
+        }
+
+        // "Strict, Type Preserving" InterpolateFactorys -
+        // a preferred version with no optional arguments where
+        // all inputs and the interpolator's output are the same type
+        export interface STPInterpolateFactory<T> extends InterpolateFactory {
+            (a: T, b: T): (t: number)=>T;
         }
 
         export interface BaseInterpolate {
