@@ -1,6 +1,2 @@
-html.ts
-index.ts
-tson.ts
-text.ts
 xhr.ts
-xml.ts
+

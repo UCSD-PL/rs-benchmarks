@@ -8,7 +8,7 @@ d3.map = function(object?: any):D3.Map {
   return map;
 };
 
-function d3_Map():D3.Map {}
+function d3_Map():void {}
 
 d3_class(d3_Map, {
   has: d3_map_has,
