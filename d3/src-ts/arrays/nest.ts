@@ -1,17 +1,17 @@
 /// <reference path="../../d3.d.ts" />
 /// <reference path="map.ts" />
 
+d3.nest = function() { return new NestImpl() };
 
-d3.nest = function():D3.Nest {
-  var nest:any = {},
-      keys = [],
-      sortKeys = [],
-      sortValues,
-      rollup;
+class NestImpl {
+  keys = [];
+  sortKeys = [];
+  sortValues;
+  rollup;
 
-  function map(mapType, array, depth) {
+  private mapI(mapType, array, depth:number) {
     if (depth >= keys.length) return rollup
-        ? rollup.call(nest, array) : (sortValues
+        ? rollup.call(this, array) : (sortValues
         ? array.sort(sortValues)
         : array);
 
@@ -21,7 +21,7 @@ d3.nest = function():D3.Nest {
         keyValue,
         object,
         setter,
-        valuesByKey = new d3_Map,
+        valuesByKey = d3.map(),
         values;
 
     while (++i < n) {
@@ -48,7 +48,7 @@ d3.nest = function():D3.Nest {
     return object;
   }
 
-  function entries(map, depth) {
+  private entriesI(map, depth) {
     if (depth >= keys.length) return map;
 
     var array = [],
@@ -63,37 +63,35 @@ d3.nest = function():D3.Nest {
         : array;
   }
 
-  nest.map = function(array, mapType) {
-    return map(mapType, array, 0);
-  };
+  map(array, mapType) {
+    return mapI(mapType, array, 0);
+  }
 
-  nest.entries = function(array) {
-    return entries(map(d3.map, array, 0), 0);
-  };
+  entries(array) {
+    return entriesI(mapI(d3.map, array, 0), 0);
+  }
 
-  nest.key = function(d) {
+  key(d) {
     keys.push(d);
-    return nest;
-  };
+    return this;
+  }
 
   // Specifies the order for the most-recently specified key.
   // Note: only applies to entries. Map keys are unordered!
-  nest.sortKeys = function(order) {
+  sortKeys(order) {
     sortKeys[keys.length - 1] = order;
-    return nest;
-  };
+    return this;
+  }
 
   // Specifies the order for leaf values.
   // Applies to both maps and entries array.
-  nest.sortValues = function(order) {
+  sortValues(order) {
     sortValues = order;
-    return nest;
-  };
+    return this;
+  }
 
-  nest.rollup = function(f) {
+  rollup(f) {
     rollup = f;
-    return nest;
-  };
-
-  return nest;
-};
+    return this;
+  }
+}
