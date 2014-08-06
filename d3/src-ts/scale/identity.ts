@@ -3,32 +3,43 @@
 /// <reference path="scale.ts" />
 
 d3.scale.identity = function() {
-  return d3_scale_identity([0, 1]);
+  return new IdentityScaleImpl([0, 1]);
 };
 
-function d3_scale_identity(domain) {
+class IdentityScaleImpl implements D3.Scale.IdentityScale {
+  dmn:number[];
 
-  function identity(x) { return +x; }
+  constructor(dmn:number[]) {
+    this.dmn = dmn;
+  }
 
-  identity.invert = identity;
+  convert(x:number):number { return +x; }
 
-  identity.domain = identity.range = function(x) {
-    if (!arguments.length) return domain;
-    domain = x.map(identity);
-    return identity;
-  };
+  invert(x:number):number { return this.convert(x); }
 
-  identity.ticks = function(m) {
-    return d3_scale_linearTicks(domain, m);
-  };
+  domain(values:number[]):D3.Scale.IdentityScale;
+  domain():number[];
+  domain(values?:number[]):any {
+    if (!arguments.length) return this.dmn;
+    this.dmn = values.map(this.convert);
+    return this;
+  }
 
-  identity.tickFormat = function(m, format) {
-    return d3_scale_linearTickFormat(domain, m, format);
-  };
+  range(values:number[]):D3.Scale.IdentityScale;
+  range():number[];
+  range(values?:number[]):any {
+    return this.domain(values);
+  } // TODO can we get the old one-line version "range = domain" back?
 
-  identity.copy = function() {
-    return d3_scale_identity(domain);
-  };
+  ticks(count: number): any[] {
+    return d3_scale_linearTicks(this.dmn, count);
+  }
 
-  return identity;
+  tickFormat(count: number, format: string): (n: number) => string {
+    return d3_scale_linearTickFormat(this.dmn, count, format);
+  }
+
+  copy() {
+    return new IdentityScaleImpl(this.dmn);
+  }
 }

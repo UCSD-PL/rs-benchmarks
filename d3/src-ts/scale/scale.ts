@@ -1,5 +1,5 @@
 /// <reference path="../../d3.d.ts" />
-d3.scale = {};
+//d3.scale = {};
 
 function d3_scaleExtent(domain) {
   var start = domain[0], stop = domain[domain.length - 1];

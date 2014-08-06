@@ -3,35 +3,44 @@
 /// <reference path="scale.ts" />
 
 d3.scale.threshold = function() {
-  return d3_scale_threshold([.5], [0, 1]);
+  return new ThresholdScaleImpl([.5], [0, 1]);
 };
 
-function d3_scale_threshold(domain, range) {
+class ThresholdScaleImpl implements D3.Scale.ThresholdScale {
+  dmn:number[];
+  rng:any[];
 
-  function scale(x) {
-    if (x <= x) return range[d3.bisect(domain, x)];
+  constructor(dmn:number[], rng:any[]) {
+    this.dmn = dmn;
+    this.rng = rng;
   }
 
-  scale.domain = function(_) {
-    if (!arguments.length) return domain;
-    domain = _;
-    return scale;
-  };
+  convert(x:number) {
+    if (x <= x) return this.rng[d3.bisect(this.dmn, x)];
+  }
 
-  scale.range = function(_) {
-    if (!arguments.length) return range;
-    range = _;
-    return scale;
-  };
+  domain(values:number[]):D3.Scale.ThresholdScale;
+  domain():number[];
+  domain(values?:number[]):any {
+    if (!arguments.length) return this.dmn;
+    this.dmn = values;
+    return this;
+  }
 
-  scale.invertExtent = function(y) {
-    y = range.indexOf(y);
-    return [domain[y - 1], domain[y]];
-  };
+  range(values:any[]):D3.Scale.ThresholdScale;
+  range():any[];
+  range(values?:any[]):any {
+    if (!arguments.length) return this.rng;
+    this.rng = values;
+    return this;
+  }
 
-  scale.copy = function() {
-    return d3_scale_threshold(domain, range);
-  };
+  invertExtent(y:any):number[] {
+    y = this.rng.indexOf(y);
+    return [this.dmn[y - 1], this.dmn[y]];
+  }
 
-  return scale;
-};
+  copy() {
+    return new ThresholdScaleImpl(this.dmn, this.rng);
+  }
+}

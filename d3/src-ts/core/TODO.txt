@@ -1,4 +1,3 @@
-class.ts		// prototype stuff
 index.ts
 ns.ts			// needs to understand that d3_nsPrefix.hasOwnProperty(prefix) implies d3_nsPrefix[prefix] is defined; also qualify's return type does not match DT
 subclass.ts		// prototype stuff

@@ -1,27 +1,31 @@
 /// <reference path="../../d3.d.ts" />
 /// <reference path="map.ts" />
 
+d3.nest = function() { return new NestImpl() };
 
-d3.nest = function():D3.Nest {
-  var nest:any = {},
-      keys = [],
-      sortKeys = [],
-      sortValues,
-      rollup;
+interface NestComparator {
+  (d1: any, d2: any): number;
+};
 
-  function map(mapType, array, depth) {
-    if (depth >= keys.length) return rollup
-        ? rollup.call(nest, array) : (sortValues
-        ? array.sort(sortValues)
+class NestImpl {
+  keys:any[] = [];
+  sortKeysVar:NestComparator[] = [];
+  sortValuesVar:NestComparator;
+  rollupVar:(data: any, index: number) => any;
+
+  private mapI(mapType:any, array, depth:number) {
+    if (depth >= this.keys.length) return this.rollupVar
+        ? this.rollupVar.call(this, array) : (this.sortValuesVar
+        ? array.sort(this.sortValuesVar)
         : array);
 
     var i = -1,
         n = array.length,
-        key = keys[depth++],
+        key = this.keys[depth++],
         keyValue,
         object,
         setter,
-        valuesByKey = new d3_Map,
+        valuesByKey = d3.map(),
         values;
 
     while (++i < n) {
@@ -35,12 +39,12 @@ d3.nest = function():D3.Nest {
     if (mapType) {
       object = mapType();
       setter = function(keyValue, values) {
-        object.set(keyValue, map(mapType, values, depth));
+        object.set(keyValue, this.mapI(mapType, values, depth));
       };
     } else {
       object = {};
       setter = function(keyValue, values) {
-        object[keyValue] = map(mapType, values, depth);
+        object[keyValue] = this.mapI(mapType, values, depth);
       };
     }
 
@@ -48,14 +52,14 @@ d3.nest = function():D3.Nest {
     return object;
   }
 
-  function entries(map, depth) {
-    if (depth >= keys.length) return map;
+  private entriesI(map, depth) {
+    if (depth >= this.keys.length) return map;
 
     var array = [],
-        sortKey = sortKeys[depth++];
+        sortKey = this.sortKeysVar[depth++];
 
     map.forEach(function(key, keyMap) {
-      array.push({key: key, values: entries(keyMap, depth)});
+      array.push({key: key, values: this.entriesI(keyMap, depth)});
     });
 
     return sortKey
@@ -63,37 +67,35 @@ d3.nest = function():D3.Nest {
         : array;
   }
 
-  nest.map = function(array, mapType) {
-    return map(mapType, array, 0);
-  };
+  map(array: any[], mapType: any) {
+    return this.mapI(mapType, array, 0);
+  }
 
-  nest.entries = function(array) {
-    return entries(map(d3.map, array, 0), 0);
-  };
+  entries(array: any[]) {
+    return this.entriesI(this.mapI(d3.map, array, 0), 0);
+  }
 
-  nest.key = function(d) {
-    keys.push(d);
-    return nest;
-  };
+  key(keyFunction: (data: any, index: number) => string) {
+    this.keys.push(keyFunction);
+    return this;
+  }
 
   // Specifies the order for the most-recently specified key.
   // Note: only applies to entries. Map keys are unordered!
-  nest.sortKeys = function(order) {
-    sortKeys[keys.length - 1] = order;
-    return nest;
-  };
+  sortKeys(comparator: NestComparator) {
+    this.sortKeysVar[this.keys.length - 1] = comparator;
+    return this;
+  }
 
   // Specifies the order for leaf values.
   // Applies to both maps and entries array.
-  nest.sortValues = function(order) {
-    sortValues = order;
-    return nest;
-  };
+  sortValues(comparator: NestComparator) {
+    this.sortValuesVar = comparator;
+    return this;
+  }
 
-  nest.rollup = function(f) {
-    rollup = f;
-    return nest;
-  };
-
-  return nest;
-};
+  rollup(f: (data: any, index: number) => any) {
+    this.rollupVar = f;
+    return this;
+  }
+}
