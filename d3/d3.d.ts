@@ -835,7 +835,7 @@ declare module D3 {
         sortKeys(comparator: (d1: any, d2: any) => number): Nest;
         sortValues(comparator: (d1: any, d2: any) => number): Nest;
         rollup(rollupFunction: (data: any, index: number) => any): Nest;
-        map(values: any[]): any;
+        map(values: any[], mapType: any): any;
         entries(values: any[]): NestKeyValue[];
     }
 

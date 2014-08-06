@@ -3,21 +3,25 @@
 
 d3.nest = function() { return new NestImpl() };
 
-class NestImpl {
-  keys = [];
-  sortKeys = [];
-  sortValues;
-  rollup;
+interface NestComparator {
+  (d1: any, d2: any): number;
+};
 
-  private mapI(mapType, array, depth:number) {
-    if (depth >= keys.length) return rollup
-        ? rollup.call(this, array) : (sortValues
-        ? array.sort(sortValues)
+class NestImpl {
+  keys:any[] = [];
+  sortKeysVar:NestComparator[] = [];
+  sortValuesVar:NestComparator;
+  rollupVar:(data: any, index: number) => any;
+
+  private mapI(mapType:any, array, depth:number) {
+    if (depth >= this.keys.length) return this.rollupVar
+        ? this.rollupVar.call(this, array) : (this.sortValuesVar
+        ? array.sort(this.sortValuesVar)
         : array);
 
     var i = -1,
         n = array.length,
-        key = keys[depth++],
+        key = this.keys[depth++],
         keyValue,
         object,
         setter,
@@ -35,12 +39,12 @@ class NestImpl {
     if (mapType) {
       object = mapType();
       setter = function(keyValue, values) {
-        object.set(keyValue, map(mapType, values, depth));
+        object.set(keyValue, this.mapI(mapType, values, depth));
       };
     } else {
       object = {};
       setter = function(keyValue, values) {
-        object[keyValue] = map(mapType, values, depth);
+        object[keyValue] = this.mapI(mapType, values, depth);
       };
     }
 
@@ -49,13 +53,13 @@ class NestImpl {
   }
 
   private entriesI(map, depth) {
-    if (depth >= keys.length) return map;
+    if (depth >= this.keys.length) return map;
 
     var array = [],
-        sortKey = sortKeys[depth++];
+        sortKey = this.sortKeysVar[depth++];
 
     map.forEach(function(key, keyMap) {
-      array.push({key: key, values: entries(keyMap, depth)});
+      array.push({key: key, values: this.entriesI(keyMap, depth)});
     });
 
     return sortKey
@@ -63,35 +67,35 @@ class NestImpl {
         : array;
   }
 
-  map(array, mapType) {
-    return mapI(mapType, array, 0);
+  map(array: any[], mapType: any) {
+    return this.mapI(mapType, array, 0);
   }
 
-  entries(array) {
-    return entriesI(mapI(d3.map, array, 0), 0);
+  entries(array: any[]) {
+    return this.entriesI(this.mapI(d3.map, array, 0), 0);
   }
 
-  key(d) {
-    keys.push(d);
+  key(keyFunction: (data: any, index: number) => string) {
+    this.keys.push(keyFunction);
     return this;
   }
 
   // Specifies the order for the most-recently specified key.
   // Note: only applies to entries. Map keys are unordered!
-  sortKeys(order) {
-    sortKeys[keys.length - 1] = order;
+  sortKeys(comparator: NestComparator) {
+    this.sortKeysVar[this.keys.length - 1] = comparator;
     return this;
   }
 
   // Specifies the order for leaf values.
   // Applies to both maps and entries array.
-  sortValues(order) {
-    sortValues = order;
+  sortValues(comparator: NestComparator) {
+    this.sortValuesVar = comparator;
     return this;
   }
 
-  rollup(f) {
-    rollup = f;
+  rollup(f: (data: any, index: number) => any) {
+    this.rollupVar = f;
     return this;
   }
 }
