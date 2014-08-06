@@ -2,8 +2,8 @@
 /// <reference path="../core/document.ts" />
 /// <reference path="../core/ns.ts" />
 
-d3.transform = function(string) {
-  var g = d3_document.createElementNS(d3.ns.prefix.svg, "g");
+d3.transform = function(string:string):any {
+  var g:Element = d3_document.createElementNS(d3.ns.prefix.svg, "g");
   return (d3.transform = function(string) {
     if (string != null) {
       g.setAttribute("transform", string);
