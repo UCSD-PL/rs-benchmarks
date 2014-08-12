@@ -24,7 +24,7 @@ interface d3_adder{
 d3_adder.prototype = {
   s: 0, // rounded value
   t: 0, // exact error
-  add: function(y:number) {
+  add: function(y:number):void {
     d3_adderSum(y, this.t, d3_adderTemp);
     d3_adderSum(d3_adderTemp.s, this.s, this);
     if (this.s) this.t += d3_adderTemp.t;

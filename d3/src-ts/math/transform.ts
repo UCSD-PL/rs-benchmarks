@@ -3,11 +3,11 @@
 /// <reference path="../core/ns.ts" />
 
 d3.transform = function(string:string):any {
-  var g:Element = d3_document.createElementNS(d3.ns.prefix.svg, "g");
-  return (d3.transform = function(string) {
+  var g:any= d3_document.createElementNS(d3.ns.prefix.svg, "g");
+  return (d3.transform = function(string:string) :any{
     if (string != null) {
       g.setAttribute("transform", string);
-      var t = g.transform.baseVal.consolidate();
+      var t:SVGTransformList = g.transform.baseVal.consolidate();
     }
     return new d3_transform(t ? t.matrix : d3_transformIdentity);
   })(string);
@@ -17,12 +17,12 @@ d3.transform = function(string:string):any {
 // Compute shear and make second row orthogonal to first.
 // Compute y-scale and normalize the second row.
 // Finally, compute the rotation.
-function d3_transform(m) {
-  var r0 = [m.a, m.b],
-      r1 = [m.c, m.d],
-      kx = d3_transformNormalize(r0),
-      kz = d3_transformDot(r0, r1),
-      ky = d3_transformNormalize(d3_transformCombine(r1, r0, -kz)) || 0;
+function d3_transform(m:any) :void{
+  var r0 :number[]= [m.a, m.b],
+      r1:number[] = [m.c, m.d],
+      kx :number= d3_transformNormalize(r0),
+      kz:number = d3_transformDot(r0, r1),
+      ky:number = d3_transformNormalize(d3_transformCombine(r1, r0, -kz)) || 0;
   if (r0[0] * r1[1] < r1[0] * r0[1]) {
     r0[0] *= -1;
     r0[1] *= -1;
@@ -35,7 +35,7 @@ function d3_transform(m) {
   this.skew = ky ? Math.atan2(kz, ky) * d3_degrees : 0;
 };
 
-d3_transform.prototype.toString = function() {
+d3_transform.prototype.toString = function() :string{
   return "translate(" + this.translate
       + ")rotate(" + this.rotate
       + ")skewX(" + this.skew
@@ -43,11 +43,11 @@ d3_transform.prototype.toString = function() {
       + ")";
 };
 
-function d3_transformDot(a, b) {
+function d3_transformDot(a:number[],  b: number[]) :number{
   return a[0] * b[0] + a[1] * b[1];
 }
 
-function d3_transformNormalize(a) {
+function d3_transformNormalize(a:number[]) :number{
   var k = Math.sqrt(d3_transformDot(a, a));
   if (k) {
     a[0] /= k;
@@ -56,10 +56,10 @@ function d3_transformNormalize(a) {
   return k;
 }
 
-function d3_transformCombine(a, b, k) {
+function d3_transformCombine(a:number[] ,b:number[], k:number) :number[]{
   a[0] += k * b[0];
   a[1] += k * b[1];
   return a;
 }
 
-var d3_transformIdentity = {a: 1, b: 0, c: 0, d: 1, e: 0, f: 0};
+var d3_transformIdentity:Object= {a: 1, b: 0, c: 0, d: 1, e: 0, f: 0};
