@@ -4,90 +4,99 @@
 /// <reference path="scale.ts" />
 
 d3.scale.ordinal = function() {
-  return d3_scale_ordinal([], {t: "range", a: [[]]});
+  return new OrdinalScaleImpl([], {t: "range", a: [[]]});
 };
 
-function d3_scale_ordinal(domain, ranger) {
-  var index,
-      range,
-      rangeBand;
+class OrdinalScaleImpl implements D3.Scale.OrdinalScale {
+  dmn: any[];
+  ranger: { t: string; a: any };
+  index: D3.Map;
+  rng: any[];
+  rngBand: number;
 
-  function scale(x) {
-    return range[((index.get(x) || (ranger.t === "range" ? index.set(x, domain.push(x)) : NaN)) - 1) % range.length];
+  constructor(dmn:any[], ranger:any) {
+    this.ranger = ranger;
+    this.domain(dmn);
   }
 
-  function steps(start, step) {
-    return d3.range(domain.length).map(function(i) { return start + step * i; });
+  convert(x: any) {
+    return this.rng[((this.index.get(x) || (this.ranger.t === "range" ? this.index.set(x, this.dmn.push(x)) : NaN)) - 1) % this.rng.length];
   }
 
-  scale.domain = function(x) {
-    if (!arguments.length) return domain;
-    domain = [];
-    index = new d3_Map;
-    var i = -1, n = x.length, xi;
-    while (++i < n) if (!index.has(xi = x[i])) index.set(xi, domain.push(xi));
-    return scale[ranger.t].apply(scale, ranger.a);
-  };
+  private steps(start:number, step:number) {
+    return d3.range(this.dmn.length).map(function(i) { return start + step * i; });
+  }
 
-  scale.range = function(x) {
-    if (!arguments.length) return range;
-    range = x;
-    rangeBand = 0;
-    ranger = {t: "range", a: arguments};
-    return scale;
-  };
+  domain(values:any[]):D3.Scale.OrdinalScale;
+  domain():any[];
+  domain(values?:any[]):any {
+    if (!arguments.length) return this.dmn;
+    this.dmn = [];
+    this.index = d3.map();
+    var i = -1, n = values.length, xi:any;
+    while (++i < n) if (!this.index.has(xi = values[i])) this.index.set(xi, this.dmn.push(xi));
+    return this[this.ranger.t].apply(this.convert, this.ranger.a);
+  }
 
-  scale.rangePoints = function(x, padding) {
+  range(values:any[]):D3.Scale.OrdinalScale;
+  range():any[];
+  range(values?:any[]):any {
+    if (!arguments.length) return this.rng;
+    this.rng = values;
+    this.rngBand = 0;
+    this.ranger = {t: "range", a: arguments};
+    return this;
+  }
+
+  rangePoints(x: number[], padding?: number): D3.Scale.OrdinalScale {
     if (arguments.length < 2) padding = 0;
     var start = x[0],
         stop = x[1],
-        step = (stop - start) / (Math.max(1, domain.length - 1) + padding);
-    range = steps(domain.length < 2 ? (start + stop) / 2 : start + step * padding / 2, step);
-    rangeBand = 0;
-    ranger = {t: "rangePoints", a: arguments};
-    return scale;
-  };
+        step = (stop - start) / (Math.max(1, this.dmn.length - 1) + padding);
+    this.rng = this.steps(this.dmn.length < 2 ? (start + stop) / 2 : start + step * padding / 2, step);
+    this.rngBand = 0;
+    this.ranger = {t: "rangePoints", a: arguments};
+    return this;
+  }
 
-  scale.rangeBands = function(x, padding, outerPadding) {
+  rangeBands(x: number[], padding?: number, outerPadding?: number): D3.Scale.OrdinalScale {
     if (arguments.length < 2) padding = 0;
     if (arguments.length < 3) outerPadding = padding;
-    var reverse = x[1] < x[0],
+    var reverse = x[1] < x[0] ? 1 : 0,
         start = x[reverse - 0],
         stop = x[1 - reverse],
-        step = (stop - start) / (domain.length - padding + 2 * outerPadding);
-    range = steps(start + step * outerPadding, step);
-    if (reverse) range.reverse();
-    rangeBand = step * (1 - padding);
-    ranger = {t: "rangeBands", a: arguments};
-    return scale;
-  };
+        step = (stop - start) / (this.dmn.length - padding + 2 * outerPadding);
+    this.rng = this.steps(start + step * outerPadding, step);
+    if (reverse) this.rng.reverse();
+    this.rngBand = step * (1 - padding);
+    this.ranger = {t: "rangeBands", a: arguments};
+    return this;
+  }
 
-  scale.rangeRoundBands = function(x, padding, outerPadding) {
+  rangeRoundBands(x: number[], padding?: number, outerPadding?: number): D3.Scale.OrdinalScale {
     if (arguments.length < 2) padding = 0;
     if (arguments.length < 3) outerPadding = padding;
-    var reverse = x[1] < x[0],
+    var reverse = x[1] < x[0] ? 1 : 0,
         start = x[reverse - 0],
         stop = x[1 - reverse],
-        step = Math.floor((stop - start) / (domain.length - padding + 2 * outerPadding)),
-        error = stop - start - (domain.length - padding) * step;
-    range = steps(start + Math.round(error / 2), step);
-    if (reverse) range.reverse();
-    rangeBand = Math.round(step * (1 - padding));
-    ranger = {t: "rangeRoundBands", a: arguments};
-    return scale;
-  };
+        step = Math.floor((stop - start) / (this.dmn.length - padding + 2 * outerPadding)),
+        error = stop - start - (this.dmn.length - padding) * step;
+    this.rng = this.steps(start + Math.round(error / 2), step);
+    if (reverse) this.rng.reverse();
+    this.rngBand = Math.round(step * (1 - padding));
+    this.ranger = {t: "rangeRoundBands", a: arguments};
+    return this;
+  }
 
-  scale.rangeBand = function() {
-    return rangeBand;
-  };
+  rangeBand(): number {
+    return this.rngBand;
+  }
 
-  scale.rangeExtent = function() {
-    return d3_scaleExtent(ranger.a[0]);
-  };
+  rangeExtent(): any[] {
+    return d3_scaleExtent(this.ranger.a[0]);
+  }
 
-  scale.copy = function() {
-    return d3_scale_ordinal(domain, ranger);
-  };
-
-  return scale.domain(domain);
+  copy(): D3.Scale.OrdinalScale {
+    return new OrdinalScaleImpl(this.dmn, this.ranger);
+  }
 }

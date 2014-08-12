@@ -1,15 +1,11 @@
 bilinear.ts
 category.ts
-identity.ts
 index.ts
 linear.ts
 log.ts
-nice.ts
 ordinal.ts
 polylinear.ts
 pow.ts
-quantile.ts
 quantize.ts
 scale.ts
 sqrt.ts
-threshold.ts
