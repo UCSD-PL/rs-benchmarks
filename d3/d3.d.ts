@@ -1228,6 +1228,21 @@ declare module D3 {
             target: GraphNode;
         }
 
+        export interface GraphNodeForce {
+            index?: number;
+            x?: number;
+            y?: number;
+            px?: number;
+            py?: number;
+            fixed?: boolean;
+            weight?: number;
+        }
+
+        export interface GraphLinkForce {
+            source: GraphNodeForce;
+            target: GraphNodeForce;
+        }
+
         export interface ForceLayout {
             (): ForceLayout;
             size: {
@@ -1277,14 +1292,14 @@ declare module D3 {
             };
 
             links: {
-                (): GraphLink[];
-                (arLinks: GraphLink[]): ForceLayout;
+                (): GraphLinkForce[];
+                (arLinks: GraphLinkForce[]): ForceLayout;
 
             };
             nodes:
             {
-                (): GraphNode[];
-                (arNodes: GraphNode[]): ForceLayout;
+                (): GraphNodeForce[];
+                (arNodes: GraphNodeForce[]): ForceLayout;
 
             };
             start(): ForceLayout;
