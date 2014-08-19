@@ -11,5 +11,5 @@ function d3_median<T>(array: T[], f: (v: T) => number): number;
 function d3_median<T>(array: any[], f?: (v: T) => number): number {
   if (arguments.length > 1) array = array.map(f);
   array = array.filter(d3_number);
-  return array.length ? d3.quantile(array.sort(d3_ascending), .5) : undefined;
+  return array.length ? d3.quantile(array.sort(d3.ascending), .5) : undefined;
 };
