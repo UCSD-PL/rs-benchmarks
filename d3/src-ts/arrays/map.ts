@@ -8,19 +8,6 @@ d3.map = function(object?: any):D3.Map {
   return map;
 };
 
-function d3_Map():void {}
-
-d3_class(d3_Map, {
-  has: d3_map_has,
-  get: function(key:string):any {
-    return this[d3_map_prefix + key];
-  },
-  set: function<T>(key: string, value:T):T {
-    return this[d3_map_prefix + key] = value;
-  },
-  remove: d3_map_remove,
-  keys: d3_map_keys,
-  values: function():Array<any> {
 function d3_Map():D3.Map { return new MapImpl() }
 
 class MapImpl implements D3.Map {
