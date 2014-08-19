@@ -1,13 +1,9 @@
 array.ts
 ease.ts
-hcl.ts
-hsl.ts
 index.ts
 interpolate.ts
-lab.ts
 number.ts
 object.ts
-rgb.ts
 round.ts
 string.ts
 transform.ts

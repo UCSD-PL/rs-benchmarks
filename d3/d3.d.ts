@@ -389,7 +389,7 @@ declare module D3 {
         /*
         * Interpolate two RGB colors
         */
-        interpolateRgb: Transition.BaseInterpolate;
+        interpolateRgb: Transition.STPInterpolateFactory<Color.RGBColor>;
         /*
         * Interpolate two HSL colors
         */
@@ -397,11 +397,11 @@ declare module D3 {
         /*
         * Interpolate two HCL colors
         */
-        interpolateHcl: Transition.BaseInterpolate;
+        interpolateHcl: Transition.STPInterpolateFactory<Color.HCLColor>;
         /*
         * Interpolate two L*a*b* colors
         */
-        interpolateLab: Transition.BaseInterpolate;
+        interpolateLab: Transition.STPInterpolateFactory<Color.LABColor>;
         /*
         * Interpolate two arrays of values
         */
