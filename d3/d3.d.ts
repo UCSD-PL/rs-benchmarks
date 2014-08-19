@@ -385,7 +385,7 @@ declare module D3 {
         /*
         * Interpolate two strings
         */
-        interpolateString: Transition.BaseInterpolate;
+        interpolateString: Transition.STPInterpolateFactory<string>;
         /*
         * Interpolate two RGB colors
         */
@@ -964,7 +964,11 @@ declare module D3 {
         // a preferred version with no optional arguments where
         // all inputs and the interpolator's output are the same type
         export interface STPInterpolateFactory<T> extends InterpolateFactory {
-            (a: T, b: T): (t: number)=>T;
+            (a: T, b: T): STPInterpolate<T>;
+        }
+
+        export interface STPInterpolate<T> extends BaseInterpolate {
+            (t: number): T;
         }
 
         export interface BaseInterpolate {
