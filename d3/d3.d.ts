@@ -377,11 +377,11 @@ declare module D3 {
         /*
         * Interpolate two numbers
         */
-        interpolateNumber: Transition.BaseInterpolate;
+        interpolateNumber: Transition.STPInterpolateFactory<number>;
         /*
         * Interpolate two integers
         */
-        interpolateRound: Transition.BaseInterpolate;
+        interpolateRound: Transition.STPInterpolateFactory<number>;
         /*
         * Interpolate two strings
         */

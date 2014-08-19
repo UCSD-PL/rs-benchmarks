@@ -4,7 +4,6 @@ index.ts
 interpolate.ts
 number.ts
 object.ts
-round.ts
 string.ts
 transform.ts
 uninterpolate.ts
