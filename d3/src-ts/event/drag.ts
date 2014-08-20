@@ -18,12 +18,12 @@ function d3_event_dragSuppress() :(suppress:any)=>void{
         select:string = style[d3_event_dragSelect];
     style[d3_event_dragSelect] = "none";
   }
-  return function(suppressClick) {
+  return function(suppressClick:any) :void{
     w.on(name, null);
     if (d3_event_dragSelect) style[d3_event_dragSelect] = select;
     if (suppressClick) { // suppress the next click, but only if it’s immediate
-      function off() { w.on(click, null); }
-      w.on(click, function() { d3_eventPreventDefault(); off(); }, true);
+      function off() :void{ w.on(click, null); }
+      w.on(click, function():void { d3_eventPreventDefault(); off(); }, true);
       setTimeout(off, 0);
     }
   };

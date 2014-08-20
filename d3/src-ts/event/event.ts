@@ -3,12 +3,12 @@
 
 d3.event = null;
 
-function d3_eventPreventDefault() {
+function d3_eventPreventDefault() :void{
   d3.event.preventDefault();
 }
 
-function d3_eventSource() {
-  var e = d3.event, s;
+function d3_eventSource() :D3.D3Event{
+  var e :D3.D3Event= d3.event, s:D3.D3Event;
   while (s = e.sourceEvent) e = s;
   return e;
 }
@@ -17,8 +17,8 @@ function d3_eventSource() {
 // events have a target component (such as a brush), a target element (such as
 // the svg:g element containing the brush) and the standard arguments `d` (the
 // target element's data) and `i` (the selection index of the target element).
-function d3_eventDispatch(target) {
-  var dispatch = new d3_dispatch,
+function d3_eventDispatch(target:any) :D3.Dispatch{
+  var dispatch :D3.Dispatch= new d3_dispatch,
       i = 0,
       n = arguments.length;
 
@@ -33,10 +33,10 @@ function d3_eventDispatch(target) {
   // constructor. This context will automatically populate the "sourceEvent" and
   // "target" attributes of the event, as well as setting the `d3.event` global
   // for the duration of the notification.
-  dispatch.of = function(thiz, argumentz) {
-    return function(e1) {
+  dispatch.of= function(thiz:any, argumentz:any) {
+    return function(e1:D3.D3Event) {
       try {
-        var e0 =
+        var e0 :D3.D3Event=
         e1.sourceEvent = d3.event;
         e1.target = target;
         d3.event = e1;

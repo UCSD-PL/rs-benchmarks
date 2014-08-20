@@ -1,7 +1,7 @@
 /// <reference path="../../d3.d.ts" />
 /// <reference path="../arrays/map.ts" />
 
-d3.dispatch = function(...types: Array<string>) :D3.Dispatch{
+d3.dispatch = function(...types: string[]) :D3.Dispatch{
   var dispatch:D3.Dispatch= new d3_dispatch,
       i:number = -1,
       n:number = arguments.length;
@@ -38,7 +38,7 @@ function d3_dispatch_event(dispatch:D3.Dispatch) :()=>D3.Dispatch{
       listenerByName:D3.Map= new d3_Map;
 
   function event():D3.Dispatch{
-    var z = listeners, // defensive reference
+    var z :any[]= listeners, // defensive reference
         i = -1,
         n = z.length,
         l:any;
