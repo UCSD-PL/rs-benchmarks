@@ -1,4 +1,4 @@
-/// <reference path= "../math/abs.ts" />
+/// <reference path="../math/abs.ts" />
 /// <reference path="../../d3.d.ts" />
 d3.range = function(start:number, stop?:number, step?:number): number[] {
   if (arguments.length < 3) {

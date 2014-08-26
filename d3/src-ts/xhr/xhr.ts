@@ -5,32 +5,42 @@
 /// <reference path="../core/rebind.ts" />
 /// <reference path="../event/dispatch.ts" />
 
+
+
+
+
+
+
 d3.xhr = d3_xhrType(d3_identity);
 
 function d3_xhrType(response) {
-  return function(url, mimeType, callback) {
+  return function(url, mimeType,callback?:any){
     if (arguments.length === 2 && typeof mimeType === "function") callback = mimeType, mimeType = null;
     return d3_xhr(url, mimeType, response, callback);
   };
 }
 
-function d3_xhr(url, mimeType, response, callback) {
+function d3_xhr(url:string, mimeType: string, 
+      response:(request)=>any
+   , callback) {
   var xhr = {},
       dispatch = d3.dispatch("beforesend", "progress", "load", "error"),
       headers = {},
-      request = new XMLHttpRequest,
+      request:XMLHttpRequest = new XMLHttpRequest,
       responseType = null;
-
+      
+      
   // If IE does not support CORS, use XDomainRequest.
   if (d3_window.XDomainRequest
       && !("withCredentials" in request)
-      && /^(http(s)?:)?\/\//.test(url)) request = new XDomainRequest;
+      && /^(http(s)?:)?\/\//.test(url)) request1 = new XDomainRequest;
 
   "onload" in request
       ? request.onload = request.onerror = respond
       : request.onreadystatechange = function() { request.readyState > 3 && respond(); };
 
   function respond() {
+    
     var status = request.status, result;
     if (!status && request.responseText || status >= 200 && status < 300 || status === 304) {
       try {

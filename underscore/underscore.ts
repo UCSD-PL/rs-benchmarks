@@ -141,13 +141,9 @@ module _Implementation {
       return obj;
     }
 
-    public forEach<T>(obj: _.List<T>, iterator: _.ListIterator<T, any>, context?: any): _.List<T> {
-      return this.each(obj, iterator, context);
-    }
+    public forEach = this.each;
 
-    public forEachD<T>(obj: _.Dictionary<T>, iterator: _.ObjectIterator<T, any>, context?: any): _.Dictionary<T> {
-      return this.eachD(obj, iterator, context);
-    }
+    public forEachD = this.eachD;
 
     // Return the results of applying the iterator to each element.
     public map<T, TResult>(obj: _.List<T>, iterator: _.ListIterator<T, TResult>, context?: any): TResult[] {
@@ -170,13 +166,9 @@ module _Implementation {
       return results;
     }
 
-    public collect<T, TResult>(obj: _.List<T>, iterator: _.ListIterator<T, TResult>, context?: any): TResult[] {
-      return this.map(obj, iterator, context);
-    }
+    public collect = this.map;
 
-    public collectD<T, TResult>(obj: _.Dictionary<T>, iterator: _.ObjectIterator<T, TResult>, context?: any): TResult[] {
-      return this.mapD(obj, iterator, context);
-    }
+    public collectD = this.mapD;
 
     private reduceError = 'Reduce of empty array with no initial value';
 
@@ -206,13 +198,9 @@ module _Implementation {
       return memo;
     }
 
-    public inject<T, TResult>(obj: _.List<T>, iterator: _.MemoIterator<T, TResult>, memo: TResult, context?: any): TResult {
-      return this.reduce(obj, iterator, memo, context);
-    }
+    public inject = this.reduce;
 
-    public foldl<T, TResult>(obj: _.List<T>, iterator: _.MemoIterator<T, TResult>, memo: TResult, context?: any): TResult {
-      return this.reduce(obj, iterator, memo, context);
-    }
+    public foldl = this.reduce;
 
     // The right-associative version of reduce, also known as `foldr`.
     public reduceRight<T, TResult>(obj: _.List<T>, iterator: _.MemoIterator<T, TResult>, memo: TResult, context?: any): TResult;
@@ -240,11 +228,7 @@ module _Implementation {
       return memo;
     }
 
-    public foldr<T, TResult>(obj: _.List<T>, iterator: _.MemoIterator<T, TResult>, memo: TResult, context?: any): TResult;
-    public foldr<T>(obj: _.List<T>, iterator: _.MemoIterator<T, T>, memo?: T, context?: any): T;
-    public foldr<T>(obj: _.List<T>, iterator: any, memo?: any, context?: any): any {
-      return this.reduceRight(obj, iterator, memo, context);
-    }
+    public foldr = this.reduceRight;
 
     // Return the first value which passes a truth test. Aliased as `detect`.
     public find<T>(list: _.List<T>, predicate: _.ListIterator<T, boolean>, context?: any): T {
@@ -271,13 +255,9 @@ module _Implementation {
       return result;
     }
 
-    public detect<T>(list: _.List<T>, predicate: _.ListIterator<T, boolean>, context?: any): T {
-      return this.find(list, predicate, context);
-    }
+    public detect = this.find;
 
-    public detectD<T>(obj: _.Dictionary<T>, predicate: _.ObjectIterator<T, boolean>, context?: any): T {
-      return this.findD(obj, predicate, context);
-    }
+    public detectD = this.findD
 
     // Return all the elements that pass a truth test.
     // Aliased as `select`.
@@ -301,13 +281,9 @@ module _Implementation {
       return results;
     }
 
-    public select<T>(list: _.List<T>, predicate: _.ListIterator<T, boolean>, context?: any): T[] {
-      return this.filter(list, predicate, context);
-    }
+    public select = this.filter;
 
-    public selectD<T>(obj: _.Dictionary<T>, predicate: _.ObjectIterator<T, boolean>, context?: any): T[] {
-      return this.filterD(obj, predicate, context);
-    }
+    public selectD = this.filterD;
 
     // Return all the elements for which a truth test fails.
     // TODO: is the 'context' arg I added to lookupIterator here correct?
@@ -343,13 +319,9 @@ module _Implementation {
       return !!result;
     }
 
-    public all<T>(list: _.List<T>, predicate?: _.ListIterator<T, boolean>, context?: any): boolean {
-      return this.every(list, predicate, context);
-    }
+    public all = this.every;
 
-    public allD<T>(obj: _.Dictionary<T>, predicate?: _.ObjectIterator<T, boolean>, context?: any): boolean {
-      return this.everyD(obj, predicate, context);
-    }
+    public allD = this.everyD;
 
     // Determine if at least one element in the object matches a truth test.
     // Aliased as `any`.
@@ -375,13 +347,9 @@ module _Implementation {
       return !!result;
     }
 
-    public any<T>(list: _.List<T>, predicate?: _.ListIterator<T, boolean>, context?: any): boolean {
-      return this.some(list, predicate, context);
-    }
+    public any = this.some;
 
-    public anyD<T>(obj: _.Dictionary<T>, predicate?: _.ObjectIterator<T, boolean>, context?: any): boolean {
-      return this.someD(obj, predicate, context);
-    }
+    public anyD = this.someD;
 
     // Determine if the array or object contains a given value (using `===`).
     // Aliased as `include`.
@@ -395,13 +363,9 @@ module _Implementation {
       return this.contains(this.values(obj), value);
     }
 
-    public include<T>(obj: _.List<T>, value: T): boolean {
-      return this.contains(obj, value);
-    }
+    public include = this.contains;
 
-    public includeD<T>(obj: _.Dictionary<T>, value: T): boolean {
-      return this.containsD(obj, value);
-    }
+    public includeD = this.containsD;
 
     // Invoke a method (with arguments) on every item in a collection.
     public invoke<T extends {}>(list: _.List<T>, method: any, ...args: any[]): any {
@@ -624,17 +588,9 @@ module _Implementation {
       return slice.call(array, 0, n);
     }
 
-    public head<T>(array: _.List<T>): T;
-    public head<T>(array: _.List<T>, n: number): T[];
-    public head<T>(array: _.List<T>, n?: number): any {
-      return this.first(array, n);
-    }
+    public head = this.first;
 
-    public take<T>(array: _.List<T>): T;
-    public take<T>(array: _.List<T>, n: number): T[];
-    public take<T>(array: _.List<T>, n?: number): any {
-      return this.first(array, n);
-    }
+    public take = this.first;
 
     // Returns everything but the last entry of the array. Especially useful on
     // the arguments object. Passing **n** will return all the values in
@@ -664,13 +620,9 @@ module _Implementation {
       return slice.call(array, n);
     }
 
-    public tail<T>(array: _.List<T>, n?: number): T[] {
-      return this.rest(array, n);
-    }
+    public tail = this.rest;
 
-    public drop<T>(array: _.List<T>, n?: number): T[] {
-      return this.rest(array, n);
-    }
+    public drop = this.rest;
 
     // Trim out all falsy values from an array.
     public compact<T>(array: _.List<T>): T[] {
@@ -708,7 +660,6 @@ module _Implementation {
     // Produce a duplicate-free version of the array. If the array has already
     // been sorted, you have the option of using a faster algorithm.
     // Aliased as `unique`.
-    // _.uniq = _.unique = function(array, isSorted, iterator, context) {
     public uniq<T, TSort>(array: _.List<T>, isSorted?: boolean, iterator?: _.ListIterator<T, TSort>, context?: any): T[];
     public uniq<T, TSort>(array: _.List<T>, iterator?: _.ListIterator<T, TSort>, context?: any): T[];
     public uniq<T, TSort>(array: _.List<T>, isSorted?: any, iterator?: any, context?: any): T[] {
@@ -732,11 +683,7 @@ module _Implementation {
       return result;
     }
 
-    public unique<T, TSort>(array: _.List<T>, isSorted?: boolean, iterator?: _.ListIterator<T, TSort>, context?: any): T[];
-    public unique<T, TSort>(array: _.List<T>, iterator?: _.ListIterator<T, TSort>, context?: any): T[];
-    public unique<T, TSort>(array: _.List<T>, isSorted?: any, iterator?: any, context?: any): T[] {
-      return this.uniq(array, isSorted, iterator, context);
-    }
+    public unique = this.uniq;
 
     // Produce an array that contains the union: each distinct element from all of
     // the passed-in arrays.

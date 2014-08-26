@@ -1,23 +1,23 @@
 /// <reference path="../../d3.d.ts" />
 /// <reference path="../arrays/map.ts" />
 
-d3.dispatch = function() {
-  var dispatch = new d3_dispatch,
-      i = -1,
-      n = arguments.length;
-  while (++i < n) dispatch[arguments[i]] = d3_dispatch_event(dispatch);
+d3.dispatch = function(...types: string[]) :D3.Dispatch{
+  var dispatch:D3.Dispatch= new d3_dispatch,
+      i:number = -1,
+      n:number = arguments.length;
+  while (++i < n) dispatch[arguments[i]] =d3_dispatch_event(dispatch);
   return dispatch;
 };
 
-function d3_dispatch() {}
+function d3_dispatch() :void{}
 
-d3_dispatch.prototype.on = function(type, listener) {
-  var i = type.indexOf("."),
-      name = "";
+d3_dispatch.prototype.on = function(type:string, listener?:any) :any{
+  var i:number = type.indexOf("."),
+      name:string = "";
 
   // Extract optional namespace, e.g., "click.foo"
   if (i >= 0) {
-    name = type.substring(i + 1);
+    name= type.substring(i + 1);
     type = type.substring(0, i);
   }
 
@@ -33,22 +33,22 @@ d3_dispatch.prototype.on = function(type, listener) {
   }
 };
 
-function d3_dispatch_event(dispatch) {
-  var listeners = [],
-      listenerByName = new d3_Map;
+function d3_dispatch_event(dispatch:D3.Dispatch) :()=>D3.Dispatch{
+  var listeners:any[]= [],
+      listenerByName:D3.Map= new d3_Map;
 
-  function event() {
-    var z = listeners, // defensive reference
+  function event():D3.Dispatch{
+    var z :any[]= listeners, // defensive reference
         i = -1,
         n = z.length,
-        l;
+        l:any;
     while (++i < n) if (l = z[i].on) l.apply(this, arguments);
     return dispatch;
   }
 
-  event.on = function(name, listener) {
-    var l = listenerByName.get(name),
-        i;
+  event.on = function(name:string, listener:any) :D3.Dispatch{
+    var l:any = listenerByName.get(name),
+        i:any;
 
     // return the current listener, if any
     if (arguments.length < 2) return l && l.on;

@@ -1,14 +1,14 @@
 /// <reference path="../../d3.d.ts" />
 /// <reference path="../core/document.ts" />
 
-d3.mouse = function(container) {
+d3.mouse = function(container:any) :number[]{
   return d3_mousePoint(container, d3_eventSource());
 };
 
 // https://bugs.webkit.org/show_bug.cgi?id=44083
-var d3_mouse_bug44083 = /WebKit/.test(d3_window.navigator.userAgent) ? -1 : 0;
+var d3_mouse_bug44083 :number= /WebKit/.test(d3_window.navigator.userAgent) ? -1 : 0;
 
-function d3_mousePoint(container, e) {
+function d3_mousePoint(container:any, e:any) :any[]{
   if (e.changedTouches) e = e.changedTouches[0];
   var svg = container.ownerSVGElement || container;
   if (svg.createSVGPoint) {

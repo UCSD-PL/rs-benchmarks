@@ -2,21 +2,22 @@
 /// <reference path="../core/document.ts" />
 /// <reference path="../core/vendor.ts" />
 
-var d3_timer_queueHead,
-    d3_timer_queueTail,
-    d3_timer_interval, // is an interval (or frame) active?
-    d3_timer_timeout, // is a timeout active?
-    d3_timer_active, // active timer object
-    d3_timer_frame = d3_window[d3_vendorSymbol(d3_window, "requestAnimationFrame")] || function(callback) { setTimeout(callback, 17); };
+var d3_timer_queueHead:{c:any;t:number;f:boolean; n:any;},
+    d3_timer_queueTail:{c:any;t:number;f:boolean; n:any;},
+    d3_timer_interval:number, // is an interval (or frame) active?
+    d3_timer_timeout:number, // is a timeout active?
+    d3_timer_active:{c:any;t:number;f:boolean; n:any;}, // active timer object
+    d3_timer_frame :(c:any)=>void= d3_window[d3_vendorSymbol(d3_window, "requestAnimationFrame")] || function(callback) { setTimeout(callback, 17); };
 
 // The timer will continue to fire until callback returns true.
-d3.timer = function(callback, delay, then) {
+d3.timer = function(callback:any, delay?:number, then?:number) {
   var n = arguments.length;
   if (n < 2) delay = 0;
   if (n < 3) then = Date.now();
 
   // Add the callback to the tail of the queue.
-  var time = then + delay, timer = {c: callback, t: time, f: false, n: null};
+  var time = then + delay, 
+  timer:{c:any;t:number;f:boolean; n:any;}= {c: callback, t: time, f: false, n: null};
   if (d3_timer_queueTail) d3_timer_queueTail.n = timer;
   else d3_timer_queueHead = timer;
   d3_timer_queueTail = timer;
@@ -29,9 +30,9 @@ d3.timer = function(callback, delay, then) {
   }
 };
 
-function d3_timer_step() {
-  var now = d3_timer_mark(),
-      delay = d3_timer_sweep() - now;
+function d3_timer_step() :void{
+  var now :number= d3_timer_mark(),
+      delay:number = d3_timer_sweep() - now;
   if (delay > 24) {
     if (isFinite(delay)) {
       clearTimeout(d3_timer_timeout);
@@ -44,12 +45,12 @@ function d3_timer_step() {
   }
 }
 
-d3.timer.flush = function() {
+d3.timer.flush = function() :void{
   d3_timer_mark();
   d3_timer_sweep();
 };
 
-function d3_timer_mark() {
+function d3_timer_mark() :number{
   var now = Date.now();
   d3_timer_active = d3_timer_queueHead;
   while (d3_timer_active) {
@@ -61,10 +62,10 @@ function d3_timer_mark() {
 
 // Flush after callbacks to avoid concurrent queue modification.
 // Returns the time of the earliest active timer, post-sweep.
-function d3_timer_sweep() {
-  var t0,
-      t1 = d3_timer_queueHead,
-      time = Infinity;
+function d3_timer_sweep() :number{
+  var t0:{c:any;t:number;f:boolean; n:any;},
+      t1:{c:any;t:number;f:boolean; n:any;} = d3_timer_queueHead,
+      time:number = Infinity;
   while (t1) {
     if (t1.f) {
       t1 = t0 ? t0.n = t1.n : d3_timer_queueHead = t1.n;

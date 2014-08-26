@@ -7,9 +7,9 @@ var d3_nsPrefix = {
   xmlns: "http://www.w3.org/2000/xmlns/"
 };
 
-d3.ns = {
+d3.ns = <any>{
   prefix: d3_nsPrefix,
-  qualify: function(name) {
+  qualify: function(name) { //TODO: reconcile this with DT type qualify(name: string): { space: string; local: string; };
     var i = name.indexOf(":"),
         prefix = name;
     if (i >= 0) {
