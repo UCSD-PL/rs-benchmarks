@@ -213,7 +213,7 @@ declare module D3 {
         * @param arr Array to reorder
         * @param indexes Array containing the order the elements should be returned in
         */
-        permute(arr: any[], indexes: any[]): any[];
+        permute<T>(arr: T[], indexes: number[]): T[];
         /**
         * Transpose a variable number of arrays.
         *

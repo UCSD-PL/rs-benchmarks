@@ -22,33 +22,30 @@ TS -> RS
 ascending.ts
 descending.ts
 
-
 **Todo**
 
-transpose.ts [zip.ts]
+- values-0.ts  [cannot parse dict-sig]
+- keys-0.ts    [cannot parse dict-sig]
+- entries-0.ts [cannot parse dict-sig]
++ transpose.ts [module import -- zip.ts]
++ permute.ts -- nice example for bounds checking imo
 
-6      21     170 values.ts
-6      23     163 keys.ts
-6      26     193 entries.ts
-6      26     218 permute.ts
-7      50     239 pairs.ts
-9      39     245 shuffle.ts
-10      50     324 quantile.ts
-
-15      56     356 sum.ts
-15     102     499 max.ts
-15     102     530 min.ts
-16      65     432 zip.ts
-      16      73     421 mean.ts
-      20      73     618 median.ts
-      22      59     409 merge.ts
-      23     129     647 possibleExtent.ts
-      24      96     832 index.ts
-      26     122     768 range.ts
-      27     148     736 extent.ts
-      29      96     735 set.ts
-      50     201    1214 bisect.ts
-      67     213    1894 map.ts
-      99     258    2179 nest.ts
-     555    2230   14937 total
+7  pairs.ts
+9  shuffle.ts
+10 quantile.ts
+15 sum.ts
+15 max.ts
+15 min.ts
+16 zip.ts
+16 mean.ts
+20 median.ts
+22 merge.ts
+23 possibleExtent.ts
+24 index.ts
+26 range.ts
+27 extent.ts
+29 set.ts
+50 bisect.ts
+67 map.ts
+99 nest.ts
 
