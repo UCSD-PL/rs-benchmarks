@@ -3,6 +3,19 @@
 // Definitions by: Boris Yankov <https://github.com/borisyankov>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 
+// Aliases
+
+/*@ alias idx[a]    = {v: number | (0 <= v && v < (len a)) }  */
+
+
+// Qualifiers
+
+/*@ qualif ArrLen(v:number, a:a) : v < (len a) */
+/*@ qualif ArrLen(a:n, b:m) : (len a) = (len b) */
+
+
+
+
 declare module D3 {
 //    export interface Selectors {
 //        /**
@@ -207,13 +220,14 @@ declare module D3 {
 //        * @param arr Array to randomize
 //        */
 //        shuffle<T>(arr: T[]): T[];
-//        /**
-//        * Reorder an array of elements according to an array of indexes
-//        *
-//        * @param arr Array to reorder
-//        * @param indexes Array containing the order the elements should be returned in
-//        */
-//        permute(arr: any[], indexes: any[]): any[];
+        /**
+        * Reorder an array of elements according to an array of indexes
+        *
+        * @param arr Array to reorder
+        * @param indexes Array containing the order the elements should be returned in
+        */
+        /*@ permute : forall T . (array: #Array[#Immutable, T], indexes: #Array[#Immutable, #idx[array]]) => { #Array[#Immutable, T] | (len v) = (len indexes) } */
+        permute(arr: any[], indexes: any[]): any[];
 //        /**
 //        * Transpose a variable number of arrays.
 //        *
@@ -3305,4 +3319,6 @@ declare module D3 {
 //    }
 }
 
-declare var d3: D3.Base;
+/*@ d3 :: #D3.Base[#Mutable] */
+declare var d3:   D3.Base;
+
