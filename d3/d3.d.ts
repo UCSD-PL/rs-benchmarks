@@ -95,14 +95,21 @@ declare module D3 {
          */
         ascending<T>(a: T, b: T): number;
 
-//        /**
-//        * Compare two values for sorting.
-//        * Returns -1 if a is greater than b, or 1 if a is less than b, or 0
-//        *
-//        * @param a First value
-//        * @param b Second value
-//        */
-//        descending<T>(a: T, b: T): number;
+        /**
+        * Compare two values for sorting.
+        * Returns -1 if a is greater than b, or 1 if a is less than b, or 0
+        *
+        * @param a First value
+        * @param b Second value
+        */
+        /*@ descending :
+            /\ (a: number, b: number) => { number | [ (a > b => v = -1);
+                                                      (a = b => v =  0);
+                                                      (a < b => v =  1)] }
+            /\ forall T . (T,T) => number 
+         */
+        descending<T>(a: T, b: T): number;
+
 //        /**
 //        * Find the minimum value in an array
 //        *
