@@ -14,8 +14,9 @@ TS -> RS
 + entries.ts	// clones dictionaries.
 
 **Done**
-ascending.ts
-descending.ts
+arrays/ascending.ts
+arrays/descending.ts
+arrays/permute.ts
 
 
 **Todo**

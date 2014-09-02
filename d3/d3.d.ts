@@ -79,15 +79,22 @@ declare module D3 {
 //        * Access the current user event for interaction
 //        */
 //        event: D3Event;
-//
-//        /**
-//        * Compare two values for sorting.
-//        * Returns -1 if a is less than b, or 1 if a is greater than b, or 0
-//        *
-//        * @param a First value
-//        * @param b Second value
-//        */
-//        ascending<T>(a: T, b: T): number;
+
+        /**
+        * Compare two values for sorting.
+        * Returns -1 if a is less than b, or 1 if a is greater than b, or 0
+        *
+        * @param a First value
+        * @param b Second value
+        */
+        /*@ ascending : 
+            /\ (a: number, b: number) => { number | [ (a < b => v = -1);
+                                                      (a = b => v =  0);
+                                                      (a > b => v =  1)] }
+            /\ forall T . (T,T) => number 
+         */
+        ascending<T>(a: T, b: T): number;
+
 //        /**
 //        * Compare two values for sorting.
 //        * Returns -1 if a is greater than b, or 1 if a is less than b, or 0
