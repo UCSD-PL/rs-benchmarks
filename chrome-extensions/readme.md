@@ -1,18 +1,19 @@
+#Chrome Extensions
+=======
+##Lazarus:
+###http://getlazarus.com/
 
-Lazarus:
-http://getlazarus.com/
+##secure-shell:
+###http://git.chromium.org/gitweb/?p=chromiumos/platform/assets.git;a=blob;f=chromeapps/nassh/doc/faq.txt
 
-secure-shell:
-http://git.chromium.org/gitweb/?p=chromiumos/platform/assets.git;a=blob;f=chromeapps/nassh/doc/faq.txt
+##imagus:
+###no website
 
-imagus:
-no website
+##any.do:
+###http://any.do
 
-any.do:
-any.do
+##turn on off the lights:
+###http://turnoffthelights.com
 
-turn on off the lights:
-www.turnoffthelights.com
-
-feedly:
-feedly.com
+##feedly:
+###http://feedly.com
