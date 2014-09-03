@@ -1,0 +1,522 @@
+{
+    "extension_description": {
+        "message": "Any.do helps you remember everything you have to do.",
+        "description": "Used primarily in installation dialogs and such"
+    },
+
+    "task_added": {
+        "message": "Successfully added to $anydo$",
+        "description": "Gmail: Shown after adding a task. Leave the $anydo$ bit alone, it's replaced with a link",
+        "placeholders": {
+            "anydo": {
+                "content": "$1"
+            }
+        }
+    },
+
+    "error_must_login_first": {
+        "message": "You must log in to Any.do first.",
+        "description": "Shown when trying to add tasks from Gmail when the user isn't logged in to Any.do in the extension"
+    },
+
+    "remind_me": {
+        "message": "Remind Me",
+        "description": "Primary Gmail Button"
+    },
+    "add_this_thread": {
+        "message": "Add this thread",
+        "description": "Gmail button tooltip"
+    },
+    "add_to_my_anydo": {
+        "message": "Add to my Any.do",
+        "description": "Gmail dropdown: Main Title"
+    },
+    "gmail_task_title_label": {
+        "message": "Title",
+        "description": "Label before task title field"
+    },
+
+    "date_today": {
+        "message": "Today"
+    },
+    "date_tomorrow": {
+        "message": "Tomorrow"
+    },
+    "date_upcoming": {
+    "message": "Upcoming"
+},
+    "date_someday": {
+        "message": "Someday"
+    },
+    "date_custom": {
+        "message": "Custom"
+    },
+    "later": {
+        "message": "Later"
+    },
+
+    "date_1_week": {
+        "message": "1 week"
+    },
+    "date_2_weeks": {
+        "message": "2 weeks"
+    },
+    "date_1_month": {
+        "message": "1 month"
+    },
+
+    "9am": {
+        "message": "9am",
+        "description": "Keep it short"
+    },
+    "12pm": {
+        "message": "12pm",
+        "description": "Keep it short"
+    },
+    "8pm": {
+        "message": "8pm",
+        "description": "Keep it short"
+    },
+    "reminder_window_title": {
+        "message": "Set Time"
+    },
+    "warning_alert_past": {
+        "message": "Reminder is set to the past"
+    },
+    "alert_when": {
+        "message": "When:",
+        "description": "Label in front of the alert time dropdowns"
+    },
+
+    "today": {
+        "message": "Today"
+    },
+    "sun": {
+        "message": "Sun"
+    },
+    "mon": {
+        "message": "Mon"
+    },
+    "tue": {
+        "message": "Tue"
+    },
+    "wed": {
+        "message": "Wed"
+    },
+    "thu": {
+        "message": "Thu"
+    },
+    "fri": {
+        "message": "Fri"
+    },
+    "sat": {
+        "message": "Sat"
+    },
+    "i_sun": {
+        "message": "S",
+        "description": "Initial for Sunday"
+    },
+    "i_mon": {
+        "message": "M"
+    },
+    "i_tue": {
+        "message": "T"
+    },
+    "i_wed": {
+        "message": "W"
+    },
+    "i_thu": {
+        "message": "T"
+    },
+    "i_fri": {
+        "message": "F"
+    },
+    "i_sat": {
+        "message": "S"
+    },
+
+    "jan": {
+        "message": "Jan"
+    },
+    "feb": {
+        "message": "Feb"
+    },
+    "mar": {
+        "message": "Mar"
+    },
+    "apr": {
+        "message": "Apr"
+    },
+    "may": {
+        "message": "May"
+    },
+    "jun": {
+        "message": "Jun"
+    },
+    "jul": {
+        "message": "Jul"
+    },
+    "aug": {
+        "message": "Aug"
+    },
+    "sep": {
+        "message": "Sep"
+    },
+    "oct": {
+        "message": "Oct"
+    },
+    "nov": {
+        "message": "Nov"
+    },
+    "dec": {
+        "message": "Dec"
+    },
+
+
+
+    "January": {
+        "message": "January"
+    },
+    "February": {
+        "message": "February"
+    },
+    "March": {
+        "message": "March"
+    },
+    "April": {
+        "message": "April"
+    },
+    "May": {
+        "message": "May"
+    },
+    "June": {
+        "message": "June"
+    },
+    "July": {
+        "message": "July"
+    },
+    "August": {
+        "message": "August"
+    },
+    "September": {
+        "message": "September"
+    },
+    "October": {
+        "message": "October"
+    },
+    "November": {
+        "message": "November"
+    },
+    "December": {
+        "message": "December"
+    },
+
+    "back": {
+        "message": "Back"
+    },
+    "set": {
+        "message": "Set"
+    },
+
+    "gmail_tour_title": {
+        "message": "Yo!"
+    },
+
+    "gmail_tour": {
+        "message": "We’ve added this really cool button to your Gmail so you could add email related tasks to your Any.do.\n\nYou’ll never forget an email again",
+        "description": "Gmail tour text. Use one \n to insert a new line, or two in a row for a new paragraph: \n\n"
+    },
+
+    "welcome_title": {
+        "message": "Hey there!",
+        "description": "Top headline in welcome screen"
+    },
+    "welcome_intro": {
+        "message": "Sync with your mobile app and start making things happen",
+        "description": "Into paragraph"
+    },
+    "register": {
+        "message": "Register"
+    },
+    "login": {
+        "message": "Login"
+    },
+    "log_in": {
+        "message": "Log in"
+    },
+    "forgot": {
+        "message": "Forgot your password?"
+    },
+    "your_email": {
+        "message": "Your email"
+    },
+    "password": {
+        "message": "Password"
+    },
+    "choose_a_password": {
+        "message": "Choose a password"
+    },
+    "enter_your_name": {
+        "message": "Enter your name"
+    },
+    "already": {
+        "message": "Already a member?"
+    },
+    "forgot_headline": {
+        "message": "Forgot?"
+    },
+    "forgot_instructions": {
+        "message": "Don't worry, enter your email and we'll send you instructions."
+    },
+    "reset_password_button": {
+        "message": "Remind me"
+    },
+
+    "error_wrong_credentials": {
+        "message": "Wrong password or username"
+    },
+    "error_invalid_name": {
+        "message": "Name is too short"
+    },
+    "error_invalid_email": {
+        "message": "That's not a valid email"
+    },
+    "error_invalid_password": {
+        "message": "Password is too short"
+    },
+    "error_with_email": {
+        "message": "We don't know this email"
+    },
+    "error_email_exists": {
+        "message": "This email is already registered"
+    },
+    "error_cant_register": {
+        "message": "We couldn't create a user for you. Please try again."
+    },
+
+    "priority": {
+        "message": "Priority"
+    },
+    "folder": {
+        "message": "Folder"
+    },
+    "reminder": {
+        "message": "Reminder"
+    },
+    "notes": {
+        "message": "Notes"
+    },
+    "share": {
+        "message": "share"
+    },
+
+    "personal": {
+        "message": "Personal"
+    },
+    "work": {
+        "message": "Work"
+    },
+
+    "add_note": {
+        "message": "Add a new note"
+    },
+
+    "choose_folder": {
+        "message": "Choose a folder"
+    },
+    "new_folder": {
+        "message": "New Folder...",
+        "description": "Placeholder"
+    },
+    "insert_new_task": {
+        "message": "Insert a new task...",
+        "description": "Placeholder"
+    },
+    "show_by_date": {
+        "message": "Show by Date"
+    },
+    "show_by_folder": {
+        "message": "Show by Folder"
+    },
+    "clear_completed": {
+        "message": "Clear Completed Tasks"
+    },
+    "user_options": {
+        "message": "User Options"
+    },
+    "pop_out": {
+        "message": "Pop Out"
+    },
+    "send_feedback": {
+        "message": "Send us Feedback"
+    },
+    "week_start": {
+        "message": "Week Start"
+    },
+    "off": {
+        "message": "Off"
+    },
+    "on": {
+        "message": "On"
+    },
+    "on_time": {
+        "message": "On Time"
+    },
+    "sign_out": {
+        "message": "Sign Out"
+    },
+    "connected_as": {
+        "message": "Connected as: "
+    },
+
+	"gmail_setting_button": {
+		"message": "Gmail Button"
+	},
+	"gmail_setting_followup": {
+		"message": "Gmail Followup"
+	},
+
+    "context_add_to_anydo": {
+        "message": "Add To Any.do",
+        "description": "Context Menu Title"
+    },
+
+    "dismiss": {
+        "message": "Dismiss"
+    },
+    "snooze": {
+        "message": "Snooze"
+    },
+    "5_minutes": {
+        "message": "5 minutes"
+    },
+    "15_minutes": {
+        "message": "15 minutes"
+    },
+    "30_minutes": {
+        "message": "30 minutes"
+    },
+    "1_hour": {
+        "message": "1 hour"
+    },
+    "3_hours": {
+        "message": "3 hours"
+    },
+    "tomorrow": {
+        "message": "tomorrow"
+    },
+
+    "followup_with" : {
+        "message": "followup with $sender$",
+        "placeholders": {
+            "sender": {
+                "content": "$1",
+                "example": "John"
+            }
+        }
+    },
+    "followup_on" : {
+        "message": "followup on $title$",
+        "description": "placeholder for action items suggestion, gets passed the thread title",
+        "placeholders": {
+            "title": {
+                "content": "$1",
+                "example": "Weekly Report"
+            }
+        }
+    },
+    "followup_placeholder" : {
+        "message": "e.g. $followup$",
+        "description": "complete placeholder text for action items suggestion, gets passed the followup example itself",
+        "placeholders": {
+            "followup": {
+                "content": "$1",
+                "example": "followup on Weekly report"
+            }
+        }
+    },
+
+
+
+
+    "x_9am": {
+        "message": "9am",
+        "description": "DO NOT TRANSLATE ANY KEY THAT STARTS WITH x_"
+    },
+    "x_12pm": {
+        "message": "12pm",
+        "description": "DO NOT TRANSLATE ANY KEY THAT STARTS WITH x_"
+    },
+    "x_8pm": {
+        "message": "8pm",
+        "description": "DO NOT TRANSLATE ANY KEY THAT STARTS WITH x_"
+    },
+    "x_date_today": {
+        "message": "Today",
+        "description": "DO NOT TRANSLATE ANY KEY THAT STARTS WITH x_"
+    },
+    "x_date_tomorrow": {
+        "message": "Tomorrow",
+        "description": "DO NOT TRANSLATE ANY KEY THAT STARTS WITH x_"
+    },
+    "x_date_upcoming": {
+        "message": "Upcoming",
+        "description": "DO NOT TRANSLATE ANY KEY THAT STARTS WITH x_"
+    },
+    "x_date_someday": {
+        "message": "Someday",
+        "description": "DO NOT TRANSLATE ANY KEY THAT STARTS WITH x_"
+    },
+    "x_date_custom": {
+        "message": "Custom",
+        "description": "DO NOT TRANSLATE ANY KEY THAT STARTS WITH x_"
+    },
+    "x_later": {
+        "message": "Later",
+        "description": "DO NOT TRANSLATE ANY KEY THAT STARTS WITH x_"
+    },
+
+    "x_date_1_week": {
+        "message": "1 week",
+        "description": "DO NOT TRANSLATE ANY KEY THAT STARTS WITH x_"
+    },
+    "x_date_2_weeks": {
+        "message": "2 weeks",
+        "description": "DO NOT TRANSLATE ANY KEY THAT STARTS WITH x_"
+    },
+    "x_date_1_month": {
+        "message": "1 month",
+        "description": "DO NOT TRANSLATE ANY KEY THAT STARTS WITH x_"
+    },
+
+    "x_followup_with" : {
+        "message": "followup with $sender$",
+        "description": "DO NOT TRANSLATE ANY KEY THAT STARTS WITH x_",
+        "placeholders": {
+            "sender": {
+                "content": "$1",
+                "example": "John"
+            }
+        }
+    },
+    "x_followup_on" : {
+        "message": "followup on $title$",
+        "description": "DO NOT TRANSLATE ANY KEY THAT STARTS WITH x_",
+        "placeholders": {
+            "title": {
+                "content": "$1",
+                "example": "Weekly Report"
+            }
+        }
+    },
+    "x_followup_placeholder" : {
+        "message": "e.g. $followup$",
+        "description": "DO NOT TRANSLATE ANY KEY THAT STARTS WITH x_",
+        "placeholders": {
+            "followup": {
+                "content": "$1",
+                "example": "followup on Weekly report"
+            }
+        }
+    }
+}
