@@ -13,16 +13,16 @@
 
 #### JS -> TS
 
-+ extent.js	 // dynamic check on the number of arguments
-+ median.js	 // dynamic check on the number of arguments 
-+ index.js	 // multiple imports dependent on functionality of unstable files
-+ nest.js	   // Strange and large requires greater familiarity with ts
+    + extent.js	 // dynamic check on the number of arguments
+    + median.js	 // dynamic check on the number of arguments 
+    + index.js	 // multiple imports dependent on functionality of unstable files
+    + nest.js	 // Strange and large requires greater familiarity with ts
 
 
 #### TS -> RS 
 
     + min.js, mean.js, max.ts, sum.js   // difficulty with overloaded functions; dynamic check on the number of arguments
-    + entries.ts	                      // clones dictionaries.
+    + entries.ts	                    // clones dictionaries.
 
 
 **Todo**
