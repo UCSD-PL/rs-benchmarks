@@ -1,10 +1,12 @@
 /// <reference path="../../d3.d.ts" />
 
-d3.min = d3_min;
+// d3.min = d3_min;
+// 
+// function d3_min(array: number[]): number;
+// function d3_min<T>(array: T[], f: (v: T) => number): number;
+// function d3_min<T>(array: any[], f?: (v: T) => number): number {
 
-function d3_min(array: number[]): number;
-function d3_min<T>(array: T[], f: (v: T) => number): number;
-function d3_min<T>(array: any[], f?: (v: T) => number): number {
+d3.min = function(array, f) {
   var i = -1,
       n = array.length,
       a:any,

@@ -71,14 +71,14 @@ declare module D3 {
     }
 
     export interface Base { // extends Selectors {
+//         /**
+//         * Create a behavior
+//         */
+//         behavior: Behavior.Behavior;
         /**
-        * Create a behavior
+        * Access the current user event for interaction
         */
-//        behavior: Behavior.Behavior;
-//        /**
-//        * Access the current user event for interaction
-//        */
-//        event: D3Event;
+        event: D3Event;
 
         /**
         * Compare two values for sorting.
@@ -110,19 +110,19 @@ declare module D3 {
          */
         descending<T>(a: T, b: T): number;
 
-//        /**
-//        * Find the minimum value in an array
-//        *
-//        * @param arr Array to search
-//        * @param map Accsessor function
-//        */
-//        min<T, U>(arr: T[], map: (v: T) => U): U;
-//        /**
-//        * Find the minimum value in an array
-//        *
-//        * @param arr Array to search
-//        */
-//        min<T>(arr: T[]): T;
+        /**
+        * Find the minimum value in an array
+        *
+        * @param arr Array to search
+        * @param map Accsessor function
+        */
+        min<T, U>(arr: T[], map: (v: T) => U): U;
+        /**
+        * Find the minimum value in an array
+        *
+        * @param arr Array to search
+        */
+        min<T>(arr: T[]): T;
 //        /**
 //        * Find the maximum value in an array
 //        *
