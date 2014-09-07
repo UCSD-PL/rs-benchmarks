@@ -4,6 +4,7 @@
 
     src-ts/arrays/ascending.ts
     src-ts/arrays/descending.ts
+    src-ts/arrays/min.ts
     src-ts/arrays/permute.ts
 
 
