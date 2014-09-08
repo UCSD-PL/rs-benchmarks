@@ -568,8 +568,8 @@ declare module D3 {
 //        */
 //        functor<R,T>(value: (p : R) => T): (p : R) => T;
 //        functor<T>(value: T): (p : any) => T;
-//
-//        map(object?: any): Map;
+
+        map(object?: any): Map;
 //        set(array?: Array<any>): Set;
 //        dispatch(...types: Array<string>): Dispatch;
 //        rebind(target: any, source: any, ...names: Array<any>): any;
@@ -869,18 +869,18 @@ declare module D3 {
 //        map(values: any[], mapType: any): any;
 //        entries(values: any[]): NestKeyValue[];
 //    }
-//
-//    export interface Map {
-//        has(key: string): boolean;
-//        get(key: string): any;
-//        set<T>(key: string, value: T): T;
-//        remove(key: string): boolean;
-//        keys(): Array<string>;
-//        values(): Array<any>;
-//        entries(): Array<any>;
-//        forEach(func: (key: string, value: any) => void ): void;
-//    }
-//
+
+    export interface Map {
+        has(key: string): boolean;
+        get(key: string): any;
+        set<T>(key: string, value: T): T;
+        remove(key: string): boolean;
+        keys(): Array<string>;
+        values(): Array<any>;
+        entries(): Array<any>;
+        forEach(func: (key: string, value: any) => void ): void;
+    }
+
 //    export interface Set{
 //        has(value: any): boolean;
 //        add(value: any): any;
