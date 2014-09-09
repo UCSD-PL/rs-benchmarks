@@ -1,3 +1,15 @@
+## Things in d3 that refscript does not handle yet (with example source files):
+
+optional parameters like 'end' in 'substring' (core/vendor.ts:6)
+(<Array<T>>[]).slice (core/array.ts)
+"in" expressions (core/vendor.ts)
+EventTarget (selection/* ??)
+Date (time/time.ts)
+window and document (core/document.ts)
+Cannot call 'toRsExp' on...
+    SyntaxKind BitwiseOrExpression (arrays/shuffle.ts:5)
+    SyntaxKind CommaExpression (arrays/shuffle.ts:6)
+    SyntaxKind PlusExpression (arrays/quantile.ts:7)
 
 
 ## Done
