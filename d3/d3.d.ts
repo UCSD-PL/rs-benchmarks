@@ -275,12 +275,15 @@ declare module D3 {
 //        * @param map Array of objects to get the values from
 //        */
 //        values<T>(map:{[k:string]:T}): T[];
-//        /**
-//        * List the key-value entries of an associative array.
-//        *
-//        * @param map Array of objects to get the key-value pairs from
-//        */
-//        entries<T>(map: {[k:string]:T}): {key:string; value:T}[];
+
+        /**
+        * List the key-value entries of an associative array.
+        *
+        * @param map Array of objects to get the key-value pairs from
+        */
+        /*@ entries: forall T . (map: { [k: string]: T}) => { #Array[#Mutable, { key: string; value: T} ] | true } */
+        entries<T>(map: {[k:string]:T}): {key:string; value:T}[];
+
 //        /**
 //        * merge multiple arrays into one array
 //        *
