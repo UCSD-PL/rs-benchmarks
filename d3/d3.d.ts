@@ -263,12 +263,13 @@ declare module D3 {
 //        * @param matrix Two dimensional array to transpose
 //        */
 //        transpose(matrix: any[]): any[];
-//        /**
-//        * List the keys of an associative array.
-//        *
-//        * @param map Array of objects to get the key values from
-//        */
-//        keys<T>(map:{[k:string]:T}): string[];
+        /**
+        * List the keys of an associative array.
+        *
+        * @param map Array of objects to get the key values from
+        */
+        /*@ keys : (map: [#Immutable]{ }) => #Array[#Mutable, {string | keyIn(v, map) && enumProp(v, map)}] */
+        keys(map:{ }): string[];
 //        /**
 //        * List the values of an associative array.
 //        *
