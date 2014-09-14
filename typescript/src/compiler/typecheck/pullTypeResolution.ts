@@ -13572,10 +13572,11 @@ module TypeScript {
             if (sourceComparisonInfo) {
                 this.onlyCaptureFirstError = sourceComparisonInfo.onlyCaptureFirstError;
                 this.stringConstantVal = sourceComparisonInfo.stringConstantVal;
-                this.indent = sourceComparisonInfo.indent;
+                var _indent = sourceComparisonInfo.indent;
                 if (!useSameIndent) {
-                    this.indent++;
-                }
+                    _indent++;
+				}
+				this.indent = _indent;
             }
         }
 

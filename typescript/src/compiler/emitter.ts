@@ -96,8 +96,12 @@ module TypeScript {
                 }
             }
 
-            this._sourceMapRootDirectory = convertToDirectoryPath(switchToForwardSlashes(settings.mapRoot()));
-            this._sourceRootDirectory = convertToDirectoryPath(switchToForwardSlashes(settings.sourceRoot()));
+			var _sourceMapRootDirectory = convertToDirectoryPath(switchToForwardSlashes(settings.mapRoot()));
+			this._sourceMapRootDirectory = _sourceMapRootDirectory;
+
+			var _sourceRootDirectory = convertToDirectoryPath(switchToForwardSlashes(settings.sourceRoot()));
+			this._sourceRootDirectory = _sourceRootDirectory;
+
 
             if (settings.outFileOption() ||
                 settings.outDirOption() ||
@@ -108,12 +112,14 @@ module TypeScript {
                     this._sharedOutputFile = switchToForwardSlashes(resolvePath(settings.outFileOption()));
                 }
 
+				var _outputDirectory = "";
                 if (settings.outDirOption()) {
-                    this._outputDirectory = convertToDirectoryPath(switchToForwardSlashes(resolvePath(settings.outDirOption())));
-                }
+                    _outputDirectory = convertToDirectoryPath(switchToForwardSlashes(resolvePath(settings.outDirOption())));
+				}
+				this._outputDirectory = _outputDirectory;
 
                 // Parse the directory structure
-                if (this._outputDirectory || this._sourceMapRootDirectory || this.sourceRootDirectory) {
+                if (_outputDirectory || _sourceMapRootDirectory || _sourceRootDirectory) {
                     this.determineCommonDirectoryPath(compiler);
                 }
             }

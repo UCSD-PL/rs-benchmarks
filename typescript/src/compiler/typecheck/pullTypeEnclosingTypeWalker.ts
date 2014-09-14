@@ -78,7 +78,8 @@ module TypeScript {
         private enclosingTypeWalkerState: EnclosingTypeWalkerState;
 
         constructor() {
-            this.setDefaultTypeWalkerState();
+            //this.setDefaultTypeWalkerState();
+            this.enclosingTypeWalkerState = PullTypeEnclosingTypeWalker._defaultEnclosingTypeWalkerState;
         }
 
         private setDefaultTypeWalkerState() {

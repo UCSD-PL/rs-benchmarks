@@ -139,8 +139,9 @@ module TypeScript.Syntax {
         private item: ISyntaxTrivia;
 
         constructor(item: ISyntaxTrivia) {
-            this.item = item.clone();
-            this.item.parent = this;
+            var item_clone = item.clone();
+			item_clone.parent = this;
+			this.item = item_clone;
         }
 
         public isNode(): boolean { return false; }

@@ -165,7 +165,9 @@ module TypeScript.Parser {
         private _pinCount: number = 0;
 
         constructor(sourceUnit: SourceUnitSyntax) {
-            sourceUnit.insertChildrenInto(this._elements, 0);
+			var _elements_local: ISyntaxElement[] = []
+			this._elements = _elements_local;
+            sourceUnit.insertChildrenInto(_elements_local, 0);
         }
 
         public isFinished(): boolean {
@@ -645,12 +647,13 @@ module TypeScript.Parser {
             // time this could be problematic would be if the user made a ton of discontinuous edits.
             // For example, doing a column select on a *large* section of a code.  If this is a 
             // problem, we can always update this code to handle multiple changes.
-            this._changeRange = IncrementalParserSource.extendToAffectedRange(textChangeRange, oldSourceUnit);
+			var _changeRange_local = IncrementalParserSource.extendToAffectedRange(textChangeRange, oldSourceUnit);
+			this._changeRange = _changeRange_local;
 
             // The old tree's length, plus whatever length change was caused by the edit
             // Had better equal the new text's length!
             if (Debug.shouldAssert(AssertionLevel.Aggressive)) {
-                Debug.assert((oldSourceUnit.fullWidth() - this._changeRange.span().length() + this._changeRange.newLength()) === newText.length());
+                Debug.assert((oldSourceUnit.fullWidth() - _changeRange_local.span().length() + _changeRange_local.newLength()) === newText.length());
             }
 
             // Set up a scanner so that we can scan tokens out of the new text.

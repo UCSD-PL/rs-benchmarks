@@ -1659,7 +1659,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -1752,7 +1752,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -1831,7 +1831,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -1912,7 +1912,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -2006,7 +2006,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -2092,7 +2092,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -2175,7 +2175,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -2248,7 +2248,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -2315,7 +2315,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -2382,7 +2382,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -2446,7 +2446,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -2537,7 +2537,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -2638,7 +2638,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -2737,7 +2737,7 @@ module TypeScript {
             super(parsedInStrictMode); 
 
             this._kind = kind;
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -2816,7 +2816,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -2918,7 +2918,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -3011,7 +3011,7 @@ module TypeScript {
             super(parsedInStrictMode); 
 
             this.arguments = _arguments;
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -3102,7 +3102,7 @@ module TypeScript {
             super(parsedInStrictMode); 
 
             this._kind = kind;
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -3181,7 +3181,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -3271,7 +3271,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -3339,7 +3339,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -3420,7 +3420,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -3506,7 +3506,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -3584,7 +3584,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -3665,7 +3665,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -3745,7 +3745,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -3823,7 +3823,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -3890,7 +3890,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -3953,7 +3953,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -4021,7 +4021,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -4128,7 +4128,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -4203,7 +4203,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -4300,7 +4300,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -4402,7 +4402,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -4519,7 +4519,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -4624,7 +4624,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -4711,7 +4711,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -4794,7 +4794,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -4873,7 +4873,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -4957,7 +4957,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -5062,7 +5062,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -5180,7 +5180,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -5272,7 +5272,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -5356,7 +5356,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -5439,7 +5439,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -5529,7 +5529,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -5672,7 +5672,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -5800,7 +5800,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -5899,7 +5899,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -5995,7 +5995,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -6101,7 +6101,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -6171,7 +6171,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -6256,7 +6256,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -6360,7 +6360,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -6436,7 +6436,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -6513,7 +6513,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -6619,7 +6619,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -6686,7 +6686,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -6781,7 +6781,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -6878,7 +6878,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -6943,7 +6943,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -7027,7 +7027,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -7135,7 +7135,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -7207,7 +7207,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -7279,7 +7279,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {
@@ -7351,7 +7351,7 @@ module TypeScript {
                     parsedInStrictMode: boolean) {
             super(parsedInStrictMode); 
 
-            Syntax.setParentForChildren(this);
+              Syntax.setParentForChildren(this);
         }
 
         public accept(visitor: ISyntaxVisitor): any {

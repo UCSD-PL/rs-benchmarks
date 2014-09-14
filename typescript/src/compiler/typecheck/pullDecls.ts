@@ -42,7 +42,7 @@ module TypeScript {
             this.flags = declFlags;
             this.semanticInfoChain = semanticInfoChain;
 
-            if (displayName !== this.name) {
+            if (displayName !== declName) {
                 this.declDisplayName = displayName;
             }
         }
@@ -367,12 +367,12 @@ module TypeScript {
                 parentDecl.addChildDecl(this);
             }
 
-            if (this.parentDecl) {
-                if (this.parentDecl.isRootDecl()) {
-                    this._rootDecl = <RootPullDecl>this.parentDecl;
+            if (parentDecl) {
+                if (parentDecl.isRootDecl()) {
+                    this._rootDecl = <RootPullDecl>parentDecl;
                 }
                 else {
-                    this._rootDecl = (<NormalPullDecl>this.parentDecl)._rootDecl;
+                    this._rootDecl = (<NormalPullDecl>parentDecl)._rootDecl;
                 }
             } else {
                 // Synthetic
