@@ -381,7 +381,7 @@ module NavierStokes {
             {
                 return dens;
             }
-            this.setResolution = function (hRes:number, wRes:number)
+            var this_setResolution = function (hRes:number, wRes:number)
             {
                 var res = wRes * hRes;
                 if (res > 0 && res < 1000000 && (wRes != width || hRes != height)) {
@@ -392,7 +392,8 @@ module NavierStokes {
                 }
                 return false;
             }
-            this.setResolution(64, 64);
+            this_setResolution(64, 64);
+			this.setResolution = this_setResolution;
         }
     }
     export class Field {

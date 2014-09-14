@@ -14,7 +14,9 @@ class SetImpl implements D3.Set {
 
   constructor() { this.s = {} }
 
-  has = d3_map_has;
+  has(key: string): boolean {
+    return d3_map_prefix + key in this;
+  }
 
   add(value:any) {
     this.s[d3_map_prefix + value] = true;
@@ -26,11 +28,22 @@ class SetImpl implements D3.Set {
     return value in this.s && delete this.s[value];
   }
 
-  values = d3_map_keys;
+  values(): Array<string> {
+    var keys: string[] = [];
+    this.forEach(function(key: string) { keys.push(key); });
+    return keys;
+  }
 
-  size = d3_map_size;
+  private size(): number {
+    var size = 0;
+    for (var key in this) if (key.charCodeAt(0) === d3_map_prefixCode)++size;    
+    return size;
+  }
 
-  empty = d3_map_empty;
+  public empty(): boolean {
+    for (var key in this) if (key.charCodeAt(0) === d3_map_prefixCode) return false;
+    return true;
+  }
 
   forEach(f:(value:any)=>void) {
     for (var value in this.s) if (value.charCodeAt(0) === d3_map_prefixCode) f.call(this, value.substring(1));

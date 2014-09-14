@@ -396,8 +396,8 @@ module VERSION {
             constructor(public position:Vector = null,
                         public lookAt:Vector = null,
                         public up:Vector = null) {
-                this.equator = this.lookAt.normalize().cross(this.up);
-                this.screen = Vector.add(this.position, this.lookAt);
+                this.equator = lookAt.normalize().cross(up);
+                this.screen = Vector.add(position, lookAt);
             }
 
             public getRay(vx:number, vy:number) {
@@ -440,7 +440,7 @@ module VERSION {
             public options = null;
 
             constructor(options) {
-                this.options = extend({
+				var this_options = extend({
                     canvasHeight: 100,
                     canvasWidth: 100,
                     pixelWidth: 2,
@@ -452,8 +452,10 @@ module VERSION {
                     rayDepth: 2
                 }, options || {});
 
-                this.options.canvasHeight /= this.options.pixelHeight;
-                this.options.canvasWidth /= this.options.pixelWidth;
+                this_options.canvasHeight /= this_options.pixelHeight;
+                this_options.canvasWidth /= this_options.pixelWidth;
+
+				this.options = this_options;
 
                 /* TODO: dynamically include other scripts */
             }
