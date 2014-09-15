@@ -263,12 +263,13 @@ declare module D3 {
 //        * @param matrix Two dimensional array to transpose
 //        */
 //        transpose(matrix: any[]): any[];
-//        /**
-//        * List the keys of an associative array.
-//        *
-//        * @param map Array of objects to get the key values from
-//        */
-//        keys<T>(map:{[k:string]:T}): string[];
+        /**
+        * List the keys of an associative array.
+        *
+        * @param map Array of objects to get the key values from
+        */
+        /*@ keys : (map: [#Immutable]{ }) => #Array[#Mutable, {string | keyIn(v, map) && enumProp(v, map)}] */
+        keys(map:{ }): string[];
 //        /**
 //        * List the values of an associative array.
 //        *
@@ -281,12 +282,13 @@ declare module D3 {
 //        * @param map Array of objects to get the key-value pairs from
 //        */
 //        entries<T>(map: {[k:string]:T}): {key:string; value:T}[];
-//        /**
-//        * merge multiple arrays into one array
-//        *
-//        * @param map Arrays to merge
-//        */
-//        merge(...map: any[]): any[];
+        /**
+        * merge multiple arrays into one array
+        *
+        * @param map Arrays to merge
+        */
+        /*@ merge : forall T . (map: #Array[#Immutable, #Array[#Immutable, T]]) => #Array[#Immutable, T] */
+        merge<T>(map: T[][]): T[];
 //        /**
 //        * Generate a range of numeric values.
 //        */

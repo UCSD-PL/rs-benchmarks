@@ -19,6 +19,8 @@
     src-ts/arrays/descending.ts
     src-ts/arrays/min.ts
     src-ts/arrays/permute.ts
+    src-ts/arrays/merge.ts
+    src-ts/arrays/keys.ts
 
 
 
@@ -35,7 +37,7 @@
 
 #### TS -> RS 
 
-    + min.js, mean.js, max.ts, sum.js   // difficulty with overloaded functions; dynamic check on the number of arguments
+    + mean.js, max.ts, sum.js   // difficulty with overloaded functions; dynamic check on the number of arguments
     + entries.ts	                    // clones dictionaries.
 
 

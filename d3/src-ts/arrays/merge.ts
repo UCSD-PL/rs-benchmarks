@@ -1,21 +1,31 @@
 /// <reference path="../../d3.d.ts" />
-d3.merge = function(arrays: any[]): any [] {
+d3.merge = function<T>(arrays: T[][]): T[] {
   var n = arrays.length,
-      m:number,
       i = -1,
-      j = 0,
-      merged:any[],
-      array:any[];
+      j = 0;
 
-  while (++i < n) j += arrays[i].length;
-  merged = new Array(j);
+  //Original code:
+  //while (++i < n) j += arrays[i].length;
+  i++;
+  while (i < n) {
+    j += arrays[i].length;
+    i++;
+  }
 
-  while (--n >= 0) {
-    array = arrays[n];
-    m = array.length;
-    while (--m >= 0) {
+  var merged:T[] = new Array(j);
+
+  //while (--n >= 0) {
+  n--;
+  while (n >= 0) {
+    var array:T[] = arrays[n];
+    var m = array.length;
+    //while (--m >= 0) {
+    m--;
+    while (m >= 0 && j > 0) {
       merged[--j] = array[m];
+      m--;
     }
+    n--;
   }
 
   return merged;
