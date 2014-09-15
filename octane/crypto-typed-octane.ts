@@ -1224,11 +1224,13 @@ module CryptoVERSION {
 
         constructor(public m:BigInteger) {
             super();
-            this.mp = this.m.invDigit();
-            this.mpl = this.mp&0x7fff;
-            this.mph = this.mp>>15;
+            // this.mp = this.m.invDigit();
+			var mp = m.invDigit();
+            this.mpl = mp&0x7fff;
+            this.mph = mp>>15;
             this.um = (1<<(BI_DB-15))-1;
-            this.mt2 = 2*this.m.t;
+            this.mt2 = 2 * m.t;
+			this.mp = mp;
         }
 
         // xR mod m
@@ -1285,10 +1287,11 @@ module CryptoVERSION {
         constructor(public m: BigInteger) {
             super();
             // setup Barrett
-            this.r2 = nbi();
+            var r2 = nbi();
             this.q3 = nbi();
-            BigInteger.ONE.dlShiftTo(2*this.m.t,this.r2);
-            this.mu = this.r2.divide(this.m);
+            BigInteger.ONE.dlShiftTo(2*m.t, r2);
+            this.mu = r2.divide(m);
+            this.r2 = r2;
         }
 
         public convert(x: BigInteger) {

@@ -4465,7 +4465,7 @@ interface HTMLFrameElement extends HTMLElement, GetSVGDocument, MSDataBindingExt
     addEventListener(type: "emptied", listener: (ev: Event) => any, useCapture?: boolean): void;
     addEventListener(type: "seeking", listener: (ev: Event) => any, useCapture?: boolean): void;
     addEventListener(type: "canplay", listener: (ev: Event) => any, useCapture?: boolean): void;
-    addEventListener(type: "deactivate", listener: (ev:  UIEvent) => any, useCapture?: boolean): void;
+    addEventListener(type: "deactivate", listener: (ev: UIEvent) => any, useCapture?: boolean): void;
     addEventListener(type: "datasetchanged", listener: (ev: MSEventObj) => any, useCapture?: boolean): void;
     addEventListener(type: "rowsdelete", listener: (ev: MSEventObj) => any, useCapture?: boolean): void;
     addEventListener(type: "loadstart", listener: (ev: Event) => any, useCapture?: boolean): void;

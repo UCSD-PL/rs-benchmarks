@@ -39,12 +39,12 @@ module TypeScript.Parser {
     }
 
     // The precedence of expressions in typescript.  While we're parsing an expression, we will 
-    // continue to consume and form new trees if the precedence is greater than our current
-    // precedence.  For example, if we have: a + b * c, we will first parse 'a' with precedence 0. 
-    // We will then see the + with precedence 13.  13 is greater than 0 so we will decide to create
+    // continue to consume and form new trees if the precedence is *strictly* greater than our current
+    // precedence.  For example, if we have: a + b * c, we will first parse 'a' with precedence 1 (Lowest). 
+    // We will then see the + with precedence 10.  10 is greater than 1 so we will decide to create
     // a binary expression with the result of parsing the sub expression "b * c".  We'll then parse
-    // the term 'b' (passing in precedence 13).  We will then see the * with precedence 14.  14 is
-    // greater than 13, so we will create a binary expression from "b" and "c", return that, and 
+    // the term 'b' (passing in precedence 10).  We will then see the * with precedence 11.  11 is
+    // greater than 10, so we will create a binary expression from "b" and "c", return that, and 
     // join it with "a" producing:
     //
     //      +
@@ -53,13 +53,13 @@ module TypeScript.Parser {
     //       / \
     //      b   c
     //
-    // If we instead had: "a * b + c", we would first parser 'a' with precedence 0.  We would then see 
-    // the * with precedence 14.  14 is greater than 0 so we will decide to create a binary expression
+    // If we instead had: "a * b + c", we would first parser 'a' with precedence 1 (lowest).  We would then see 
+    // the * with precedence 11.  11 is greater than 1 so we will decide to create a binary expression
     // with the result of parsing the sub expression "b + c".  We'll then parse the term 'b' (passing in
-    // precedence 14).  We will then see the + with precedence 13.  13 is less than 14, so we won't 
+    // precedence 11).  We will then see the + with precedence 10.  10 is less than 11, so we won't 
     // continue parsing subexpressions and will just return the expression 'b'.  The caller will join 
-    // that into "a * b" (and will be back at precedence 0). It will then see the + with precedence 11.
-    // 11 is greater than 0 so it will parse the sub expression and make a binary expression out of it
+    // that into "a * b" (and will be back at precedence 1). It will then see the + with precedence 10.
+    // 10 is greater than 1 so it will parse the sub expression and make a binary expression out of it
     // producing:
     //
     //        +
@@ -67,34 +67,38 @@ module TypeScript.Parser {
     //      *   c
     //     / \
     //    a   b
-    enum ExpressionPrecedence {
-        // Intuitively, commas have the lowest precedence.  "a || b, c" is "(a || b), c", not
-        // "a || (b, c)"
-        CommaExpressionPrecedence = 1,
+    //
+    // Note: because all these binary expressions have left-to-right precedence, if we see a * b * c 
+    // then we parse it as:
+    //
+    //        *
+    //       / \
+    //      *   c
+    //     / \
+    //    a   b
+    //
+    // The code to do this uses the above logic.  It will see an operator with the same precedence,
+    // and so it won't consume it.
+    enum BinaryExpressionPrecedence {
+        Lowest = 1,
 
-        AssignmentExpressionPrecedence = 2,
+        // Intuitively, logical || have the lowest precedence.  "a || b && c" is "a || (b && c)", not
+        // "(a || b) && c"
+        LogicalOrExpressionPrecedence = 2,
+        LogicalAndExpressionPrecedence = 3,
+        BitwiseOrExpressionPrecedence = 4,
+        BitwiseExclusiveOrExpressionPrecedence = 5,
+        BitwiseAndExpressionPrecedence = 6,
+        EqualityExpressionPrecedence = 7,
+        RelationalExpressionPrecedence = 8,
+        ShiftExpressionPrecdence = 9,
+        AdditiveExpressionPrecedence = 10,
 
-        ConditionalExpressionPrecedence = 3,
-
-        // REVIEW: Should ArrowFunctions have higher, lower, or the same precedence as ternary?
-        ArrowFunctionPrecedence = 4,
-
-        LogicalOrExpressionPrecedence = 5,
-        LogicalAndExpressionPrecedence = 6,
-        BitwiseOrExpressionPrecedence = 7,
-        BitwiseExclusiveOrExpressionPrecedence = 8,
-        BitwiseAndExpressionPrecedence = 9,
-        EqualityExpressionPrecedence = 10,
-        RelationalExpressionPrecedence = 11,
-        ShiftExpressionPrecdence = 12,
-        AdditiveExpressionPrecedence = 13,
-        MultiplicativeExpressionPrecedence = 14,
-
-        // Intuitively, unary expressions have the highest precedence.  After all, if you have:
-        //   !foo || bar
+        // Intuitively, multiplicative expressions have the highest precedence.  After all, if you have:
+        //   a + b * c
         //
-        // Then you have "(!foo) || bar", not "!(foo || bar)"
-        UnaryExpressionPrecedence = 15,
+        // Then you have "a + (b * c)" not "(a + b) * c"
+        MultiplicativeExpressionPrecedence = 11,
     }
 
     // The current state of the parser wrt to list parsing.  The way to read these is as:
@@ -333,7 +337,7 @@ module TypeScript.Parser {
         // have their fullStart at this position.  previousToken has it's fullEnd at this position.
         absolutePosition(): number;
 
-        // The token that comes before the 'currentToken' that hte source is pointing at. Initially
+        // The token that comes before the 'currentToken' that the source is pointing at. Initially
         // null. 
         previousToken(): ISyntaxToken;
 
@@ -662,7 +666,7 @@ module TypeScript.Parser {
             //      void foo() { //; }
             //
             // If we were to just use the changeRange a is, then we would not rescan the { token 
-            // (as it does not intersect hte actual original change range).  Because an edit may
+            // (as it does not intersect the actual original change range).  Because an edit may
             // change the token touching it, we actually need to look back *at least* one token so
             // that the prior token sees that change.  
             //
@@ -764,12 +768,35 @@ module TypeScript.Parser {
             return this._changeDelta === 0 &&
                    !this._oldSourceUnitCursor.isFinished();
         }
-        
+
+        private setTokenPositionWalker = new SetTokenPositionWalker();
+
+        private updateTokenPositions(nodeOrToken: ISyntaxNodeOrToken): void {
+            // If we got a node or token, and we're past the range of edited text, then walk its
+            // constituent tokens, making sure all their positions are correct.  We don't need to
+            // do this for the tokens before the edited range (since their positions couldn't have 
+            // been affected by the edit), and we don't need to do this for the tokens in the 
+            // edited range, as their positions will be correct when the underlying parser source 
+            // creates them.
+
+            var position = this.absolutePosition();
+            if (this.isPastChangeRange() && nodeOrToken.fullStart() !== position) {
+                this.setTokenPositionWalker.position = position;
+
+                nodeOrToken.accept(this.setTokenPositionWalker);
+            }
+        }
+
         public currentNode(): SyntaxNode {
             if (this.canReadFromOldSourceUnit()) {
                 // Try to read a node.  If we can't then our caller will call back in and just try
                 // to get a token.
-                return this.tryGetNodeFromOldSourceUnit();
+                var node = this.tryGetNodeFromOldSourceUnit();
+                if (node !== null) {
+                    // Make sure the positions for the tokens in this node are correct.
+                    this.updateTokenPositions(node);
+                    return node;
+                }
             }
 
             // Either we were ahead of the old text, or we were pinned.  No node can be read here.
@@ -780,6 +807,8 @@ module TypeScript.Parser {
             if (this.canReadFromOldSourceUnit()) {
                 var token = this.tryGetTokenFromOldSourceUnit();
                 if (token !== null) {
+                    // Make sure the token's position/text is correct.
+                    this.updateTokenPositions(token);
                     return token;
                 }
             }
@@ -844,7 +873,7 @@ module TypeScript.Parser {
         }
 
         private intersectsWithChangeRangeSpanInOriginalText(start: number, length: number) {
-            return this._changeRange !== null && this._changeRange.span().intersectsWith(start, length);
+            return !this.isPastChangeRange() && this._changeRange.span().intersectsWith(start, length);
         }
 
         private tryGetNodeFromOldSourceUnit(): SyntaxNode {
@@ -973,7 +1002,7 @@ module TypeScript.Parser {
             // Debug.assert(previousToken !== null);
             // Debug.assert(previousToken.width() > 0);
 
-            if (this._changeRange !== null) {
+            if (!this.isPastChangeRange()) {
                 // If we still have a change range, then this node must have ended before the 
                 // change range starts.  Thus, we don't need to call 'skipPastChanges'.
                 // Debug.assert(this.absolutePosition() < this._changeRange.span().start());
@@ -1005,7 +1034,7 @@ module TypeScript.Parser {
                 // Debug.assert(previousToken !== null);
                 // Debug.assert(previousToken.width() > 0);
 
-                if (this._changeRange !== null) {
+                if (!this.isPastChangeRange()) {
                     // If we still have a change range, then this token must have ended before the 
                     // change range starts.  Thus, we don't need to call 'skipPastChanges'.
                     // Debug.assert(this.absolutePosition() < this._changeRange.span().start());
@@ -1021,15 +1050,36 @@ module TypeScript.Parser {
                 // Because we read a token from the new text, we may have moved ourselves past the
                 // change range.  If we did, then we may also have to update our change delta to
                 // compensate for the length change between the old and new text.
-                if (this._changeRange !== null) {
+                if (!this.isPastChangeRange()) {
                     // var changeEndInNewText = this._changeRange.span().start() + this._changeRange.newLength();
                     var changeRangeSpanInNewText = this._changeRange.newSpan();
                     if (this.absolutePosition() >= changeRangeSpanInNewText.end()) {
                         this._changeDelta += this._changeRange.newLength() - this._changeRange.span().length();
+
+                        // Once we're past the change range, we no longer need it.  Null it out.
+                        // From now on we can check if we're past the change range just by seeing
+                        // if this is null.
                         this._changeRange = null;
                     }
                 }
             }
+        }
+
+        private isPastChangeRange(): boolean {
+            return this._changeRange === null;
+        }
+    }
+
+    // A simple walker we use to hit all the tokens of a node and update their positions when they
+    // are reused in a different location because of an incremental parse.
+    class SetTokenPositionWalker extends SyntaxWalker {
+        public position: number;
+
+        public visitToken(token: ISyntaxToken): void {
+            var position = this.position;
+            token.setFullStart(position);
+
+            this.position += token.fullWidth();
         }
     }
 
@@ -1069,7 +1119,7 @@ module TypeScript.Parser {
 
         private factory: Syntax.IFactory = Syntax.normalModeFactory;
 
-        constructor(fileName: string, lineMap: LineMap, source: IParserSource, parseOptions: ParseOptions, private newText_forDebuggingPurposesOnly: ISimpleText) {
+        constructor(fileName: string, lineMap: LineMap, source: IParserSource, parseOptions: ParseOptions, private text: ISimpleText) {
             this.fileName = fileName;
             this.lineMap = lineMap;
             this.source = source;
@@ -1128,7 +1178,7 @@ module TypeScript.Parser {
 
             // We can only reuse a node if it was parsed under the same strict mode that we're 
             // currently in.  i.e. if we originally parsed a node in non-strict mode, but then
-            // the user added 'using strict' at hte top of the file, then we can't use that node
+            // the user added 'using strict' at the top of the file, then we can't use that node
             // again as the presense of strict mode may cause us to parse the tokens in the file
             // differetly.
             //
@@ -1162,6 +1212,12 @@ module TypeScript.Parser {
 
         private moveToNextToken(): void {
             this.source.moveToNextToken();
+        }
+
+        private moveToNextTokenN(count: number): void {
+            for (var i = 0; i < count; i++) {
+                this.moveToNextToken();
+            }
         }
 
         private previousToken(): ISyntaxToken {
@@ -1391,48 +1447,28 @@ module TypeScript.Parser {
             // throw Errors.notYetImplemented();
         }
 
-        private static getPrecedence(expressionKind: SyntaxKind): ExpressionPrecedence {
+        private static getBinaryExpressionPrecedence(expressionKind: SyntaxKind): BinaryExpressionPrecedence {
             switch (expressionKind) {
-                case SyntaxKind.CommaExpression:
-                    return ExpressionPrecedence.CommaExpressionPrecedence;
-
-                case SyntaxKind.AssignmentExpression:
-                case SyntaxKind.AddAssignmentExpression:
-                case SyntaxKind.SubtractAssignmentExpression:
-                case SyntaxKind.MultiplyAssignmentExpression:
-                case SyntaxKind.DivideAssignmentExpression:
-                case SyntaxKind.ModuloAssignmentExpression:
-                case SyntaxKind.AndAssignmentExpression:
-                case SyntaxKind.ExclusiveOrAssignmentExpression:
-                case SyntaxKind.OrAssignmentExpression:
-                case SyntaxKind.LeftShiftAssignmentExpression:
-                case SyntaxKind.SignedRightShiftAssignmentExpression:
-                case SyntaxKind.UnsignedRightShiftAssignmentExpression:
-                    return ExpressionPrecedence.AssignmentExpressionPrecedence;
-
-                case SyntaxKind.ConditionalExpression:
-                    return ExpressionPrecedence.ConditionalExpressionPrecedence;
-
                 case SyntaxKind.LogicalOrExpression:
-                    return ExpressionPrecedence.LogicalOrExpressionPrecedence;
+                    return BinaryExpressionPrecedence.LogicalOrExpressionPrecedence;
 
                 case SyntaxKind.LogicalAndExpression:
-                    return ExpressionPrecedence.LogicalAndExpressionPrecedence;
+                    return BinaryExpressionPrecedence.LogicalAndExpressionPrecedence;
 
                 case SyntaxKind.BitwiseOrExpression:
-                    return ExpressionPrecedence.BitwiseOrExpressionPrecedence;
+                    return BinaryExpressionPrecedence.BitwiseOrExpressionPrecedence;
 
                 case SyntaxKind.BitwiseExclusiveOrExpression:
-                    return ExpressionPrecedence.BitwiseExclusiveOrExpressionPrecedence;
+                    return BinaryExpressionPrecedence.BitwiseExclusiveOrExpressionPrecedence;
 
                 case SyntaxKind.BitwiseAndExpression:
-                    return ExpressionPrecedence.BitwiseAndExpressionPrecedence;
+                    return BinaryExpressionPrecedence.BitwiseAndExpressionPrecedence;
 
                 case SyntaxKind.EqualsWithTypeConversionExpression:
                 case SyntaxKind.NotEqualsWithTypeConversionExpression:
                 case SyntaxKind.EqualsExpression:
                 case SyntaxKind.NotEqualsExpression:
-                    return ExpressionPrecedence.EqualityExpressionPrecedence;
+                    return BinaryExpressionPrecedence.EqualityExpressionPrecedence;
 
                 case SyntaxKind.LessThanExpression:
                 case SyntaxKind.GreaterThanExpression:
@@ -1440,32 +1476,21 @@ module TypeScript.Parser {
                 case SyntaxKind.GreaterThanOrEqualExpression:
                 case SyntaxKind.InstanceOfExpression:
                 case SyntaxKind.InExpression:
-                    return ExpressionPrecedence.RelationalExpressionPrecedence;
+                    return BinaryExpressionPrecedence.RelationalExpressionPrecedence;
 
                 case SyntaxKind.LeftShiftExpression:
                 case SyntaxKind.SignedRightShiftExpression:
                 case SyntaxKind.UnsignedRightShiftExpression:
-                    return ExpressionPrecedence.ShiftExpressionPrecdence;
+                    return BinaryExpressionPrecedence.ShiftExpressionPrecdence;
 
                 case SyntaxKind.AddExpression:
                 case SyntaxKind.SubtractExpression:
-                    return ExpressionPrecedence.AdditiveExpressionPrecedence;
+                    return BinaryExpressionPrecedence.AdditiveExpressionPrecedence;
 
                 case SyntaxKind.MultiplyExpression:
                 case SyntaxKind.DivideExpression:
                 case SyntaxKind.ModuloExpression:
-                    return ExpressionPrecedence.MultiplicativeExpressionPrecedence;
-
-                case SyntaxKind.PlusExpression:
-                case SyntaxKind.NegateExpression:
-                case SyntaxKind.BitwiseNotExpression:
-                case SyntaxKind.LogicalNotExpression:
-                case SyntaxKind.DeleteExpression:
-                case SyntaxKind.TypeOfExpression:
-                case SyntaxKind.VoidExpression:
-                case SyntaxKind.PreIncrementExpression:
-                case SyntaxKind.PreDecrementExpression:
-                    return ExpressionPrecedence.UnaryExpressionPrecedence;
+                    return BinaryExpressionPrecedence.MultiplicativeExpressionPrecedence;
             }
 
             throw Errors.invalidOperation();
@@ -1507,14 +1532,23 @@ module TypeScript.Parser {
 
             var leadingTrivia: ISyntaxTrivia[] = [];
             for (var i = 0, n = skippedTokens.length; i < n; i++) {
-                this.addSkippedTokenToTriviaArray(leadingTrivia, skippedTokens[i]);
+                var skippedToken = skippedTokens[i];
+                this.addSkippedTokenToTriviaArray(leadingTrivia, skippedToken);
             }
 
             this.addTriviaTo(token.leadingTrivia(), leadingTrivia);
 
+            var updatedToken = token.withLeadingTrivia(Syntax.triviaList(leadingTrivia));
+
+            // We've prepending this token with new leading trivia.  This means the full start of
+            // the token is not where the scanner originally thought it was, but is instead at the
+            // start of the first skipped token.
+            updatedToken.setFullStart(skippedTokens[0].fullStart());
+
             // Don't need this array anymore.  Give it back so we can reuse it.
             this.returnArray(skippedTokens);
-            return token.withLeadingTrivia(Syntax.triviaList(leadingTrivia));
+
+            return updatedToken;
         }
 
         private addSkippedTokensAfterToken(token: ISyntaxToken, skippedTokens: ISyntaxToken[]): ISyntaxToken {
@@ -1552,6 +1586,11 @@ module TypeScript.Parser {
 
             // now, add the text of the token as skipped text to the trivia array.
             var trimmedToken = skippedToken.withLeadingTrivia(Syntax.emptyTriviaList).withTrailingTrivia(Syntax.emptyTriviaList);
+
+            // Because we removed the leading trivia from the skipped token, the full start of the
+            // trimmed token is the start of the skipped token.
+            trimmedToken.setFullStart(skippedToken.start());
+
             array.push(Syntax.skippedTokenTrivia(trimmedToken));
 
             // Finally, add the trailing trivia of the skipped token to the trivia array.
@@ -1570,7 +1609,10 @@ module TypeScript.Parser {
             var allDiagnostics = this.source.tokenDiagnostics().concat(this.diagnostics);
             allDiagnostics.sort((a: Diagnostic, b: Diagnostic) => a.start() - b.start());
 
-            return new SyntaxTree(sourceUnit, isDeclaration, allDiagnostics, this.fileName, this.lineMap, this.parseOptions);
+            var syntaxTree = new SyntaxTree(sourceUnit, isDeclaration, allDiagnostics, this.fileName, this.lineMap, this.parseOptions);
+            sourceUnit._syntaxTree = syntaxTree;
+
+            return syntaxTree;
         }
 
         private setStrictMode(isInStrictMode: boolean) {
@@ -1584,7 +1626,7 @@ module TypeScript.Parser {
             // loop ends.  However, for sake of symmetry and consistancy we do this.
             var savedIsInStrictMode = this.isInStrictMode;
 
-            var result = this.parseSyntaxList(ListParsingState.SourceUnit_ModuleElements, ParserImpl.updateStrictModeState);
+            var result = this.parseSyntaxList<IModuleElementSyntax>(ListParsingState.SourceUnit_ModuleElements, ParserImpl.updateStrictModeState);
             var moduleElements = result.list;
 
             this.setStrictMode(savedIsInStrictMode);
@@ -1593,10 +1635,10 @@ module TypeScript.Parser {
             sourceUnit = <SourceUnitSyntax>this.addSkippedTokensBeforeNode(sourceUnit, result.skippedTokens);
 
             if (Debug.shouldAssert(AssertionLevel.Aggressive)) {
-                Debug.assert(sourceUnit.fullWidth() === this.newText_forDebuggingPurposesOnly.length());
+                Debug.assert(sourceUnit.fullWidth() === this.text.length());
 
                 if (Debug.shouldAssert(AssertionLevel.VeryAggressive)) {
-                    Debug.assert(sourceUnit.fullText() === this.newText_forDebuggingPurposesOnly.substr(0, this.newText_forDebuggingPurposesOnly.length(), /*intern:*/ false));
+                    Debug.assert(sourceUnit.fullText() === this.text.substr(0, this.text.length(), /*intern:*/ false));
                 }
             }
 
@@ -1754,8 +1796,8 @@ module TypeScript.Parser {
 
             var lessThanToken: ISyntaxToken;
             var greaterThanToken: ISyntaxToken;
-            var result: { skippedTokens: ISyntaxToken[]; list: ISeparatedSyntaxList; };
-            var typeArguments: ISeparatedSyntaxList;
+            var result: { skippedTokens: ISyntaxToken[]; list: ISeparatedSyntaxList<ITypeSyntax>; };
+            var typeArguments: ISeparatedSyntaxList<ITypeSyntax>;
 
             if (!inExpression) {
                 // if we're not in an expression, this must be a type argument list.  Just parse
@@ -1763,7 +1805,7 @@ module TypeScript.Parser {
                 lessThanToken = this.eatToken(SyntaxKind.LessThanToken);
                 // Debug.assert(lessThanToken.fullWidth() > 0);
 
-                result = this.parseSeparatedSyntaxList(ListParsingState.TypeArgumentList_Types);
+                result = this.parseSeparatedSyntaxList<ITypeSyntax>(ListParsingState.TypeArgumentList_Types);
                 typeArguments = result.list;
                 lessThanToken = this.addSkippedTokensAfterToken(lessThanToken, result.skippedTokens);
 
@@ -1781,7 +1823,7 @@ module TypeScript.Parser {
             lessThanToken = this.eatToken(SyntaxKind.LessThanToken);
             // Debug.assert(lessThanToken.fullWidth() > 0);
 
-            result = this.parseSeparatedSyntaxList(ListParsingState.TypeArgumentList_Types);
+            result = this.parseSeparatedSyntaxList<ITypeSyntax>(ListParsingState.TypeArgumentList_Types);
             typeArguments = result.list;
             lessThanToken = this.addSkippedTokensAfterToken(lessThanToken, result.skippedTokens);
 
@@ -1909,10 +1951,10 @@ module TypeScript.Parser {
             var identifier = this.eatIdentifierToken();
 
             var openBraceToken = this.eatToken(SyntaxKind.OpenBraceToken);
-            var enumElements: ISeparatedSyntaxList = Syntax.emptySeparatedList;
+            var enumElements = Syntax.emptySeparatedList<EnumElementSyntax>();
 
             if (openBraceToken.width() > 0) {
-                var result = this.parseSeparatedSyntaxList(ListParsingState.EnumDeclaration_EnumElements);
+                var result = this.parseSeparatedSyntaxList<EnumElementSyntax>(ListParsingState.EnumDeclaration_EnumElements);
                 enumElements = result.list;
                 openBraceToken = this.addSkippedTokensAfterToken(openBraceToken, result.skippedTokens);
             }
@@ -1974,7 +2016,7 @@ module TypeScript.Parser {
             return modifierCount;
         }
 
-        private parseModifiers(): ISyntaxList {
+        private parseModifiers(): ISyntaxList<ISyntaxToken> {
             var tokens: ISyntaxToken[] = this.getArray();
 
             while (true) {
@@ -2009,11 +2051,11 @@ module TypeScript.Parser {
                    this.isIdentifier(this.peekToken(1));
         }
 
-        private parseHeritageClauses(): ISyntaxList {
-            var heritageClauses: ISyntaxList = Syntax.emptyList;
+        private parseHeritageClauses(): ISyntaxList<HeritageClauseSyntax> {
+            var heritageClauses = Syntax.emptyList<HeritageClauseSyntax>();
             
             if (this.isHeritageClause()) {
-                var result = this.parseSyntaxList(ListParsingState.ClassOrInterfaceDeclaration_HeritageClauses);
+                var result = this.parseSyntaxList<HeritageClauseSyntax>(ListParsingState.ClassOrInterfaceDeclaration_HeritageClauses);
                 heritageClauses = result.list;
                 Debug.assert(result.skippedTokens.length === 0);
             }
@@ -2028,13 +2070,13 @@ module TypeScript.Parser {
 
             var classKeyword = this.eatKeyword(SyntaxKind.ClassKeyword);
             var identifier = this.eatIdentifierToken();
-            var typeParameterList = this.parseOptionalTypeParameterList(/*requireCompleteTypeParameterList:*/ false);
+            var typeParameterList = this.tryParseTypeParameterList(/*requireCompleteTypeParameterList:*/ false);
             var heritageClauses = this.parseHeritageClauses();
             var openBraceToken = this.eatToken(SyntaxKind.OpenBraceToken);
-            var classElements: ISyntaxList = Syntax.emptyList;
+            var classElements = Syntax.emptyList<IClassElementSyntax>();
 
             if (openBraceToken.width() > 0) {
-                var result = this.parseSyntaxList(ListParsingState.ClassDeclaration_ClassElements);
+                var result = this.parseSyntaxList<IClassElementSyntax>(ListParsingState.ClassDeclaration_ClassElements);
 
                 classElements = result.list;
                 openBraceToken = this.addSkippedTokensAfterToken(openBraceToken, result.skippedTokens);
@@ -2077,7 +2119,7 @@ module TypeScript.Parser {
             }
         }
 
-        private parseGetMemberAccessorDeclaration(modifiers: ISyntaxList, checkForStrictMode: boolean): GetAccessorSyntax {
+        private parseGetMemberAccessorDeclaration(modifiers: ISyntaxList<ISyntaxToken>, checkForStrictMode: boolean): GetAccessorSyntax {
             // Debug.assert(this.currentToken().tokenKind === SyntaxKind.GetKeyword);
 
             var getKeyword = this.eatKeyword(SyntaxKind.GetKeyword);
@@ -2090,7 +2132,7 @@ module TypeScript.Parser {
                 modifiers, getKeyword, propertyName, parameterList, typeAnnotation, block);
         }
 
-        private parseSetMemberAccessorDeclaration(modifiers: ISyntaxList, checkForStrictMode: boolean): SetAccessorSyntax {
+        private parseSetMemberAccessorDeclaration(modifiers: ISyntaxList<ISyntaxToken>, checkForStrictMode: boolean): SetAccessorSyntax {
             // Debug.assert(this.currentToken().tokenKind === SyntaxKind.SetKeyword);
 
             var setKeyword = this.eatKeyword(SyntaxKind.SetKeyword);
@@ -2442,9 +2484,9 @@ module TypeScript.Parser {
 
             var openBraceToken = this.eatToken(SyntaxKind.OpenBraceToken);
 
-            var moduleElements: ISyntaxList = Syntax.emptyList;
+            var moduleElements = Syntax.emptyList<IModuleElementSyntax>();
             if (openBraceToken.width() > 0) {
-                var result = this.parseSyntaxList(ListParsingState.ModuleDeclaration_ModuleElements);
+                var result = this.parseSyntaxList<IModuleElementSyntax>(ListParsingState.ModuleDeclaration_ModuleElements);
                 moduleElements = result.list;
                 openBraceToken = this.addSkippedTokensAfterToken(openBraceToken, result.skippedTokens);
             }
@@ -2476,7 +2518,7 @@ module TypeScript.Parser {
             var modifiers = this.parseModifiers();
             var interfaceKeyword = this.eatKeyword(SyntaxKind.InterfaceKeyword);
             var identifier = this.eatIdentifierToken();
-            var typeParameterList = this.parseOptionalTypeParameterList(/*requireCompleteTypeParameterList:*/ false);
+            var typeParameterList = this.tryParseTypeParameterList(/*requireCompleteTypeParameterList:*/ false);
             var heritageClauses = this.parseHeritageClauses();
 
             var objectType = this.parseObjectType();
@@ -2487,9 +2529,9 @@ module TypeScript.Parser {
         private parseObjectType(): ObjectTypeSyntax {
             var openBraceToken = this.eatToken(SyntaxKind.OpenBraceToken);
 
-            var typeMembers: ISeparatedSyntaxList = Syntax.emptySeparatedList;
+            var typeMembers = Syntax.emptySeparatedList<ITypeMemberSyntax>();
             if (openBraceToken.width() > 0) {
-                var result = this.parseSeparatedSyntaxList(ListParsingState.ObjectType_TypeMembers);
+                var result = this.parseSeparatedSyntaxList<ITypeMemberSyntax>(ListParsingState.ObjectType_TypeMembers);
                 typeMembers = result.list;
                 openBraceToken = this.addSkippedTokensAfterToken(openBraceToken, result.skippedTokens);
             }
@@ -2670,7 +2712,7 @@ module TypeScript.Parser {
             var extendsOrImplementsKeyword = this.eatAnyToken();
             Debug.assert(extendsOrImplementsKeyword.tokenKind === SyntaxKind.ExtendsKeyword || extendsOrImplementsKeyword.tokenKind === SyntaxKind.ImplementsKeyword);
 
-            var result = this.parseSeparatedSyntaxList(ListParsingState.HeritageClause_TypeNameList);
+            var result = this.parseSeparatedSyntaxList<INameSyntax>(ListParsingState.HeritageClause_TypeNameList);
             var typeNames = result.list;
             extendsOrImplementsKeyword = this.addSkippedTokensAfterToken(extendsOrImplementsKeyword, result.skippedTokens);
 
@@ -2691,7 +2733,7 @@ module TypeScript.Parser {
                 case SyntaxKind.PublicKeyword:
                 case SyntaxKind.PrivateKeyword:
                 case SyntaxKind.StaticKeyword:
-                    // None of hte above are actually keywords.  And they might show up in a real
+                    // None of the above are actually keywords.  And they might show up in a real
                     // statement (i.e. "public();").  However, if we see 'public <identifier>' then 
                     // that can't possibly be a statement (and instead will be a class element), 
                     // and we should not parse it out here.
@@ -3087,9 +3129,9 @@ module TypeScript.Parser {
 
             var openBraceToken = this.eatToken(SyntaxKind.OpenBraceToken);
 
-            var switchClauses: ISyntaxList = Syntax.emptyList;
+            var switchClauses = Syntax.emptyList<ISwitchClauseSyntax>();
             if (openBraceToken.width() > 0) {
-                var result = this.parseSyntaxList(ListParsingState.SwitchStatement_SwitchClauses);
+                var result = this.parseSyntaxList<ISwitchClauseSyntax>(ListParsingState.SwitchStatement_SwitchClauses);
                 switchClauses = result.list;
                 openBraceToken = this.addSkippedTokensAfterToken(openBraceToken, result.skippedTokens);
             }
@@ -3138,12 +3180,12 @@ module TypeScript.Parser {
             var caseKeyword = this.eatKeyword(SyntaxKind.CaseKeyword);
             var expression = this.parseExpression(/*allowIn:*/ true);
             var colonToken = this.eatToken(SyntaxKind.ColonToken);
-            var statements = Syntax.emptyList;
+            var statements = Syntax.emptyList<IStatementSyntax>();
 
             // TODO: allow parsing of the list evne if there's no colon.  However, we have to make 
             // sure we add any skipped tokens to the right previous node or token.
             if (colonToken.fullWidth() > 0) {
-                var result = this.parseSyntaxList(ListParsingState.SwitchClause_Statements);
+                var result = this.parseSyntaxList<IStatementSyntax>(ListParsingState.SwitchClause_Statements);
                 statements = result.list;
                 colonToken = this.addSkippedTokensAfterToken(colonToken, result.skippedTokens);
             }
@@ -3156,12 +3198,12 @@ module TypeScript.Parser {
 
             var defaultKeyword = this.eatKeyword(SyntaxKind.DefaultKeyword);
             var colonToken = this.eatToken(SyntaxKind.ColonToken);
-            var statements = Syntax.emptyList;
+            var statements = Syntax.emptyList<IStatementSyntax>();
 
             // TODO: Allow parsing witha colon here.  However, ensure that we attach any skipped 
             // tokens to the defaultKeyword.
             if (colonToken.fullWidth() > 0) {
-                var result = this.parseSyntaxList(ListParsingState.SwitchClause_Statements);
+                var result = this.parseSyntaxList<IStatementSyntax>(ListParsingState.SwitchClause_Statements);
                 statements = result.list;
                 colonToken = this.addSkippedTokensAfterToken(colonToken, result.skippedTokens);
             }
@@ -3232,7 +3274,7 @@ module TypeScript.Parser {
                 return this.factory.omittedExpression();
             }
 
-            return this.parseAssignmentExpression(/*allowIn:*/ true);
+            return this.parseAssignmentExpressionOrHigher(/*allowIn:*/ true);
         }
 
         private isExpression(currentToken: ISyntaxToken): boolean {
@@ -3365,7 +3407,7 @@ module TypeScript.Parser {
                 ? ListParsingState.VariableDeclaration_VariableDeclarators_AllowIn
                 : ListParsingState.VariableDeclaration_VariableDeclarators_DisallowIn;
 
-            var result = this.parseSeparatedSyntaxList(listParsingState);
+            var result = this.parseSeparatedSyntaxList<VariableDeclaratorSyntax>(listParsingState);
             var variableDeclarators = result.list;
             varKeyword = this.addSkippedTokensAfterToken(varKeyword, result.skippedTokens);
 
@@ -3473,31 +3515,138 @@ module TypeScript.Parser {
             // Debug.assert(this.isEqualsValueClause());
 
             var equalsToken = this.eatToken(SyntaxKind.EqualsToken);
-            var value = this.parseAssignmentExpression(allowIn);
+            var value = this.parseAssignmentExpressionOrHigher(allowIn);
 
             return this.factory.equalsValueClause(equalsToken, value);
         }
 
         private parseExpression(allowIn: boolean): IExpressionSyntax {
-            return this.parseSubExpression(0, allowIn);
+            // Expression[in]:
+            //      AssignmentExpression[in] 
+            //      Expression[in] , AssignmentExpression[in]
+
+            var leftOperand = this.parseAssignmentExpressionOrHigher(allowIn);
+            while (true) {
+                var token0 = this.currentToken();
+                var token0Kind = token0.tokenKind;
+
+                if (token0Kind !== SyntaxKind.CommaToken) {
+                    break;
+                }
+
+                this.eatAnyToken();
+
+                var rightOperand = this.parseAssignmentExpressionOrHigher(allowIn);
+                leftOperand = this.factory.binaryExpression(SyntaxKind.CommaExpression, leftOperand, token0, rightOperand);
+            }
+
+            return leftOperand;
         }
 
         // Called when you need to parse an expression, but you do not want to allow 'CommaExpressions'.
         // i.e. if you have "var a = 1, b = 2" then when we parse '1' we want to parse with higher 
         // precedence than 'comma'.  Otherwise we'll get: "var a = (1, (b = 2))", instead of
         // "var a = (1), b = (2)");
-        private parseAssignmentExpression(allowIn: boolean): IExpressionSyntax {
-            return this.parseSubExpression(ExpressionPrecedence.AssignmentExpressionPrecedence, allowIn);
+        private parseAssignmentExpressionOrHigher(allowIn: boolean): IExpressionSyntax {
+            // Augmented by TypeScript:
+            //
+            //  AssignmentExpression[in]:
+            //      1) ConditionalExpression[in]
+            //      2) LeftHandSideExpression = AssignmentExpression[in]
+            //      3) LeftHandSideExpression AssignmentOperator AssignmentExpression[in]
+            //      4) ArrowFunctionExpression <-- added by TypeScript
+            //
+            // Open spec question.  Right now, there is no 'ArrowFunctionExpression[in]' variant.
+            // Thus, if the user has:
+            //
+            //      for (var a = () => b in c) {}
+            //
+            // Then we will fail to parse (because the 'in' will be consumed as part of the body of
+            // the lambda, and not as part of the 'for' statement).  This is likely not an issue
+            // whatsoever as there seems to be no good reason why anyone would ever write code like
+            // the above.
+            //
+            // Note: for ease of implementation we treat productions '2' and '3' as the same thing. 
+            // (i.e. they're both BinaryExpressions with an assignment operator in it).
+
+            // First, check if we have production '4' (an arrow function).  Note that if we do, we
+            // must *not* recurse for productsion 1, 2 or 3. An ArrowFunction is not a 
+            // LeftHandSideExpression, nor does it start a ConditionalExpression.  So we are done 
+            // with AssignmentExpression if we see one.
+
+            var arrowFunction = this.tryParseAnyArrowFunctionExpression();
+            if (arrowFunction !== null) {
+                return arrowFunction;
+            }
+
+            // Now try to see if we're in production '1', '2' or '3'.  A conditional expression can
+            // start with a LogicalOrExpression, while the assignment productions can only start with
+            // LeftHandSideExpressions.
+            //
+            // So, first, we try to just parse out a BinaryExpression.  If we get something that is a 
+            // LeftHandSide or higher, then we can try to parse out the assignment expression part.  
+            // Otherwise, we try to parse out the conditional expression bit.  We want to allow any 
+            // binary expression here, so we pass in the 'lowest' precedence here so that it matches
+            // and consumes anything.
+            var leftOperand = this.parseBinaryExpressionOrHigher(BinaryExpressionPrecedence.Lowest, allowIn);
+
+            if (leftOperand.isLeftHandSideExpression()) {
+                // Note: we call currentOperatorToken so that we get an appropriately merged token
+                // for cases like > > =  becoming >>=
+                var token0 = this.currentOperatorToken();
+                var token0Kind = token0.tokenKind;
+
+                // Check for recursive assignment expressions.
+                if (ParserImpl.isAssignmentOperatorToken(token0Kind)) {
+                    this.moveToNextTokenN(this.unmergedTokenCount(token0Kind));
+
+                    var rightOperand = this.parseAssignmentExpressionOrHigher(allowIn);
+                    var binaryExpressionKind = SyntaxFacts.getBinaryExpressionFromOperatorToken(token0Kind);
+                    return this.factory.binaryExpression(binaryExpressionKind, leftOperand, token0, rightOperand);
+                }
+            }
+
+            // It wasn't an assignment or a lambda.  This is a conditional expression:
+            return this.parseConditionalExpressionRest(allowIn, leftOperand);
         }
 
-        private parseUnaryExpressionOrLower(): IUnaryExpressionSyntax {
+        private static isAssignmentOperatorToken(tokenKind: SyntaxKind): boolean {
+            switch (tokenKind) {
+                case SyntaxKind.BarEqualsToken:
+                case SyntaxKind.AmpersandEqualsToken:
+                case SyntaxKind.CaretEqualsToken:
+                case SyntaxKind.LessThanLessThanEqualsToken:
+                case SyntaxKind.GreaterThanGreaterThanEqualsToken:
+                case SyntaxKind.GreaterThanGreaterThanGreaterThanEqualsToken:
+                case SyntaxKind.PlusEqualsToken:
+                case SyntaxKind.MinusEqualsToken:
+                case SyntaxKind.AsteriskEqualsToken:
+                case SyntaxKind.SlashEqualsToken:
+                case SyntaxKind.PercentEqualsToken:
+                case SyntaxKind.EqualsToken:
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
+        private tryParseAnyArrowFunctionExpression(): IExpressionSyntax {
+            if (this.isSimpleArrowFunctionExpression()) {
+                return this.parseSimpleArrowFunctionExpression();
+            }
+
+            return this.tryParseParenthesizedArrowFunctionExpression();
+        }
+
+        private parseUnaryExpressionOrHigher(): IUnaryExpressionSyntax {
             var currentTokenKind = this.currentToken().tokenKind; 
             if (SyntaxFacts.isPrefixUnaryExpressionOperatorToken(currentTokenKind)) {
                 var operatorKind = SyntaxFacts.getPrefixUnaryExpressionFromOperatorToken(currentTokenKind);
 
                 var operatorToken = this.eatAnyToken();
 
-                var operand = this.parseUnaryExpressionOrLower();
+                var operand = this.parseUnaryExpressionOrHigher();
                 return this.factory.prefixUnaryExpression(operatorKind, operatorToken, operand);
             }
             else if (currentTokenKind === SyntaxKind.TypeOfKeyword) {
@@ -3513,104 +3662,88 @@ module TypeScript.Parser {
                 return this.parseCastExpression();
             }
             else {
-                return this.parsePostfixExpressionOrLower();
+                return this.parsePostfixExpressionOrHigher();
             }
         }
 
-        private parseSubExpression(precedence: ExpressionPrecedence, allowIn: boolean): IExpressionSyntax {
-            if (precedence <= ExpressionPrecedence.AssignmentExpressionPrecedence) {
-                if (this.isSimpleArrowFunctionExpression()) {
-                    return this.parseSimpleArrowFunctionExpression();
-                }
+        private parseBinaryExpressionOrHigher(precedence: BinaryExpressionPrecedence, allowIn: boolean): IExpressionSyntax {
+            // The binary expressions are incredibly left recursive in their definitions. We 
+            // clearly can't implement that through recursion.  So, instead, we first bottom out 
+            // of all the recursion by jumping to this production and consuming a UnaryExpression 
+            // first.
+            //
+            // MultiplicativeExpression: See 11.5 
+            //      UnaryExpression 
+            var leftOperand = this.parseUnaryExpressionOrHigher();
 
-                var parethesizedArrowFunction = this.tryParseParenthesizedArrowFunctionExpression();
-                if (parethesizedArrowFunction !== null) {
-                    return parethesizedArrowFunction;
-                }
-           }
-
-            // Parse out an expression that has higher precedence than all binary and ternary operators.
-            var leftOperand = this.parseUnaryExpressionOrLower();
-            return this.parseBinaryOrConditionalExpressions(precedence, allowIn, leftOperand);
+            // We then pop up the stack consuming the other side of the binary exprssion if it exists.
+            return this.parseBinaryExpressionRest(precedence, allowIn, leftOperand);
         }
 
-        private parseBinaryOrConditionalExpressions(precedence: number, allowIn: boolean, leftOperand: IExpressionSyntax): IExpressionSyntax {
+        private parseConditionalExpressionRest(allowIn: boolean, leftOperand: IExpressionSyntax): IExpressionSyntax {
+            // Note: we are passed in an expression which was produced from parseBinaryExpressionOrHigher.
+
+            var token0 = this.currentToken();
+            var token0Kind = token0.tokenKind;
+
+            // Now check for conditional expression.
+            if (token0Kind !== SyntaxKind.QuestionToken) {
+                return leftOperand;
+            }
+
+            var questionToken = this.eatToken(SyntaxKind.QuestionToken);
+
+            // Note: we explicitly do *not* pass 'allowIn' here.  An 'in' expression is always
+            // allowed in the 'true' part of a conditional expression.
+            var whenTrueExpression = this.parseAssignmentExpressionOrHigher(/*allowIn:*/ true);
+            var colon = this.eatToken(SyntaxKind.ColonToken);
+
+            var whenFalseExpression = this.parseAssignmentExpressionOrHigher(allowIn);
+            return this.factory.conditionalExpression(
+                leftOperand, questionToken, whenTrueExpression, colon, whenFalseExpression);
+        }
+
+        private parseBinaryExpressionRest(precedence: BinaryExpressionPrecedence, allowIn: boolean, leftOperand: IExpressionSyntax): IExpressionSyntax {
             while (true) {
-                // We either have a binary operator here, or we're finished.
-                var token0 = this.currentToken();
-                var token0Kind = token0.tokenKind;
-                
-                // Check for binary expressions.
-                if (SyntaxFacts.isBinaryExpressionOperatorToken(token0Kind)) {
-                    // also, if it's the 'in' operator, only allow if our caller allows it.
-                    if (token0Kind === SyntaxKind.InKeyword && !allowIn) {
-                        break;
-                    }
+                // We either have a binary operator here, or we're finished.  We call 
+                // currentOperatorToken versus currentToken here so that we merge token sequences
+                // like > and = into >=
+                var operatorToken = this.currentOperatorToken();
+                var tokenKind = operatorToken.tokenKind;
 
-                    // check for >= or >> or >>= or >>> or >>>=.
-                    //
-                    // These are not created by the scanner since we want the individual > tokens for
-                    // generics.
-                    var mergedToken = this.tryMergeBinaryExpressionTokens();
-                    var tokenKind = mergedToken === null ? token0Kind : mergedToken.syntaxKind;
+                // Only proceed if we see binary expression token.  However we don't parse 
+                // assignment expressions or comma expressions here.  Those are taken care of 
+                // respectively in parseAssignmentExpression and parseExpression.
+                if (!SyntaxFacts.isBinaryExpressionOperatorToken(tokenKind) ||
+                    tokenKind === SyntaxKind.CommaToken ||
+                    ParserImpl.isAssignmentOperatorToken(tokenKind)) {
 
-                    var binaryExpressionKind = SyntaxFacts.getBinaryExpressionFromOperatorToken(tokenKind);
-                    var newPrecedence = ParserImpl.getPrecedence(binaryExpressionKind);
-
-                    // All binary operators must have precedence > 0!
-                    // Debug.assert(newPrecedence > 0);
-
-                    // Check the precedence to see if we should "take" this operator
-                    if (newPrecedence < precedence) {
-                        break;
-                    }
-
-                    // Same precedence, but not right-associative -- deal with this higher up in our stack "later"
-                    if (newPrecedence === precedence && !this.isRightAssociative(binaryExpressionKind)) {
-                        break;
-                    }
-
-                    // Precedence is okay, so we'll "take" this operator.  If we have a merged token, 
-                    // then create a new synthesized token with all the operators combined.  In that 
-                    // case make sure it has the right trivia associated with it.
-                    var operatorToken = mergedToken === null
-                        ? token0
-                        : Syntax.token(mergedToken.syntaxKind)
-                                .withLeadingTrivia(token0.leadingTrivia())
-                                .withTrailingTrivia(this.peekToken(mergedToken.tokenCount - 1).trailingTrivia());
-
-                    // Now skip the operator token we're on, or the tokens we merged.
-                    var skipCount = mergedToken === null ? 1 : mergedToken.tokenCount;
-                    for (var i = 0; i < skipCount; i++) {
-                        this.eatAnyToken();
-                    }
-
-                    leftOperand = this.factory.binaryExpression(
-                        binaryExpressionKind, leftOperand, operatorToken, this.parseSubExpression(newPrecedence, allowIn));
-                    continue;
+                    break;
                 }
 
-                // Now check for conditional expression.
-                // Only consume this as a ternary expression if our precedence is higher than the ternary 
-                // level.  i.e. if we have "!f ? a : b" then we would not want to 
-                // consume the "?" as part of "f" because the precedence of "!" is far too high.  However,
-                // if we have: "x = f ? a : b", then we would want to consume the "?" as part of "f".
-                //
-                // Note: if we have "m = f ? x ? y : z : b, then we do want the second "?" to go with 'x'.
-                if (token0Kind === SyntaxKind.QuestionToken && precedence <= ExpressionPrecedence.ConditionalExpressionPrecedence) {
-                    var questionToken = this.eatToken(SyntaxKind.QuestionToken);
-
-                    var whenTrueExpression = this.parseAssignmentExpression(allowIn);
-                    var colon = this.eatToken(SyntaxKind.ColonToken);
-
-                    var whenFalseExpression = this.parseAssignmentExpression(allowIn);
-                    leftOperand = this.factory.conditionalExpression(
-                        leftOperand, questionToken, whenTrueExpression, colon, whenFalseExpression);
-                    continue;
+                // also, if it's the 'in' operator, only allow if our caller allows it.
+                if (tokenKind === SyntaxKind.InKeyword && !allowIn) {
+                    break;
                 }
 
-                // Not binary or ternary.  Nothing more to consume here.
-                break;
+                var binaryExpressionKind = SyntaxFacts.getBinaryExpressionFromOperatorToken(tokenKind);
+                var newPrecedence = ParserImpl.getBinaryExpressionPrecedence(binaryExpressionKind);
+
+                // All binary operators must have precedence > 0
+                // Debug.assert(newPrecedence > 0);
+
+                // Check the precedence to see if we should "take" this operator
+                if (newPrecedence <= precedence) {
+                    break;
+                }
+
+                // Precedence is okay, so we'll "take" this operator.
+                // Now skip the operator token we're on, or the tokens we merged.
+                var skipCount = this.unmergedTokenCount(operatorToken.tokenKind);
+                this.moveToNextTokenN(skipCount);
+
+                var rightOperand = this.parseBinaryExpressionOrHigher(newPrecedence, allowIn);
+                leftOperand = this.factory.binaryExpression(binaryExpressionKind, leftOperand, operatorToken, rightOperand);
             }
 
             return leftOperand;
@@ -3618,7 +3751,7 @@ module TypeScript.Parser {
 
         private mergeTokensStorage: SyntaxKind[] = [];
 
-        private tryMergeBinaryExpressionTokens(): { tokenCount: number; syntaxKind: SyntaxKind; } {
+        private currentOperatorToken(): ISyntaxToken {
             var token0 = this.currentToken();
 
             // Only merge if we have a '>' token with no trailing trivia.
@@ -3646,94 +3779,121 @@ module TypeScript.Parser {
                     if (storage[1] === SyntaxKind.GreaterThanToken) {
                         if (storage[2] === SyntaxKind.EqualsToken) {
                             // >>>=
-                            return { tokenCount: 4, syntaxKind: SyntaxKind.GreaterThanGreaterThanGreaterThanEqualsToken };
+                            return this.createMergedToken(SyntaxKind.GreaterThanGreaterThanGreaterThanEqualsToken); 
                         }
                         else {
                             // >>>
-                            return { tokenCount: 3, syntaxKind: SyntaxKind.GreaterThanGreaterThanGreaterThanToken };
+                            return this.createMergedToken(SyntaxKind.GreaterThanGreaterThanGreaterThanToken);
                         }
                     }
                     else if (storage[1] === SyntaxKind.EqualsToken) {
                         // >>=
-                        return { tokenCount: 3, syntaxKind: SyntaxKind.GreaterThanGreaterThanEqualsToken };
+                        return this.createMergedToken(SyntaxKind.GreaterThanGreaterThanEqualsToken);
                     }
                     else {
                         // >>
-                        return { tokenCount: 2, syntaxKind: SyntaxKind.GreaterThanGreaterThanToken };
+                        return this.createMergedToken(SyntaxKind.GreaterThanGreaterThanToken);
                     }
                 }
                 else if (storage[0] === SyntaxKind.EqualsToken) {
                     // >=
-                    return { tokenCount: 2, syntaxKind: SyntaxKind.GreaterThanEqualsToken };
+                    return this.createMergedToken(SyntaxKind.GreaterThanEqualsToken);
                 }
             }
 
-            // Just use the normal logic as we're not merging the '>' with anything.
-            return null;
+            // Just use the normal logic as we're not merging the token with anything.
+            return token0;
         }
 
-        private isRightAssociative(expressionKind: SyntaxKind): boolean {
-            switch (expressionKind) {
-                case SyntaxKind.AssignmentExpression:
-                case SyntaxKind.AddAssignmentExpression:
-                case SyntaxKind.SubtractAssignmentExpression:
-                case SyntaxKind.MultiplyAssignmentExpression:
-                case SyntaxKind.DivideAssignmentExpression:
-                case SyntaxKind.ModuloAssignmentExpression:
-                case SyntaxKind.AndAssignmentExpression:
-                case SyntaxKind.ExclusiveOrAssignmentExpression:
-                case SyntaxKind.OrAssignmentExpression:
-                case SyntaxKind.LeftShiftAssignmentExpression:
-                case SyntaxKind.SignedRightShiftAssignmentExpression:
-                case SyntaxKind.UnsignedRightShiftAssignmentExpression:
-                    return true;
-                default:
-                    return false;
+        private createMergedToken(kind: SyntaxKind): ISyntaxToken {
+            var token0 = this.currentToken();
+            var tokenCount = this.unmergedTokenCount(kind);
+            var mergedToken = Syntax.token(kind)
+                .withLeadingTrivia(token0.leadingTrivia())
+                .withTrailingTrivia(this.peekToken(tokenCount - 1).trailingTrivia());
+
+            // We're synthesizing a new operator token.  We need to ensure it starts at 
+            // the right position.
+            mergedToken.setFullStart(token0.fullStart());
+
+            return mergedToken;
+        }
+
+        private unmergedTokenCount(tokenKind: SyntaxKind): number {
+            switch (tokenKind) {
+                case SyntaxKind.GreaterThanGreaterThanGreaterThanEqualsToken: /* >>>= */ return 4;
+                case SyntaxKind.GreaterThanGreaterThanGreaterThanToken:       /* >>>  */ return 3;
+                case SyntaxKind.GreaterThanGreaterThanEqualsToken:            /* >>=  */ return 3;
+                case SyntaxKind.GreaterThanGreaterThanToken:                  /* >>   */ return 2;
+                case SyntaxKind.GreaterThanEqualsToken:                       /* >=   */ return 2;
             }
+
+            return 1;
         }
 
-        private parseMemberExpressionOrLower(inObjectCreation: boolean): IMemberExpressionSyntax {
+        private parseMemberExpressionOrHigher(inObjectCreation: boolean): IMemberExpressionSyntax {
+            // Note: to make our lives simpler, we merge the NewExpression production into the
+            // MemberExpression construct like so:
+            //
+            //   MemberExpression : See 11.2 
+            //      1) PrimaryExpression 
+            //      2) FunctionExpression
+            //      3) MemberExpression[Expression]
+            //      4) MemberExpression.IdentifierName
+            //      5) new MemberExpression Arguments?
+            //
+            // Technically this is ambiguous.  i.e. CallExpression defines:
+            //
+            //   CallExpression:
+            //      MemberExpression Arguments
+            // 
+            // If you see: "new Foo()"
+            //
+            // Then that could be treated as a single ObjectCreationExpression, or it could be 
+            // treated as the invocation of "new Foo".  We disambiguate that in code (to match
+            // the original grammar) by making sure that if we see an ObjectCreationExpression
+            // we always consume arguments if they are there. So we treat "new Foo()" as an
+            // object creation only, and not at all as an invocation)  Another way to think 
+            // about this is that for every "new" that we see, we will consume an argument
+            // list if it is there as part of the associated object creation node.  Any
+            // *additional* argument lists we see, will become invocation expressions.
+            //
+            // Also, for simplicity, we merge FunctionExpression into PrimaryExpression.  There
+            // are no other places where these expressions are referred to independently in the
+            // grammar.
+            //
+            // Because MemberExpression is left recursive, we need to bottom out of the recursion
+            // immediately.  The two possible bottom out states are 'new' or a primary/function
+            // expression.  So we parse those out first.
+            var expression: IMemberExpressionSyntax = null;
             if (this.currentToken().tokenKind === SyntaxKind.NewKeyword) {
-                return this.parseObjectCreationExpression();
-            }
-
-            var expression = this.parsePrimaryExpression();
-            if (expression === null) {
-                // Nothing else worked, just try to consume an identifier so we report an error.
-                return this.eatIdentifierToken();
-            }
-
-            return this.parseMemberExpressionRest(expression, /*allowArguments:*/ false, /*inObjectCreation:*/ inObjectCreation);
-        }
-
-        private parseCallExpressionOrLower(): IMemberExpressionSyntax {
-            var expression: IMemberExpressionSyntax;
-            if (this.currentToken().tokenKind === SyntaxKind.SuperKeyword) {
-                expression = this.eatKeyword(SyntaxKind.SuperKeyword);
-
-                // If we have seen "super" it must be followed by '(' or '.'.
-                // If it wasn't then just try to parse out a '.' and report an error.
-                var currentTokenKind = this.currentToken().tokenKind;
-                if (currentTokenKind !== SyntaxKind.OpenParenToken && currentTokenKind !== SyntaxKind.DotToken) {
-                    expression = this.factory.memberAccessExpression(
-                        expression, this.eatToken(SyntaxKind.DotToken), this.eatIdentifierNameToken());
-                }
+                expression = this.parseObjectCreationExpression();
             }
             else {
-                expression = this.parseMemberExpressionOrLower(/*inObjectCreation:*/ false);
+                expression = this.parsePrimaryExpression();
             }
-
-            return this.parseMemberExpressionRest(expression, /*allowArguments:*/ true, /*inObjectCreation:*/ false);
+        
+            return this.parseMemberExpressionRest(expression, /*inObjectCreation:*/ inObjectCreation); 
         }
 
-        private parseMemberExpressionRest(expression: IMemberExpressionSyntax, allowArguments: boolean, inObjectCreation: boolean): IMemberExpressionSyntax  {
+        private parseCallExpressionRest(expression: ILeftHandSideExpressionSyntax, inObjectCreation: boolean): ILeftHandSideExpressionSyntax {
+            return this.parseCallOrMemberExpressionRest(expression, /*allowArguments:*/ true, inObjectCreation);
+        }
+
+        private parseMemberExpressionRest(expression: IMemberExpressionSyntax, inObjectCreation: boolean): IMemberExpressionSyntax {
+            return <IMemberExpressionSyntax>this.parseCallOrMemberExpressionRest(expression, /*allowArguments:*/ false, inObjectCreation);
+        }
+
+        private parseCallOrMemberExpressionRest(
+            expression: ILeftHandSideExpressionSyntax, allowArguments: boolean, inObjectCreation: boolean): ILeftHandSideExpressionSyntax {
+
             while (true) {
                 var currentTokenKind = this.currentToken().tokenKind;
 
                 switch (currentTokenKind) {
                     case SyntaxKind.OpenParenToken:
                         if (!allowArguments) {
-                            return expression;
+                            break;
                         }
 
                         expression = this.factory.invocationExpression(expression, this.parseArgumentList(/*typeArgumentList:*/ null));
@@ -3741,7 +3901,7 @@ module TypeScript.Parser {
 
                     case SyntaxKind.LessThanToken:
                         if (!allowArguments) {
-                            return expression;
+                            break;
                         }
 
                         // See if this is the start of a generic invocation.  If so, consume it and
@@ -3749,12 +3909,12 @@ module TypeScript.Parser {
                         // part of an arithmetic expression.  Break out so we consume it higher in the
                         // stack.
                         var argumentList = this.tryParseArgumentList();
-                        if (argumentList !== null) {
-                            expression = this.factory.invocationExpression(expression, argumentList);
-                            continue;
+                        if (argumentList === null) {
+                            break;
                         }
 
-                        break;
+                        expression = this.factory.invocationExpression(expression, argumentList);
+                        continue;
 
                     case SyntaxKind.OpenBracketToken:
                         expression = this.parseElementAccessExpression(expression, inObjectCreation);
@@ -3770,21 +3930,67 @@ module TypeScript.Parser {
             }
         }
 
-        private parseLeftHandSideExpressionOrLower(): IMemberExpressionSyntax {
-            if (this.currentToken().tokenKind === SyntaxKind.NewKeyword) {
-                return this.parseObjectCreationExpression();
+        private parseLeftHandSideExpressionOrHigher(): ILeftHandSideExpressionSyntax {
+            // Original Ecma:
+            // LeftHandSideExpression: See 11.2 
+            //      NewExpression
+            //      CallExpression 
+            //
+            // Our simplification:
+            //
+            // LeftHandSideExpression: See 11.2 
+            //      MemberExpression  
+            //      CallExpression 
+            //
+            // See comment in parseMemberExpressionOrHigher on how we replaced NewExpression with
+            // MemberExpression to make our lives easier.
+            //
+            // to best understand the below code, it's important to see how CallExpression expands
+            // out into its own productions:
+            //
+            // CallExpression:
+            //      MemberExpression Arguments 
+            //      CallExpression Arguments
+            //      CallExpression[Expression]
+            //      CallExpression.IdentifierName
+            //      super   (   ArgumentListopt   )
+            //      super.IdentifierName
+            //
+            // Because of the recursion in these calls, we need to bottom out first.  There are two 
+            // bottom out states we can run into.  Either we see 'super' which must start either of
+            // the last two CallExpression productions.  Or we have a MemberExpression which either
+            // completes the LeftHandSideExpression, or starts the beginning of the first four
+            // CallExpression productions.
+
+            var expression: ILeftHandSideExpressionSyntax = null;
+            if (this.currentToken().tokenKind === SyntaxKind.SuperKeyword) {
+                expression = this.parseSuperExpression();
             }
             else {
-                return this.parseCallExpressionOrLower();
+                expression = this.parseMemberExpressionOrHigher(/*inObjectCreation:*/ false);
             }
+
+            // Now, we *may* be complete.  However, we might have consumed the start of a 
+            // CallExpression.  As such, we need to consume the rest of it here to be complete.
+            return this.parseCallExpressionRest(expression, /*inObjectCreation:*/ false);
         }
 
-        private parsePostfixExpressionOrLower(): IPostfixExpressionSyntax {
-            var expression = this.parseLeftHandSideExpressionOrLower();
-            if (expression === null) {
-                // Nothing else worked, just try to consume an identifier so we report an error.
-                return this.eatIdentifierToken();
+        private parseSuperExpression(): ILeftHandSideExpressionSyntax {
+            var expression = this.eatKeyword(SyntaxKind.SuperKeyword);
+
+            // If we have seen "super" it must be followed by '(' or '.'.
+            // If it wasn't then just try to parse out a '.' and report an error.
+            var currentTokenKind = this.currentToken().tokenKind;
+            if (currentTokenKind === SyntaxKind.OpenParenToken || currentTokenKind === SyntaxKind.DotToken) {
+                return expression;
             }
+
+            return this.factory.memberAccessExpression(
+                expression, this.eatToken(SyntaxKind.DotToken), this.eatIdentifierNameToken());
+        }
+
+        private parsePostfixExpressionOrHigher(): IPostfixExpressionSyntax {
+            var expression = this.parseLeftHandSideExpressionOrHigher();
 
             var currentTokenKind = this.currentToken().tokenKind;
 
@@ -3840,7 +4046,7 @@ module TypeScript.Parser {
                     this.addDiagnostic(diagnostic);
 
                     return this.factory.argumentList(typeArgumentList,
-                        Syntax.emptyToken(SyntaxKind.OpenParenToken), Syntax.emptySeparatedList, Syntax.emptyToken(SyntaxKind.CloseParenToken));
+                        Syntax.emptyToken(SyntaxKind.OpenParenToken), Syntax.emptySeparatedList<IExpressionSyntax>(), Syntax.emptyToken(SyntaxKind.CloseParenToken));
                 }
                 else {
                     return this.parseArgumentList(typeArgumentList);
@@ -3864,10 +4070,10 @@ module TypeScript.Parser {
             var openParenToken = this.eatToken(SyntaxKind.OpenParenToken);
 
             // Don't use the name 'arguments' it prevents V8 from optimizing this method.
-            var _arguments = Syntax.emptySeparatedList;
+            var _arguments = Syntax.emptySeparatedList<IExpressionSyntax>();
 
             if (openParenToken.fullWidth() > 0) {
-                var result = this.parseSeparatedSyntaxList(ListParsingState.ArgumentList_AssignmentExpressions);
+                var result = this.parseSeparatedSyntaxList<IExpressionSyntax>(ListParsingState.ArgumentList_AssignmentExpressions);
                 _arguments = result.list;
                 openParenToken = this.addSkippedTokensAfterToken(openParenToken, result.skippedTokens);
             }
@@ -3877,7 +4083,7 @@ module TypeScript.Parser {
             return this.factory.argumentList(typeArgumentList, openParenToken, _arguments, closeParenToken);
         }
 
-        private parseElementAccessExpression(expression: IExpressionSyntax, inObjectCreation: boolean): ElementAccessExpressionSyntax {
+        private parseElementAccessExpression(expression: ILeftHandSideExpressionSyntax, inObjectCreation: boolean): ElementAccessExpressionSyntax {
             // Debug.assert(this.currentToken().tokenKind === SyntaxKind.OpenBracketToken);
 
             var start = this.currentTokenStart();
@@ -3958,8 +4164,8 @@ module TypeScript.Parser {
                     break;
             }
 
-            // Wasn't able to parse this as a term. 
-            return null;
+            // Nothing else worked, just try to consume an identifier so we report an error.
+            return this.eatIdentifierToken();
         }
 
         private tryReparseDivideAsRegularExpression(): IPrimaryExpressionSyntax {
@@ -4044,7 +4250,7 @@ module TypeScript.Parser {
             // Debug.assert(this.currentToken().tokenKind === SyntaxKind.TypeOfKeyword);
 
             var typeOfKeyword = this.eatKeyword(SyntaxKind.TypeOfKeyword);
-            var expression = this.parseUnaryExpressionOrLower();
+            var expression = this.parseUnaryExpressionOrHigher();
 
             return this.factory.typeOfExpression(typeOfKeyword, expression);
         }
@@ -4053,7 +4259,7 @@ module TypeScript.Parser {
             // Debug.assert(this.currentToken().tokenKind === SyntaxKind.DeleteKeyword);
 
             var deleteKeyword = this.eatKeyword(SyntaxKind.DeleteKeyword);
-            var expression = this.parseUnaryExpressionOrLower();
+            var expression = this.parseUnaryExpressionOrHigher();
 
             return this.factory.deleteExpression(deleteKeyword, expression);
         }
@@ -4062,7 +4268,7 @@ module TypeScript.Parser {
             // Debug.assert(this.currentToken().tokenKind === SyntaxKind.VoidKeyword);
 
             var voidKeyword = this.eatKeyword(SyntaxKind.VoidKeyword);
-            var expression = this.parseUnaryExpressionOrLower();
+            var expression = this.parseUnaryExpressionOrHigher();
 
             return this.factory.voidExpression(voidKeyword, expression);
         }
@@ -4083,26 +4289,24 @@ module TypeScript.Parser {
             return this.factory.functionExpression(functionKeyword, identifier, callSignature, block);
         }
 
-        private parseObjectCreationExpression(): IMemberExpressionSyntax {
+        private parseObjectCreationExpression(): ObjectCreationExpressionSyntax {
+            // ObjectCreationExpression
+            //      new MemberExpression Arguments?
+            //
+            // Note: if we see arguments we absolutely take them and attach them tightly to this
+            // object creation expression.
+            //
+            // See comment in tryParseMemberExpressionOrHigher for a more complete explanation of
+            // this decision.
+
             // Debug.assert(this.currentToken().tokenKind === SyntaxKind.NewKeyword);
             var newKeyword = this.eatKeyword(SyntaxKind.NewKeyword);
 
-            // While parsing the sub term we don't want to allow invocations to be parsed.  that's because
-            // we want "new Foo()" to parse as "new Foo()" (one node), not "new (Foo())".
-            var expression = this.parseObjectCreationExpressionOrLower(/*inObjectCreation:*/ true);
+            var expression = this.parseMemberExpressionOrHigher(/*inObjectCreation:*/ true);
+
             var argumentList = this.tryParseArgumentList();
 
-            var result = this.factory.objectCreationExpression(newKeyword, expression, argumentList);
-            return this.parseMemberExpressionRest(result, /*allowArguments:*/ true, /*inObjectCreation:*/ false); 
-        }
-
-        private parseObjectCreationExpressionOrLower(inObjectCreation: boolean): IMemberExpressionSyntax {
-            if (this.currentToken().tokenKind === SyntaxKind.NewKeyword) {
-                return this.parseObjectCreationExpression();
-            }
-            else {
-                return this.parseMemberExpressionOrLower(inObjectCreation);
-            }
+            return this.factory.objectCreationExpression(newKeyword, expression, argumentList);
         }
 
         private parseCastExpression(): CastExpressionSyntax {
@@ -4111,7 +4315,7 @@ module TypeScript.Parser {
             var lessThanToken = this.eatToken(SyntaxKind.LessThanToken);
             var type = this.parseType();
             var greaterThanToken = this.eatToken(SyntaxKind.GreaterThanToken);
-            var expression = this.parseUnaryExpressionOrLower();
+            var expression = this.parseUnaryExpressionOrHigher();
 
             return this.factory.castExpression(lessThanToken, type, greaterThanToken, expression);
         }
@@ -4142,7 +4346,7 @@ module TypeScript.Parser {
             if (this.isDefinitelyArrowFunctionExpression()) {
                 // We have something like "() =>" or "(a) =>".  Definitely a lambda, so parse it
                 // unilaterally as such.
-                return this.parseParenthesizedArrowFunctionExpression(/*requiresArrow:*/ false);
+                return this.tryParseParenthesizedArrowFunctionExpressionWorker(/*requiresArrow:*/ false);
             }
 
             // Now, look for cases where we're sure it's not an arrow function.  This will help save us
@@ -4154,7 +4358,7 @@ module TypeScript.Parser {
             // Then, try to actually parse it as a arrow function, and only return if we see an => 
             var rewindPoint = this.getRewindPoint();
 
-            var arrowFunction = this.parseParenthesizedArrowFunctionExpression(/*requiresArrow:*/ true);
+            var arrowFunction = this.tryParseParenthesizedArrowFunctionExpressionWorker(/*requiresArrow:*/ true);
             if (arrowFunction === null) {
                 this.rewind(rewindPoint);
             }
@@ -4163,7 +4367,7 @@ module TypeScript.Parser {
             return arrowFunction;
         }
 
-        private parseParenthesizedArrowFunctionExpression(requireArrow: boolean): ParenthesizedArrowFunctionExpressionSyntax {
+        private tryParseParenthesizedArrowFunctionExpressionWorker(requireArrow: boolean): ParenthesizedArrowFunctionExpressionSyntax {
             var currentToken = this.currentToken();
             // Debug.assert(currentToken.tokenKind === SyntaxKind.OpenParenToken || currentToken.tokenKind === SyntaxKind.LessThanToken);
 
@@ -4178,7 +4382,7 @@ module TypeScript.Parser {
             var block = this.tryParseArrowFunctionBlock();
             var expression: IExpressionSyntax = null;
             if (block === null) {
-                expression = this.parseAssignmentExpression(/*allowIn:*/ true);
+                expression = this.parseAssignmentExpressionOrHigher(/*allowIn:*/ true);
             }
 
             return this.factory.parenthesizedArrowFunctionExpression(callSignature, equalsGreaterThanToken, block, expression);
@@ -4233,7 +4437,7 @@ module TypeScript.Parser {
             var block = this.tryParseArrowFunctionBlock();
             var expression: IExpressionSyntax = null;
             if (block === null) {
-                expression = this.parseAssignmentExpression(/*allowIn:*/ true);
+                expression = this.parseAssignmentExpressionOrHigher(/*allowIn:*/ true);
             }
 
             return this.factory.simpleArrowFunctionExpression(identifier, equalsGreaterThanToken, block, expression);
@@ -4401,7 +4605,7 @@ module TypeScript.Parser {
             var openBraceToken = this.eatToken(SyntaxKind.OpenBraceToken);
             // Debug.assert(openBraceToken.fullWidth() > 0);
 
-            var result = this.parseSeparatedSyntaxList(ListParsingState.ObjectLiteralExpression_PropertyAssignments);
+            var result = this.parseSeparatedSyntaxList<IPropertyAssignmentSyntax>(ListParsingState.ObjectLiteralExpression_PropertyAssignments);
             var propertyAssignments = result.list;
             openBraceToken = this.addSkippedTokensAfterToken(openBraceToken, result.skippedTokens);
 
@@ -4464,7 +4668,7 @@ module TypeScript.Parser {
 
             var propertyName = this.eatPropertyName();
             var colonToken = this.eatToken(SyntaxKind.ColonToken);
-            var expression = this.parseAssignmentExpression(/*allowIn:*/ true);
+            var expression = this.parseAssignmentExpressionOrHigher(/*allowIn:*/ true);
 
             return this.factory.simplePropertyAssignment(propertyName, colonToken, expression);
         }
@@ -4504,7 +4708,7 @@ module TypeScript.Parser {
             var openBracketToken = this.eatToken(SyntaxKind.OpenBracketToken);
             // Debug.assert(openBracketToken.fullWidth() > 0);
 
-            var result = this.parseSeparatedSyntaxList(ListParsingState.ArrayLiteralExpression_AssignmentExpressions);
+            var result = this.parseSeparatedSyntaxList<IExpressionSyntax>(ListParsingState.ArrayLiteralExpression_AssignmentExpressions);
             var expressions = result.list;
             openBracketToken = this.addSkippedTokensAfterToken(openBracketToken, result.skippedTokens);
 
@@ -4526,13 +4730,13 @@ module TypeScript.Parser {
         private parseBlock(parseBlockEvenWithNoOpenBrace: boolean, checkForStrictMode: boolean): BlockSyntax {
             var openBraceToken = this.eatToken(SyntaxKind.OpenBraceToken);
 
-            var statements: ISyntaxList = Syntax.emptyList;
+            var statements = Syntax.emptyList<IStatementSyntax>();
 
             if (parseBlockEvenWithNoOpenBrace || openBraceToken.width() > 0) {
                 var savedIsInStrictMode = this.isInStrictMode;
                 
                 var processItems = checkForStrictMode ? ParserImpl.updateStrictModeState : null;
-                var result = this.parseSyntaxList(ListParsingState.Block_Statements, processItems);
+                var result = this.parseSyntaxList<IStatementSyntax>(ListParsingState.Block_Statements, processItems);
                 statements = result.list;
                 openBraceToken = this.addSkippedTokensAfterToken(openBraceToken, result.skippedTokens);
 
@@ -4545,14 +4749,14 @@ module TypeScript.Parser {
         }
 
         private parseCallSignature(requireCompleteTypeParameterList: boolean): CallSignatureSyntax {
-            var typeParameterList = this.parseOptionalTypeParameterList(requireCompleteTypeParameterList);
+            var typeParameterList = this.tryParseTypeParameterList(requireCompleteTypeParameterList);
             var parameterList = this.parseParameterList();
             var typeAnnotation = this.parseOptionalTypeAnnotation(/*allowStringLiteral:*/ false);
 
             return this.factory.callSignature(typeParameterList, parameterList, typeAnnotation);
         }
 
-        private parseOptionalTypeParameterList(requireCompleteTypeParameterList: boolean): TypeParameterListSyntax {
+        private tryParseTypeParameterList(requireCompleteTypeParameterList: boolean): TypeParameterListSyntax {
             if (this.currentToken().tokenKind !== SyntaxKind.LessThanToken) {
                 return null;
             }
@@ -4562,7 +4766,7 @@ module TypeScript.Parser {
             var lessThanToken = this.eatToken(SyntaxKind.LessThanToken);
             // Debug.assert(lessThanToken.fullWidth() > 0);
 
-            var result = this.parseSeparatedSyntaxList(ListParsingState.TypeParameterList_TypeParameters);
+            var result = this.parseSeparatedSyntaxList<TypeParameterSyntax>(ListParsingState.TypeParameterList_TypeParameters);
             var typeParameters = result.list;
             lessThanToken = this.addSkippedTokensAfterToken(lessThanToken, result.skippedTokens);
 
@@ -4589,12 +4793,12 @@ module TypeScript.Parser {
         private parseTypeParameter(): TypeParameterSyntax {
             // Debug.assert(this.isTypeParameter());
             var identifier = this.eatIdentifierToken();
-            var constraint = this.parseOptionalConstraint();
+            var constraint = this.tryParseConstraint();
 
             return this.factory.typeParameter(identifier, constraint);
         }
 
-        private parseOptionalConstraint(): ConstraintSyntax {
+        private tryParseConstraint(): ConstraintSyntax {
             if (this.currentToken().kind() !== SyntaxKind.ExtendsKeyword) {
                 return null;
             }
@@ -4607,10 +4811,10 @@ module TypeScript.Parser {
 
         private parseParameterList(): ParameterListSyntax {
             var openParenToken = this.eatToken(SyntaxKind.OpenParenToken);
-            var parameters: ISeparatedSyntaxList = Syntax.emptySeparatedList;
+            var parameters = Syntax.emptySeparatedList<ParameterSyntax>();
 
             if (openParenToken.width() > 0) {
-                var result = this.parseSeparatedSyntaxList(ListParsingState.ParameterList_Parameters);
+                var result = this.parseSeparatedSyntaxList<ParameterSyntax>(ListParsingState.ParameterList_Parameters);
                 parameters = result.list;
                 openParenToken = this.addSkippedTokensAfterToken(openParenToken, result.skippedTokens);
             }
@@ -4742,7 +4946,7 @@ module TypeScript.Parser {
         private parseFunctionType(): FunctionTypeSyntax {
             // Debug.assert(this.isFunctionType());
 
-            var typeParameterList = this.parseOptionalTypeParameterList(/*requireCompleteTypeParameterList:*/ false);
+            var typeParameterList = this.tryParseTypeParameterList(/*requireCompleteTypeParameterList:*/ false);
             var parameterList = this.parseParameterList();
             var equalsGreaterThanToken = this.eatToken(SyntaxKind.EqualsGreaterThanToken);
             var returnType = this.parseType();
@@ -4754,7 +4958,7 @@ module TypeScript.Parser {
             // Debug.assert(this.isConstructorType());
 
             var newKeyword = this.eatKeyword(SyntaxKind.NewKeyword);
-            var typeParameterList = this.parseOptionalTypeParameterList(/*requireCompleteTypeParameterList:*/ false);
+            var typeParameterList = this.tryParseTypeParameterList(/*requireCompleteTypeParameterList:*/ false);
             var parameterList = this.parseParameterList();
             var equalsGreaterThanToken = this.eatToken(SyntaxKind.EqualsGreaterThanToken);
             var type = this.parseType();
@@ -4843,23 +5047,24 @@ module TypeScript.Parser {
                 dotDotDotToken, modifiers, identifier, questionToken, typeAnnotation, equalsValueClause);
         }
 
-        private parseSyntaxList(currentListType: ListParsingState,
-                                processItems: (parser: ParserImpl, items: any[]) => void = null): { skippedTokens: ISyntaxToken[]; list: ISyntaxList; } {
+        private parseSyntaxList<T extends ISyntaxNodeOrToken>(
+                currentListType: ListParsingState,
+                processItems: (parser: ParserImpl, items: any[]) => void = null): { skippedTokens: ISyntaxToken[]; list: ISyntaxList<T>; } {
             var savedListParsingState = this.listParsingState;
             this.listParsingState |= currentListType;
 
-            var result = this.parseSyntaxListWorker(currentListType, processItems);
+            var result = this.parseSyntaxListWorker<T>(currentListType, processItems);
 
             this.listParsingState = savedListParsingState;
 
             return result;
         }
 
-        private parseSeparatedSyntaxList(currentListType: ListParsingState): { skippedTokens: ISyntaxToken[]; list: ISeparatedSyntaxList; } {
+        private parseSeparatedSyntaxList<T extends ISyntaxNodeOrToken>(currentListType: ListParsingState): { skippedTokens: ISyntaxToken[]; list: ISeparatedSyntaxList<T>; } {
             var savedListParsingState = this.listParsingState;
             this.listParsingState |= currentListType;
 
-            var result = this.parseSeparatedSyntaxListWorker(currentListType);
+            var result = this.parseSeparatedSyntaxListWorker<T>(currentListType);
 
             this.listParsingState = savedListParsingState;
 
@@ -4910,7 +5115,7 @@ module TypeScript.Parser {
             for (var i = items.length - 1; i >= 0; i--) {
                 var item = items[i];
                 var lastToken = item.lastToken();
-                if (lastToken.fullWidth() > 0) {
+                if (lastToken && lastToken.fullWidth() > 0) {
                     items[i] = this.addSkippedTokenAfterNodeOrToken(item, skippedToken);
                     return;
                 }
@@ -4962,9 +5167,10 @@ module TypeScript.Parser {
             this.arrayPool.push(array);
         }
 
-        private parseSyntaxListWorker(currentListType: ListParsingState,
-                                      processItems: (parser: ParserImpl, items: any[]) => void ): { skippedTokens: ISyntaxToken[]; list: ISyntaxList; } {
-            var items: SyntaxNode[] = this.getArray();
+        private parseSyntaxListWorker<T extends ISyntaxNodeOrToken>(
+                currentListType: ListParsingState,
+                processItems: (parser: ParserImpl, items: any[]) => void ): { skippedTokens: ISyntaxToken[]; list: ISyntaxList<T>; } {
+            var items: T[] = this.getArray();
             var skippedTokens: ISyntaxToken[] = this.getArray();
 
             while (true) {
@@ -4995,7 +5201,7 @@ module TypeScript.Parser {
                 // and didn't want to abort. Continue parsing elements.
             }
 
-            var result = Syntax.list(items);
+            var result = Syntax.list<T>(items);
 
             // Can't return if it has more then 1 element.  In that case, the list will have been
             // copied into the SyntaxList.
@@ -5004,7 +5210,7 @@ module TypeScript.Parser {
             return { skippedTokens: skippedTokens, list: result };
         }
 
-        private parseSeparatedSyntaxListWorker(currentListType: ListParsingState): { skippedTokens: ISyntaxToken[]; list: ISeparatedSyntaxList; } {
+        private parseSeparatedSyntaxListWorker<T extends ISyntaxNodeOrToken>(currentListType: ListParsingState): { skippedTokens: ISyntaxToken[]; list: ISeparatedSyntaxList<T>; } {
             var items: ISyntaxNodeOrToken[] = this.getArray();
             var skippedTokens: ISyntaxToken[] = this.getArray();
             Debug.assert(items.length === 0);
@@ -5115,7 +5321,7 @@ module TypeScript.Parser {
                 inErrorRecovery = true;
             }
 
-            var result = Syntax.separatedList(items);
+            var result = Syntax.separatedList<T>(items);
 
             // Can't return if it has more then 1 element.  In that case, the list will have been
             // copied into the SyntaxList.
@@ -5522,7 +5728,7 @@ module TypeScript.Parser {
                     return this.parseTypeMember(inErrorRecovery);
 
                 case ListParsingState.ArgumentList_AssignmentExpressions:
-                    return this.parseAssignmentExpression(/*allowIn:*/ true);
+                    return this.parseAssignmentExpressionOrHigher(/*allowIn:*/ true);
 
                 case ListParsingState.HeritageClause_TypeNameList:
                     return this.parseNameOrGenericType();

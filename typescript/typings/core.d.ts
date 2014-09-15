@@ -1126,4 +1126,3 @@ declare var Array: {
     isArray(arg: any): boolean;
     prototype: Array<any>;
 }
-

@@ -1,6 +1,5 @@
 /// <reference path="typescriptServices.ts" />
 module TypeScript.Services {
-
     interface LexicalScope {
         items: TypeScript.IIndexable<NavigateToItem>;
         itemNames: string[];
@@ -8,12 +7,9 @@ module TypeScript.Services {
         childScopeNames: string[];
     }
 
-    export class GetScriptLexicalStructureWalker extends TypeScript.PositionTrackingWalker {
+    export class GetScriptLexicalStructureWalker extends TypeScript.SyntaxWalker {
         private nameStack: string[] = [];
         private kindStack: string[] = [];
-        private currentMemberVariableDeclaration: TypeScript.MemberVariableDeclarationSyntax = null;
-        private currentVariableStatement: TypeScript.VariableStatementSyntax = null;
-        private currentInterfaceDeclaration: TypeScript.InterfaceDeclarationSyntax = null;
 
         private parentScopes: LexicalScope[] = [];
         private currentScope: LexicalScope;
@@ -78,7 +74,7 @@ module TypeScript.Services {
 
         private createItem(
                 node: TypeScript.SyntaxNode,
-                modifiers: TypeScript.ISyntaxList,
+                modifiers: TypeScript.ISyntaxList < ISyntaxToken>,
                 kind: string,
                 name: string): void {
 
@@ -95,8 +91,8 @@ module TypeScript.Services {
             item.matchKind = MatchKind.exact;
             item.fileName = this.fileName;
             item.kindModifiers = this.getKindModifiers(modifiers);
-            item.minChar = this.position() + node.leadingTriviaWidth();
-            item.limChar = item.minChar + node.width();
+            item.minChar = node.start();
+            item.limChar = node.end();
             item.containerName = this.nameStack.join(".");
             item.containerKind = this.kindStack.length === 0 ? "" : TypeScript.ArrayUtilities.last(this.kindStack);
 
@@ -111,7 +107,7 @@ module TypeScript.Services {
             var item = this.currentScope.items[key]
             Debug.assert(item !== undefined);
 
-            var start = this.position() + node.leadingTriviaWidth();
+            var start = node.start();
             var span = new SpanInfo(start, start + node.width());
 
 
@@ -123,27 +119,11 @@ module TypeScript.Services {
             }
         }
 
-        private getKindModifiers(modifiers: TypeScript.ISyntaxList): string {
+        private getKindModifiers(modifiers: TypeScript.ISyntaxList<ISyntaxToken>): string {
             var result: string[] = [];
 
-            if (TypeScript.SyntaxUtilities.containsToken(modifiers, TypeScript.SyntaxKind.ExportKeyword)) {
-                result.push(ScriptElementKindModifier.exportedModifier);
-            }
-
-            if (TypeScript.SyntaxUtilities.containsToken(modifiers, TypeScript.SyntaxKind.DeclareKeyword)) {
-                result.push(ScriptElementKindModifier.ambientModifier);
-            }
-
-            if (TypeScript.SyntaxUtilities.containsToken(modifiers, TypeScript.SyntaxKind.PublicKeyword)) {
-                result.push(ScriptElementKindModifier.publicMemberModifier);
-            }
-
-            if (TypeScript.SyntaxUtilities.containsToken(modifiers, TypeScript.SyntaxKind.PrivateKeyword)) {
-                result.push(ScriptElementKindModifier.privateMemberModifier);
-            }
-
-            if (TypeScript.SyntaxUtilities.containsToken(modifiers, TypeScript.SyntaxKind.StaticKeyword)) {
-                result.push(ScriptElementKindModifier.staticModifier);
+            for (var i = 0, n = modifiers.childCount(); i < n; i++) {
+                result.push(modifiers.childAt(i).text());
             }
 
             return result.length > 0 ? result.join(',') : ScriptElementKindModifier.none;
@@ -224,9 +204,7 @@ module TypeScript.Services {
 
             this.pushNewContainerScope(name, kind);
 
-            this.currentInterfaceDeclaration = node;
             super.visitInterfaceDeclaration(node);
-            this.currentInterfaceDeclaration = null;
 
             this.popScope();
         }
@@ -234,10 +212,7 @@ module TypeScript.Services {
         public visitObjectType(node: TypeScript.ObjectTypeSyntax): void {
             // Ignore an object type if we aren't inside an interface declaration.  We don't want
             // to add some random object type's members to the nav bar.
-            if (this.currentInterfaceDeclaration === null) {
-                this.skip(node);
-            }
-            else {
+            if (node.parent.kind() === SyntaxKind.InterfaceDeclaration) {
                 super.visitObjectType(node);
             }
         }
@@ -256,7 +231,7 @@ module TypeScript.Services {
         }
 
         public visitConstructorDeclaration(node: TypeScript.ConstructorDeclarationSyntax): void {
-            this.createItem(node, TypeScript.Syntax.emptyList, ScriptElementKind.constructorImplementationElement, "constructor");
+            this.createItem(node, TypeScript.Syntax.emptyList<ISyntaxToken>(), ScriptElementKind.constructorImplementationElement, "constructor");
 
             // Search the parameter list of class properties
             var parameters = node.callSignature.parameterList.parameters;
@@ -274,95 +249,72 @@ module TypeScript.Services {
             }
 
             // No need to descend into a constructor;
-            this.skip(node);
         }
 
         public visitMemberFunctionDeclaration(node: TypeScript.MemberFunctionDeclarationSyntax): void {
             this.createItem(node, node.modifiers, ScriptElementKind.memberFunctionElement, node.propertyName.text());
 
             // No need to descend into a member function;
-            this.skip(node);
         }
 
         public visitGetAccessor(node: TypeScript.GetAccessorSyntax): void {
             this.createItem(node, node.modifiers, ScriptElementKind.memberGetAccessorElement, node.propertyName.text());
 
             // No need to descend into a member accessor;
-            this.skip(node);
         }
 
         public visitSetAccessor(node: TypeScript.SetAccessorSyntax): void {
             this.createItem(node, node.modifiers, ScriptElementKind.memberSetAccessorElement, node.propertyName.text());
 
             // No need to descend into a member accessor;
-            this.skip(node);
-        }
-
-        public visitMemberVariableDeclaration(node: TypeScript.MemberVariableDeclarationSyntax): void {
-            this.currentMemberVariableDeclaration = node;
-            super.visitMemberVariableDeclaration(node);
-            this.currentMemberVariableDeclaration = null;
-        }
-
-        public visitVariableStatement(node: TypeScript.VariableStatementSyntax): void {
-            this.currentVariableStatement = node;
-            super.visitVariableStatement(node);
-            this.currentVariableStatement = null;
         }
 
         public visitVariableDeclarator(node: TypeScript.VariableDeclaratorSyntax): void {
-            var modifiers = this.currentMemberVariableDeclaration
-                ? this.currentMemberVariableDeclaration.modifiers
-                : TypeScript.Syntax.emptyList;
-            var kind = this.currentMemberVariableDeclaration
+            var modifiers = node.parent.kind() === SyntaxKind.MemberVariableDeclaration
+                ? (<MemberVariableDeclarationSyntax>node.parent).modifiers
+                : TypeScript.Syntax.emptyList<ISyntaxToken>();
+            var kind = node.parent.kind() === SyntaxKind.MemberVariableDeclaration
                 ? ScriptElementKind.memberVariableElement
                 : ScriptElementKind.variableElement;
             this.createItem(node, modifiers, kind, node.propertyName.text());
 
             // No need to descend into a variable declarator;
-            this.skip(node);
         }
 
         public visitIndexSignature(node: TypeScript.IndexSignatureSyntax): void {
-            this.createItem(node, TypeScript.Syntax.emptyList, ScriptElementKind.indexSignatureElement, "[]");
+            this.createItem(node, TypeScript.Syntax.emptyList<ISyntaxToken>(), ScriptElementKind.indexSignatureElement, "[]");
 
             // No need to descend into an index signature;
-            this.skip(node);
         }
 
         public visitEnumElement(node: TypeScript.EnumElementSyntax): void {
-            this.createItem(node, TypeScript.Syntax.emptyList, ScriptElementKind.memberVariableElement, node.propertyName.text());
+            this.createItem(node, TypeScript.Syntax.emptyList<ISyntaxToken>(), ScriptElementKind.memberVariableElement, node.propertyName.text());
 
             // No need to descend into an enum element;
-            this.skip(node);
         }
 
         public visitCallSignature(node: TypeScript.CallSignatureSyntax): void {
-            this.createItem(node, TypeScript.Syntax.emptyList, ScriptElementKind.callSignatureElement, "()");
+            this.createItem(node, TypeScript.Syntax.emptyList<ISyntaxToken>(), ScriptElementKind.callSignatureElement, "()");
 
             // No need to descend into a call signature;
-            this.skip(node);
         }
 
         public visitConstructSignature(node: TypeScript.ConstructSignatureSyntax): void {
-            this.createItem(node, TypeScript.Syntax.emptyList, ScriptElementKind.constructSignatureElement, "new()");
+            this.createItem(node, TypeScript.Syntax.emptyList<ISyntaxToken>(), ScriptElementKind.constructSignatureElement, "new()");
 
             // No need to descend into a construct signature;
-            this.skip(node);
         }
 
         public visitMethodSignature(node: TypeScript.MethodSignatureSyntax): void {
-            this.createItem(node, TypeScript.Syntax.emptyList, ScriptElementKind.memberFunctionElement, node.propertyName.text());
+            this.createItem(node, TypeScript.Syntax.emptyList<ISyntaxToken>(), ScriptElementKind.memberFunctionElement, node.propertyName.text());
 
             // No need to descend into a method signature;
-            this.skip(node);
         }
 
         public visitPropertySignature(node: TypeScript.PropertySignatureSyntax): void {
-            this.createItem(node, TypeScript.Syntax.emptyList, ScriptElementKind.memberVariableElement, node.propertyName.text());
+            this.createItem(node, TypeScript.Syntax.emptyList<ISyntaxToken>(), ScriptElementKind.memberVariableElement, node.propertyName.text());
 
             // No need to descend into a property signature;
-            this.skip(node);
         }
 
         public visitFunctionDeclaration(node: TypeScript.FunctionDeclarationSyntax): void {
@@ -375,46 +327,36 @@ module TypeScript.Services {
             }
 
             // No need to descend into a function declaration;
-            this.skip(node);
         }
 
         // Common statement types.  Don't even bother walking into them as we'll never find anything
         // inside that we'd put in the navbar.
 
         public visitBlock(node: TypeScript.BlockSyntax): void {
-            this.skip(node);
         }
 
         public visitIfStatement(node: TypeScript.IfStatementSyntax): void {
-            this.skip(node);
         }
 
         public visitExpressionStatement(node: TypeScript.ExpressionStatementSyntax): void {
-            this.skip(node);
         }
 
         public visitThrowStatement(node: TypeScript.ThrowStatementSyntax): void {
-            this.skip(node);
         }
 
         public visitReturnStatement(node: TypeScript.ReturnStatementSyntax): void {
-            this.skip(node);
         }
 
         public visitSwitchStatement(node: TypeScript.SwitchStatementSyntax): void {
-            this.skip(node);
         }
 
         public visitWithStatement(node: TypeScript.WithStatementSyntax): void {
-            this.skip(node);
         }
 
         public visitTryStatement(node: TypeScript.TryStatementSyntax): void {
-            this.skip(node);
         }
 
         public visitLabeledStatement(node: TypeScript.LabeledStatementSyntax): void {
-            this.skip(node);
         }
     }
 }

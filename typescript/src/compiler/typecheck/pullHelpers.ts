@@ -66,28 +66,28 @@ module TypeScript {
             };
         }
 
-        export function getAccessorSymbol(getterOrSetter: AST, semanticInfoChain: SemanticInfoChain): PullAccessorSymbol {
+        export function getAccessorSymbol(getterOrSetter: ISyntaxElement, semanticInfoChain: SemanticInfoChain): PullAccessorSymbol {
             var functionDecl = semanticInfoChain.getDeclForAST(getterOrSetter);
             var getterOrSetterSymbol = functionDecl.getSymbol();
 
             return <PullAccessorSymbol>getterOrSetterSymbol;
         }
 
-        export function getGetterAndSetterFunction(funcDecl: AST, semanticInfoChain: SemanticInfoChain): { getter: GetAccessor; setter: SetAccessor; } {
+        export function getGetterAndSetterFunction(funcDecl: ISyntaxElement, semanticInfoChain: SemanticInfoChain): { getter: GetAccessorSyntax; setter: SetAccessorSyntax; } {
             var accessorSymbol = PullHelpers.getAccessorSymbol(funcDecl, semanticInfoChain);
-            var result: { getter: GetAccessor; setter: SetAccessor; } = {
+            var result: { getter: GetAccessorSyntax; setter: SetAccessorSyntax; } = {
                 getter: null,
                 setter: null
             };
             var getter = accessorSymbol.getGetter();
             if (getter) {
                 var getterDecl = getter.getDeclarations()[0];
-                result.getter = <GetAccessor>semanticInfoChain.getASTForDecl(getterDecl);
+                result.getter = <GetAccessorSyntax>semanticInfoChain.getASTForDecl(getterDecl);
             }
             var setter = accessorSymbol.getSetter();
             if (setter) {
                 var setterDecl = setter.getDeclarations()[0];
-                result.setter = <SetAccessor>semanticInfoChain.getASTForDecl(setterDecl);
+                result.setter = <SetAccessorSyntax>semanticInfoChain.getASTForDecl(setterDecl);
             }
 
             return result;
@@ -122,11 +122,11 @@ module TypeScript {
             // initialized types are omitted, since the type reference points back to the generic type
             // declaration.  (E.g., the referencedTypeSymbol of 'Foo<number>' would be 'Foo<T>'
             if (a.isTypeReference() && !a.getIsSpecialized()) {
-                a = (<PullTypeReferenceSymbol>a).referencedTypeSymbol;
+                a = (<TypeReferenceSymbol>a).referencedTypeSymbol;
             }
 
             if (b.isTypeReference() && !b.getIsSpecialized()) {
-                b = (<PullTypeReferenceSymbol>b).referencedTypeSymbol;
+                b = (<TypeReferenceSymbol>b).referencedTypeSymbol;
             }
 
             return a === b;
