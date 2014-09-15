@@ -282,12 +282,13 @@ declare module D3 {
 //        * @param map Array of objects to get the key-value pairs from
 //        */
 //        entries<T>(map: {[k:string]:T}): {key:string; value:T}[];
-//        /**
-//        * merge multiple arrays into one array
-//        *
-//        * @param map Arrays to merge
-//        */
-//        merge(...map: any[]): any[];
+        /**
+        * merge multiple arrays into one array
+        *
+        * @param map Arrays to merge
+        */
+        /*@ merge : forall T . (map: #Array[#Immutable, #Array[#Immutable, T]]) => #Array[#Immutable, T] */
+        merge<T>(map: T[][]): T[];
 //        /**
 //        * Generate a range of numeric values.
 //        */
