@@ -294,7 +294,7 @@ module RichardsTYPEDVERSION {
          * @constructor
          */
         constructor(public link:TaskControlBlock, public id:number, public priority, public queue:Packet, public task:Task) {
-            if (this.queue === null) {
+            if (queue === null) {
                 this.state = STATE_SUSPENDED;
             } else {
                 this.state = STATE_SUSPENDED_RUNNABLE;

@@ -69,7 +69,20 @@ module _Implementation {
     public VERSION = '1.6.0';
 
     constructor() {
-      this._entityMap.unescape = this.invert(this._entityMap.escape);
+		var _entityMap = {
+			escape: {
+				'&': '&amp;',
+				'<': '&lt;',
+				'>': '&gt;',
+				'"': '&quot;',
+				"'": '&#x27;'
+			},
+			unescape: null
+		};
+		_entityMap.unescape = this.invert(_entityMap.escape);
+
+		this._entityMap = _entityMap;
+
     }
 
     // Internal Functions
@@ -1371,16 +1384,8 @@ module _Implementation {
     }
 
     // List of HTML entities for escaping.
-    private _entityMap: {escape: {}; unescape: {};} = {
-      escape: {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#x27;'
-      },
-      unescape: null
-    };
+    private _entityMap: { escape: {}; unescape: {}; };
+	//PV: moving initialization to constructor
 
     // Regexes containing the keys and values listed immediately above.
     private entityRegexes: {[x:string]:RegExp} = {
