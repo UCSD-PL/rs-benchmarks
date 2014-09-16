@@ -119,7 +119,7 @@ declare module D3 {
         * @param arr Array to search
         * @param map Accsessor function
         */
-        /*@ min : forall T U . (arr: #Array[#Immutable, T], f: (T, number) => T) => { T + undefined | true } */
+        /*@ min : forall T . (arr: #Array[#Immutable, T], f: (T, number) => T) => { T + undefined | true } */
         min<T, U>(array: T[], f: (v: T) => U): U;
         /**
         * Find the minimum value in an array
