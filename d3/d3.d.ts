@@ -273,12 +273,14 @@ declare module D3 {
         */
         /*@ keys : (map: [#Immutable]{ }) => #Array[#Mutable, {string | keyIn(v, map) && enumProp(v, map)}] */
         keys(map:{ }): string[];
-//        /**
-//        * List the values of an associative array.
-//        *
-//        * @param map Array of objects to get the values from
-//        */
-//        values<T>(map:{[k:string]:T}): T[];
+        /**
+        * List the values of an associative array.
+        *
+        * @param map Array of objects to get the values from
+        */
+
+        /*@ values : (map: [#Immutable]{[k:string]:T}) => {v: #Array[#Mutable,T] | true} */
+        values<T>(map:{[k:string]:T}): T[];
 //        /**
 //        * List the key-value entries of an associative array.
 //        *
