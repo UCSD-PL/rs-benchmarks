@@ -1,7 +1,24 @@
-// d3.pairs = d3_pairs;
+/// <reference path="../../d3.d.ts" />
+/// <reference path="../../d3.rsc.ts" />
 
-var d3_pairs = function<T> (array: T[]): number[] {
-  var i = 0, n = array.length - 1, p0, p1 = array[0], pairs = new Array(n < 0 ? 0 : n);
-  while (i < n) pairs[i] = [p0 = p1, p1 = array[++i]];
+// Why is this not scraped from the output type?
+/*@ qualif Pair(v:a): len(v) = 2 */
+
+/*@ d3_pairs :: forall T. ({v:#iArray[T] | len(v) > 0}) => #iArray[{#iArray[T] | len(v) = 2}] */
+function d3_pairs <T> (array: T[]) {
+  
+  var i     = 0; 
+  var n     = array.length - 1;
+  var p0    = array[0];
+  var p1    = p0;
+  var pairs = new Array(n < 0 ? 0 : n);
+
+  while (i < n) {
+      var ip   = i+1;
+      p0       = p1;
+      p1       = array[ip];
+      pairs[i] = [p0, p1];
+      i        = ip;
+  }
   return pairs;
 };

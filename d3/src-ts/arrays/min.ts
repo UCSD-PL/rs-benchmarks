@@ -12,8 +12,7 @@ d3.min = function(array, f?) {
 
   if (arguments.length === 1) {
 
-    //Original code:
-    //while (++i < n && !((a = array[i]) != null && a <= a)) a = undefined;
+    //ORIG: while (++i < n && !((a = array[i]) != null && a <= a)) a = undefined;
     //PV: skip over null or undefined values
     i++;
     var cnt = true;
@@ -23,8 +22,7 @@ d3.min = function(array, f?) {
       else { cnt = false; }
     }
 
-    //Original code:
-    //while (++i < n) if ((b = array[i]) != null && a > b) a = b;
+    //ORIG: while (++i < n) if ((b = array[i]) != null && a > b) a = b;
     i++;
     cnt = true;
     while (i < n) {
@@ -36,8 +34,7 @@ d3.min = function(array, f?) {
   } 
   else {    
 
-    //Original code:
-    //while (++i < n && !((a = f.call(array, array[i], i)) != null && a <= a)) a = undefined;
+    //ORIG: while (++i < n && !((a = f.call(array, array[i], i)) != null && a <= a)) a = undefined;
     i++;
     while (i < n) {
       a = f.call(array, array[i], i);
@@ -45,8 +42,7 @@ d3.min = function(array, f?) {
       i++;
     }
 
-    //Original code:
-    //while (++i < n) if ((b = f.call(array, array[i], i)) != null && a > b) a = b;
+    //ORIG: while (++i < n) if ((b = f.call(array, array[i], i)) != null && a > b) a = b;
     i++;
     while (i < n) {
       b = f.call(array, array[i], i);

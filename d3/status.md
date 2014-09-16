@@ -47,6 +47,7 @@
 
     6    21    170    values.ts
     6    26    193    entries.ts
+
     7    50    239    pairs.ts
     10   50    324    quantile.ts
     15   56    356    sum.ts
@@ -61,5 +62,6 @@
     50   201   1214   bisect.ts
     67   213   1894   map.ts
     99   258   2179   nest.ts
+
     555  2230  14937  total
 
