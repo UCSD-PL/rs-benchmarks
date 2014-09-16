@@ -1,9 +1,16 @@
 /// <reference path="../../d3.d.ts" />
-d3.shuffle = function<T>(array: T[]):T [] {
-  var m = array.length, t:T, i:number;
+/// <reference path="../../d3.rsc.ts" />
+
+d3.shuffle = function<T>(array: T[]):T[] {
+  var m = array.length;
   while (m) {
-    i = Math.random() * m-- | 0;
-    t = array[m], array[m] = array[i], array[i] = t;
+      // ORIG Math.random() * m-- | 0;
+      m--;
+      var i      = randomN(m); 
+      
+      // ORIG t = array[m], array[m] = array[i], array[i] = t;
+      var t      = array[m];
+      array[m]   = array[i];
   }
   return array;
 };

@@ -126,13 +126,15 @@ declare module D3 {
         /*@ min : forall T . (arr: #Array[#Immutable, T]) => { T + undefined | true } */
         min<T>(array: T[]): T;
         
-//        /**
-//        * Find the maximum value in an array
-//        *
-//        * @param arr Array to search
-//        * @param map Accsessor function
-//        */
-//        max<T>(arr: T[], map: (v: T) => number): number;
+        /**
+        * Find the maximum value in an array
+        *
+        * @param arr Array to search
+        * @param map Accsessor function
+        */
+        /*@ max : forall T U . (arr: #Array[#Immutable, T], f: (T, number) => T) => { T + undefined | true } */
+        max<T, U>(array: T[], f: (v: T) => U): U;
+
 //        /**
 //        * Find the maximum value in an array
 //        *
@@ -236,7 +238,8 @@ declare module D3 {
 //        *
 //        * @param arr Array to randomize
 //        */
-//        shuffle<T>(arr: T[]): T[];
+        /*@ shuffle : forall T . (arr: #Array[#Immutable, T]) => {v: #Array[#Immutable, T] | true} */
+        shuffle<T>(arr: T[]): T[];
         /**
         * Reorder an array of elements according to an array of indexes
         *
@@ -287,7 +290,7 @@ declare module D3 {
         *
         * @param map Arrays to merge
         */
-        /*@ merge : forall T . (map: #Array[#Immutable, #Array[#Immutable, T]]) => #Array[#Immutable, T] */
+        /*@ merge : forall T . (map: #Array[#Immutable, #Array[#Immutable, T]]) => {v: #Array[#Immutable, T] | true}*/
         merge<T>(map: T[][]): T[];
 //        /**
 //        * Generate a range of numeric values.
