@@ -15,16 +15,19 @@
 
 ## Done
 
-    src-ts/arrays/ascending.ts
-    src-ts/arrays/descending.ts
-    src-ts/arrays/min.ts
-    src-ts/arrays/max.ts
-    src-ts/arrays/permute.ts
-    src-ts/arrays/merge.ts
-    src-ts/arrays/keys.ts
-    src-ts/arrays/shuffle.ts
-    src-ts/arrays/pairs.ts
-
+    src-ts/
+		arrays/
+			ascending.ts
+			descending.ts
+			min.ts
+			max.ts
+			permute.ts
+			merge.ts
+			keys.ts
+			shuffle.ts
+			pairs.ts
+			quantile.ts
+            sum.ts               [overload/dyn-args-check, isNan, HOF]
 
 -----------------------------------------
 ## From old `TODO.markdown` file
@@ -48,8 +51,6 @@
     6    21    170    values.ts
     6    26    193    entries.ts
 
-    10   50    324    quantile.ts
-    15   56    356    sum.ts
     16   65    432    zip.ts
     16   73    421    mean.ts
     20   73    618    median.ts
@@ -64,3 +65,18 @@
 
     555  2230  14937  total
 
+### Code Transforms
+
+You can transform
+
+	var i = -1;
+    while (cond (++i)){ body(i) }
+
+Into 
+
+    var i = 0 
+    while(cond(i)){
+	  body(i)
+      i++;
+    }
+  

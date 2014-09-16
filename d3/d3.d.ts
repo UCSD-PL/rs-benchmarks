@@ -6,6 +6,9 @@
 // Aliases
 
 /*@ alias idx[a]    = {v: number | (0 <= v && v < (len a)) }  */
+/*@ alias nat       = {number | 0 <= v}    */
+/*@ alias iArray[T] = #Array[#Immutable,T] */
+/*@ alias pair[T]   = {v: #iArray[T] | len(v) = 2} */
 
 
 // Qualifiers
@@ -154,19 +157,23 @@ declare module D3 {
 //        * @param arr Array to search
 //        */
 //        extent<T>(arr: T[]): T[];
-//        /**
-//        * Compute the sum of an array of numbers
-//        *
-//        * @param arr Array to search
-//        * @param map Accsessor function
-//        */
-//        sum<T>(arr: T[], map: (v: T) => number): number;
-//        /**
-//        * Compute the sum of an array of numbers
-//        *
-//        * @param arr Array to search
-//        */
-//        sum(arr: number[]): number;
+        /**
+        * Compute the sum of an array of numbers
+        *
+        * @param arr Array to search
+        * @param map Accsessor function
+        */
+        // sum<T>(arr: T[], map: (v: T) => number): number;
+        /**
+        * Compute the sum of an array of numbers
+        *
+        * @param arr Array to search
+        */
+	
+        /*@ sum : /\ (array : #iArray[number]) => {number | true} 
+                  /\ forall T. (array : #iArray[T], f: (T, {#nat | v < len(array)}) => number) => {number | true} */ 
+        sum(arr: any, f?:any) : number;
+
 //        /**
 //        * Compute the arithmetic mean of an array of numbers
 //        *
