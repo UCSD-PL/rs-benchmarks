@@ -11,13 +11,13 @@
 //   return zips;
 // };
 
-/*@ d3_zipLength :: forall T. (d:#iArray[T]) => #nat */
-function d3_zipLength<T>(d:T[]):number {
+/*@ d3_zipLength :: forall T. (d:#iArray[T], i:number) => #nat */
+function d3_zipLength<T>(d:T[], i:number):number {
   return d.length;
 }
 
 /*@ d3_min :: /\ forall T U . (arr: #Array[#Immutable, T], f: (x:T, i:number) => U) => { U + undefined | true }
-             /\ forall T   . (arr: #Array[#Immutable, T]) => { T + undefined | true } 
+              /\ forall T  . (arr: #Array[#Immutable, T]) => { T + undefined | true } 
  */
 declare function d3_min(arr:any, f?:any):any;
 
