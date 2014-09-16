@@ -8,9 +8,7 @@
     Date (time/time.ts)
     window and document (core/document.ts)
     Cannot call 'toRsExp' on...
-        SyntaxKind BitwiseOrExpression (arrays/shuffle.ts:5)
         SyntaxKind CommaExpression (arrays/shuffle.ts:6)
-        SyntaxKind PlusExpression (arrays/quantile.ts:7)
 
 
 ## Done
@@ -34,15 +32,15 @@
 
 #### JS -> TS
 
-    + extent.js	 // dynamic check on the number of arguments
-    + median.js	 // dynamic check on the number of arguments 
-    + index.js	 // multiple imports dependent on functionality of unstable files
-    + nest.js	 // Strange and large requires greater familiarity with ts
+    + extent.js  // dynamic check on the number of arguments
+    + median.js  // dynamic check on the number of arguments 
+    + index.js   // multiple imports dependent on functionality of unstable files
+    + nest.js    // Strange and large requires greater familiarity with ts
 
-#### TS -> RS 
+#### TS -> RS
 
-    + mean.js, sum.js  // difficulty with overloaded functions; dynamic check on the number of arguments
-    + entries.ts	   // clones dictionaries.
+    + mean.js    // difficulty with overloaded functions; dynamic check on the number of arguments
+    + entries.ts // clones dictionaries.
 
 **Todo**
 

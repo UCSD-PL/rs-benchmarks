@@ -11,6 +11,7 @@ d3.shuffle = function<T>(array: T[]):T[] {
       // ORIG t = array[m], array[m] = array[i], array[i] = t;
       var t      = array[m];
       array[m]   = array[i];
+      array[i]   = t;
   }
   return array;
 };
