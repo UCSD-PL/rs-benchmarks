@@ -7,13 +7,7 @@ d3.scale.threshold = function() {
 };
 
 class ThresholdScaleImpl implements D3.Scale.ThresholdScale {
-  dmn:number[];
-  rng:any[];
-
-  constructor(dmn:number[], rng:any[]) {
-    this.dmn = dmn;
-    this.rng = rng;
-  }
+  constructor(private dmn:number[], private rng:any[]) { }
 
   convert(x:number) {
     if (x <= x) return this.rng[d3.bisect(this.dmn, x)];

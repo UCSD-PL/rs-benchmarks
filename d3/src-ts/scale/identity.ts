@@ -7,11 +7,7 @@ d3.scale.identity = function() {
 };
 
 class IdentityScaleImpl implements D3.Scale.IdentityScale {
-  dmn:number[];
-
-  constructor(dmn:number[]) {
-    this.dmn = dmn;
-  }
+  constructor(private dmn:number[]) { }
 
   convert(x:number):number { return +x; }
 

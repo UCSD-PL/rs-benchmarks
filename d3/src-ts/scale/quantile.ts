@@ -10,14 +10,10 @@ d3.scale.quantile = function() {
 };
 
 class QuantileScaleImpl implements D3.Scale.QuantileScale {
-  dmn:number[];
-  rng:any[];
   thresholds:number[];
 
-  constructor(dmn:number[], rng:any[]) {
-    this.dmn = dmn;
-    this.rng = rng;
-    rescale();
+  constructor(private dmn:number[], private rng:any[]) {
+    this.rescale();
   }
 
   convert(x:number):any {

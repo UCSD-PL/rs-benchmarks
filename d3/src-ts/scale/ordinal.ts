@@ -9,13 +9,11 @@ d3.scale.ordinal = function() {
 
 class OrdinalScaleImpl implements D3.Scale.OrdinalScale {
   dmn: any[];
-  ranger: { t: string; a: any };
   index: D3.Map;
   rng: any[];
   rngBand: number;
 
-  constructor(dmn:any[], ranger:any) {
-    this.ranger = ranger;
+  constructor(dmn:any[], private ranger:{ t: string; a: any }) {
     this.domain(dmn);
   }
 
