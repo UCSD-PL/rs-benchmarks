@@ -2,7 +2,7 @@
 /// <reference path="../../d3.rsc.ts" />
 
 // Why is this not scraped from the output type?
-/*@ qualif Pair(v:a): len(v) = 2 */
+/*@ qualif RemoveMe(v:a): len(v) = 2 */
 
 /*@ d3_pairs :: forall T. ({v:#iArray[T] | len(v) > 0}) => #iArray[{#iArray[T] | len(v) = 2}] */
 function d3_pairs <T> (array: T[]) {

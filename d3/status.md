@@ -23,7 +23,7 @@
     src-ts/arrays/merge.ts
     src-ts/arrays/keys.ts
     src-ts/arrays/shuffle.ts
-
+    src-ts/arrays/pairs.ts
 
 
 -----------------------------------------
@@ -48,7 +48,6 @@
     6    21    170    values.ts
     6    26    193    entries.ts
 
-    7    50    239    pairs.ts
     10   50    324    quantile.ts
     15   56    356    sum.ts
     16   65    432    zip.ts

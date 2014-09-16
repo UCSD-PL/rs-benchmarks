@@ -193,13 +193,14 @@ declare module D3 {
 //        * @param arr Array to search
 //        */
 //        median(arr: number[]): number;
-//        /**
-//        * Compute a quantile for a sorted array of numbers.
-//        *
-//        * @param arr Array to search
-//        * @param p The quantile to return
-//        */
-//        quantile: (arr: number[], p: number) => number;
+        /**
+        * Compute a quantile for a sorted array of numbers.
+        *
+        * @param arr Array to search
+        * @param p The quantile to return
+        */
+        /*@ quantile : (arr: {v: #Array[#Immutable, number] | 2 < len v}, p: number) => number */
+        quantile: (arr: number[], p: number) => number;
 //        /**
 //        * Locate the insertion point for x in array to maintain sorted order
 //        *
