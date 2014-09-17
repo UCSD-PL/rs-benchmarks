@@ -1,27 +1,52 @@
 /// <reference path="../../d3.d.ts" />
 
-//d3.extent = d3_extend;
+// d3.extent = d3_extend;
 
-//function d3_extend<T,U>(array: T[], f: (T, number) => U): U[] {
+// RJ: simplifying this as RSC ensures that no 'undefined' or 'null' in the array
 
-function d3_extend<T>(array: T[], f?: (T, number) => T) {
-  var i = -1,
+/*@ d3_extent_1 :: forall T . ({#iArray[T] | 0 < len v}) => #pair[T] */
+function d3_extent_1<T>(array: T[]): T[]{
+  var i = 0,
       n = array.length,
-      a: T,
-      b: T,
-      c: T;
-  if (arguments.length === 1) {
-    while (++i < n && !((a = c = array[i]) != null && a <= a)) a = c = undefined;
-    while (++i < n) if ((b = array[i]) != null) {
-      if (a > b) a = b;
-      if (c < b) c = b;
-    }
-  } else {
-    while (++i < n && !((a = c = f.call(array, array[i], i)) != null && a <= a)) a = undefined;
-    while (++i < n) if ((b = f.call(array, array[i], i)) != null) {
-      if (a > b) a = b;
-      if (c < b) c = b;
-    }
+      b = array[0],
+      a = b,
+      c = b;
+
+  while (i < n) { 
+      b = array[i];
+      if ( b != null) {
+	  if (a > b) a = b;
+	  if (c < b) c = b;
+      }
+      i++;
   }
   return [a, c];
+
+};
+
+/*@ d3_extent_2 :: forall T U . ({#iArray[T] | 0 < len v}, f: (x:T, i:number) => U) => #pair[U] */
+function d3_extent_2<T, U>(array: T[], f:(T, number) => U): U[] {
+  var i = 0,
+      n = array.length,
+      b = f.call(array, array[0], 0),
+      a = b,
+      c = b;
+
+  while (i < n) { 
+      b = f.call(array, array[i], i);
+      if ( b != null) {
+	  if (a > b) a = b;
+	  if (c < b) c = b;
+      }
+      i++;
+  }
+  return [a, c];
+};
+
+function d3_extent(array: any, f?:any):any {
+  if (arguments.length === 1) {
+      return d3_extent_1(array);
+  } else {
+      return d3_extent_2(array, f);
+  }
 };

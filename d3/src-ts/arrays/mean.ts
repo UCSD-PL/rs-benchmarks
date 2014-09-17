@@ -1,9 +1,6 @@
 /// <reference path="../../d3.d.ts" />
 /// <reference path="../math/number.ts" />
 
-/* d3_mean :: /\ (array : #iArray[number]) => {number + undefined | true} 
-               /\ forall T. (array : #iArray[T], f: (T, {#nat | v < len(array)}) => number) => {number + undefined | true} */
-
 d3.mean = function (array: any, f?: any): number {
   var s = 0,
       n = array.length,

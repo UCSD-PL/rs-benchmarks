@@ -27,8 +27,23 @@
 			quantile.ts
             sum.ts               [overload/dyn-args-check, isNan, HOF]
 			zip.ts               [TODO: https://github.com/UCSD-PL/RefScript/issues/32]
-			
+	        mean.ts              [args-check, isNaN, TODO: #38]
+			median.ts            [args-check, isNan, TODO: #39,#40]
+
+
+[#38] : https://github.com/UCSD-PL/RefScript/issues/38
+[#39] : https://github.com/UCSD-PL/RefScript/issues/39
+[#40] : https://github.com/UCSD-PL/RefScript/issues/40
+
+## Interesting Features
+
+* type test (isNan, d3_number)
+* overloads and dynamic-arguments-check
+* arithmetic array index invariants 
+
+
 -----------------------------------------
+
 ## From old `TODO.markdown` file
 
 #### JS -> TS
@@ -48,8 +63,6 @@
     6    21    170    values.ts
     6    26    193    entries.ts
 	
-    16   73    421    mean.ts
-    20   73    618    median.ts
     23   129   647    possibleExtent.ts
     24   96    832    index.ts
     26   122   768    range.ts
@@ -62,6 +75,8 @@
     555  2230  14937  total
 
 ### Code Transforms
+
+
 
 You can transform
 

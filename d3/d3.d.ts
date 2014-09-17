@@ -192,26 +192,30 @@ declare module D3 {
         /*@ mean : (array : #iArray[number]) => {number + undefined | true} */ 
         mean(arr: number[]): number;
 
-//        /**
-//        * Compute the median of an array of numbers (the 0.5-quantile).
-//        *
-//        * @param arr Array to search
-//        * @param map Accsessor function
-//        */
-//        median<T>(arr: T[], map: (v: T) => number): number;
-//        /**
-//        * Compute the median of an array of numbers (the 0.5-quantile).
-//        *
-//        * @param arr Array to search
-//        */
-//        median(arr: number[]): number;
+        /**
+        * Compute the median of an array of numbers (the 0.5-quantile).
+        *
+        * @param arr Array to search
+        * @param map Accsessor function
+        */
+
+        /*@ median : /\ forall T. (array : #iArray[T], f: (T) => number) => {number + undefined | true} */
+        median<T>(arr: T[], map: (v: T) => number): number;
+        /**
+        * Compute the median of an array of numbers (the 0.5-quantile).
+        *
+        * @param arr Array to search
+        */
+        
+        /*@ median : (array : #iArray[number]) => {number + undefined | true} */ 
+        median(arr: number[]): number;
         /**
         * Compute a quantile for a sorted array of numbers.
         *
         * @param arr Array to search
         * @param p The quantile to return
         */
-        /*@ quantile : (arr: {v: #Array[#Immutable, number] | 2 < len v}, p: number) => number */
+        /*@ quantile : (arr: {v: #Array[#Immutable, number] | 0 < len v}, p: number) => number */
         quantile: (arr: number[], p: number) => number;
 //        /**
 //        * Locate the insertion point for x in array to maintain sorted order
