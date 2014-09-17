@@ -1,8 +1,8 @@
 /// <reference path="../../d3.d.ts" />
 
-// d3.extent = d3_extend;
-
-// RJ: simplifying this as RSC ensures that no 'undefined' or 'null' in the array
+// RJ: dramatically simplifying this as rsc 
+//     ensures that no 'undefined' or 'null' 
+//     or such in the array
 
 /*@ d3_extent_1 :: forall T . ({#iArray[T] | 0 < len v}) => #pair[T] */
 function d3_extent_1<T>(array: T[]): T[]{
@@ -43,7 +43,7 @@ function d3_extent_2<T, U>(array: T[], f:(T, number) => U): U[] {
   return [a, c];
 };
 
-function d3_extent(array: any, f?:any):any {
+d3.extent = function(array: any, f?:any):any {
   if (arguments.length === 1) {
       return d3_extent_1(array);
   } else {

@@ -144,19 +144,23 @@ declare module D3 {
 //        * @param arr Array to search
 //        */
 //        max(arr: number[]): number;
-//        /**
-//        * Find the minimum and maximum value in an array
-//        *
-//        * @param arr Array to search
-//        * @param map Accsessor function
-//        */
-//        extent<T, U>(arr: T[], map: (v: T) => U): U[];
-//        /**
-//        * Find the minimum and maximum value in an array
-//        *
-//        * @param arr Array to search
-//        */
-//        extent<T>(arr: T[]): T[];
+        /**
+        * Find the minimum and maximum value in an array
+        *
+        * @param arr Array to search
+        * @param map Accsessor function
+        */
+
+	/*@ extent : forall T U . ({#iArray[T] | 0 < len v}, f: (x:T, i:number) => U) => #pair[U] */
+        extent<T, U>(arr: T[], map: (v: T) => U): U[];
+        /**
+        * Find the minimum and maximum value in an array
+        *
+        * @param arr Array to search
+        */
+
+	/*@ extent : forall T . ({#iArray[T] | 0 < len v}) => #pair[T] */
+        extent<T>(arr: T[]): T[];
         /**
         * Compute the sum of an array of numbers
         *

@@ -29,7 +29,7 @@
 			zip.ts               [TODO: https://github.com/UCSD-PL/RefScript/issues/32]
 	        mean.ts              [args-check, isNaN, TODO: #38]
 			median.ts            [args-check, isNan, TODO: #39,#40]
-
+			extent.ts            [args-check]
 
 [#38] : https://github.com/UCSD-PL/RefScript/issues/38
 [#39] : https://github.com/UCSD-PL/RefScript/issues/39
@@ -63,10 +63,8 @@
     6    21    170    values.ts
     6    26    193    entries.ts
 	
-    23   129   647    possibleExtent.ts
     24   96    832    index.ts
     26   122   768    range.ts
-    27   148   736    extent.ts
     29   96    735    set.ts
     50   201   1214   bisect.ts
     67   213   1894   map.ts
