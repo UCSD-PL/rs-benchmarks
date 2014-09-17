@@ -12,8 +12,8 @@
 // };
 
 
-/*@ d3_min :: /\ forall T U . (arr: #Array[#Immutable, T], f: (x:T, i:number) => U) => { U + undefined | true }
-              /\ forall T  . (arr: #Array[#Immutable, T]) => { T + undefined | true } 
+/*@ d3_min :: /\ forall T U . (arr: #Array[#Immutable, T], f: (x:T, i:number) => U) => { U | true }
+              /\ forall T  . (arr: #Array[#Immutable, T]) => { T | true } 
  */
 declare function d3_min(arr:any, f?:any):any;
 
@@ -28,22 +28,24 @@ function d3_zipLength(d:number[], i:number):number {
 /*@ dzip :: (args:#iArray[#iArray[number]]) => {v:#iArray[#iArray[number]] | true} */
 function dzip(args:number[][]):number[][] {
     var n:number = args.length;
+    
     if (!n) return [];
+    
+    assert (n > 0);
 
-    var m : number = d3_min(args, d3_zipLength);
+    var m = d3_min(args, d3_zipLength);
   
-    if (typeof m === "number") { 
-      var zips = new Array(<number>m);
+    var zips = new Array(m);
        
-      for (var i = 0; i < m; i++) {
-          zips[i] = new Array(n);
-      	var zip = zips[i];
-          for (var j = 0; j < n; j++) {
-            zip[j] = args[j][i];
-          }
+    for (var i = 0; i < m; i++) {
+      var zip = new Array(n);
+      zips[i] = zip;
+      for (var j = 0; j < n; j++) {
+	  var tmp = args[j];
+	  assume(i < tmp.length); // NOTE: check relies on d3_min returning a number that is smaller than length of ALL input rows.
+          zip[j] = tmp[i];
       }
-
-      return zips;
     }
-    return crash();
+
+    return zips;
 }
