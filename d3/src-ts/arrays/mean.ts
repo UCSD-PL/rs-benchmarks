@@ -31,5 +31,7 @@ d3.mean = function (array: any, f?: any): number {
 	  i++;
       }
   }
-  if (j) {return s / j;}  else {return undefined;}  // ORIG: return j ? s / j : undefined;
+  if (j) {return s / j;}  else {return undefined;}  
+  // ORIG: return j ? s / j : undefined; 
+  // see tests/pos/unions/choice-00.ts
 }
