@@ -26,7 +26,8 @@
 			pairs.ts
 			quantile.ts
             sum.ts               [overload/dyn-args-check, isNan, HOF]
-
+			zip.ts               [TODO: https://github.com/UCSD-PL/RefScript/issues/32]
+			
 -----------------------------------------
 ## From old `TODO.markdown` file
 
@@ -44,12 +45,9 @@
 
 **Todo**
 
-                      transpose.ts [zip.ts]
-
     6    21    170    values.ts
     6    26    193    entries.ts
-
-    16   65    432    zip.ts
+	
     16   73    421    mean.ts
     20   73    618    median.ts
     23   129   647    possibleExtent.ts
