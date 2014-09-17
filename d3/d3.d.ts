@@ -174,19 +174,24 @@ declare module D3 {
                   /\ forall T. (array : #iArray[T], f: (T, {#nat | v < len(array)}) => number) => {number | true} */ 
         sum(arr: any, f?:any) : number;
 
-//        /**
-//        * Compute the arithmetic mean of an array of numbers
-//        *
-//        * @param arr Array to search
-//        * @param map Accsessor function
-//        */
-//        mean<T>(arr: T[], map: (v: T) => number): number;
-//        /**
-//        * Compute the arithmetic mean of an array of numbers
-//        *
-//        * @param arr Array to search
-//        */
-//        mean(arr: number[]): number;
+        /**
+        * Compute the arithmetic mean of an array of numbers
+        *
+        * @param arr Array to search
+        * @param map Accsessor function
+        */
+        
+        /*@ mean : forall T. (array : #iArray[T], f: (T, {#nat | v < len(array)}) => number) => {number + undefined | true} */
+        mean<T>(arr: T[], map: (v: T) => number): number;
+        /**
+        * Compute the arithmetic mean of an array of numbers
+        *
+        * @param arr Array to search
+        */
+        
+        /*@ mean : (array : #iArray[number]) => {number + undefined | true} */ 
+        mean(arr: number[]): number;
+
 //        /**
 //        * Compute the median of an array of numbers (the 0.5-quantile).
 //        *

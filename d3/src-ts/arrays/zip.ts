@@ -12,18 +12,12 @@
 // };
 
 
-/*@ d3_min :: /\ forall T U . (arr: #Array[#Immutable, T], f: (x:T, i:number) => U) => { U | true }
-              /\ forall T  . (arr: #Array[#Immutable, T]) => { T | true } 
- */
-declare function d3_min(arr:any, f?:any):any;
-
-
-
 /*@ d3_zipLength :: (d:#iArray[number], i:number) => #nat */
 function d3_zipLength(d:number[], i:number):number {
   return d.length;
 }
 
+// TODO: this should be d3.zip -- after fixing POLYMORPHISM https://github.com/UCSD-PL/RefScript/issues/32
 
 /*@ dzip :: (args:#iArray[#iArray[number]]) => {v:#iArray[#iArray[number]] | true} */
 function dzip(args:number[][]):number[][] {
@@ -33,7 +27,7 @@ function dzip(args:number[][]):number[][] {
     
     assert (n > 0);
 
-    var m = d3_min(args, d3_zipLength);
+    var m = d3.min(args, d3_zipLength);
   
     var zips = new Array(m);
        
