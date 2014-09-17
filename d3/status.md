@@ -41,7 +41,6 @@
 * overloads and dynamic-arguments-check
 * arithmetic array index invariants 
 
-
 -----------------------------------------
 
 ## From old `TODO.markdown` file
@@ -67,6 +66,7 @@
     26   122   768    range.ts
     29   96    735    set.ts
     50   201   1214   bisect.ts
+
     67   213   1894   map.ts
     99   258   2179   nest.ts
 
