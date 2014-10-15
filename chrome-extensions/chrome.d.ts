@@ -3,7 +3,7 @@
 // Definitions by: Matthew Kimber <https://github.com/matthewkimber>, otiai10 <https://github.com/otiai10>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 
-/// <reference path='../webrtc/MediaStream.d.ts'/>
+/// <reference path='MediaStream.d.ts'/>
 
 ////////////////////
 // Alarms
@@ -861,6 +861,9 @@ declare module chrome.extension {
     var inIncognitoContext: boolean;
     var lastError: LastError;
 
+   // export function sendMessage(stuff:{msg:string;,href:string;}):void;
+    export function sendMessage(stuff:{msg:string;href:string;}):void;
+    export function onConnect():Event
     export function getBackgroundPage(): Window;
     export function getURL(path: string): string;
     export function setUpdateUrlData(data: string): void;

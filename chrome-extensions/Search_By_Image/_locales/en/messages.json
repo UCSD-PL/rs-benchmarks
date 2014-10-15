@@ -1,0 +1,66 @@
+{
+  "extensionName": {
+    "message": "Search by Image (by Google)",
+    "description": "The name of this extension."
+  },
+  "extensionDescription": {
+    "message": "This extension allows you to initiate a Google search using any image on the web. By the Google Images team.",
+    "description": "The description of this extension."
+  },
+  "contextMenuTitle": {
+    "message": "Search Google with this image",
+    "description": "The text of the item in context menu."
+  },
+  "mouseOverOptionText1": {
+    "message": "Show ",
+    "description": "The text of mouseover to show camera icon option. Display on options page before the icon."
+  },
+  "mouseOverOptionText2": {
+    "message": " when hovering over an image",
+    "description": "The text of mouseover to show camera icon option. Display on options page after the icon."
+  },
+  "neverOptionText1": {
+    "message": "Do not show ",
+    "description": "The text of never show camera icon option. Display on options page before the icon."
+  },
+  "neverOptionText2": {
+    "message": " when hovering over an image",
+    "description": "The text of never show camera icon option. Display on options page after the icon."
+  },
+  "getURLOptionText": {
+    "message": "Search using the URL of an image (not recommended)",
+    "description": "The text of the GET URL option. If this is set, whenever the user does a search, the image is fetched from one of Google's datacenters instead of the browser uploading it to Google."
+  },
+  "hoverMinDimsOptionText1": {
+    "message": "Only show ",
+    "description": "The text for the hover minimum width and height option."
+  },
+  "hoverMinDimsOptionText2": {
+    "message": " for images larger than: ",
+    "description": "The text for the hover minimum width and height option."
+  },
+  "iconDescriptionText": {
+    "message": "Search by image icon:",
+    "description": "The icon description text after the icon. Display on options page."
+  },
+  "privacyText": {
+    "message": "Privacy",
+    "description": "The text of privacy link. Display on options page."
+  },
+  "optionsPageTitleText": {
+    "message": "Extension options",
+    "description": "The title of the options page."
+  },
+  "saveButtonText": {
+    "message": "Save",
+    "description": "The text of the save button on options page."
+  },
+  "resetButtonText": {
+    "message": "Reset",
+    "description": "The text of the reset button on options page."
+  },
+  "saveButtonFinishText": {
+    "message": "Saved",
+    "description": "The text of the save button on options page when user performed a successful save operation."
+  }
+}
