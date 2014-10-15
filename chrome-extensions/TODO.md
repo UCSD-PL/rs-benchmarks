@@ -1,29 +1,29 @@
-## Done
+##Done
 
-  ### Search By Image
+  Search By Image
     + options.js => options.ts
 
 
 -------------------------
 
-## TODO
+##TODO
 
-#### JS -> TS
+####JS -> TS
 
 
-  #### any.do
+  any.do
     +
     +
     +
-  #### Google Mail Checker
+  Google Mail Checker
     +
     +
     +
-  #### Send from Gmail
+  Send from Gmail
     +
     +
     +
-  #### RSS Subscription Extension
+  RSS Subscription Extension
     +
     +
     +
