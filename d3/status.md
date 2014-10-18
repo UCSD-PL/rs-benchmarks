@@ -1,39 +1,43 @@
 ## Things in d3 that refscript does not handle yet (with example source files):
-    
-    
-    optional parameters like 'end' in 'substring' (core/vendor.ts:6)
-    (<Array<T>>[]).slice (core/array.ts)
-    "in" expressions (core/vendor.ts)
-    EventTarget (selection/* ??)
-    Date (time/time.ts)
-    window and document (core/document.ts)
-    Cannot call 'toRsExp' on...
-        SyntaxKind CommaExpression (arrays/shuffle.ts:6)
+
+  - optional parameters like 'end' in 'substring' (core/vendor.ts:6)
+  - `(<Array<T>>[]).slice` (core/array.ts)
+  - `in` expressions (core/vendor.ts)
+  - EventTarget (selection/* ??)
+  - Date (time/time.ts)
+  - window and document (core/document.ts)
+  - Cannot call 'toRsExp' on...
+  - SyntaxKind CommaExpression (arrays/shuffle.ts:6)
 
 
 ## Done
 
-    src-ts/
-		arrays/
-			ascending.ts
-			descending.ts
-			min.ts
-			max.ts
-			permute.ts
-			merge.ts
-			keys.ts
-			shuffle.ts
-			pairs.ts
-			quantile.ts
-            sum.ts               [overload/dyn-args-check, isNan, HOF]
-			zip.ts               [TODO: https://github.com/UCSD-PL/RefScript/issues/32]
-	        mean.ts              [args-check, isNaN, TODO: #38]
-			median.ts            [args-check, isNan, TODO: #39,#40]
-			extent.ts            [args-check]
+```
+src-ts/
+  arrays/
+    ascending.ts
+    descending.ts
+    min.ts
+    max.ts
+    permute.ts
+    merge.ts
+    keys.ts
+    shuffle.ts
+    pairs.ts
+    quantile.ts
+    sum.ts              [overload/dyn-args-check, isNan, HOF]
+    zip.ts              [TODO: https://github.com/UCSD-PL/RefScript/issues/32]
+    mean.ts             [args-check, isNaN, TODO: #38]
+    median.ts           [args-check, isNan, TODO: #39,#40]
+    extent.ts           [args-check]
+```
 
-[#38] : https://github.com/UCSD-PL/RefScript/issues/38
-[#39] : https://github.com/UCSD-PL/RefScript/issues/39
-[#40] : https://github.com/UCSD-PL/RefScript/issues/40
+
+## Issues
+
+- [#38](https://github.com/UCSD-PL/RefScript/issues/38)
+- [#39](https://github.com/UCSD-PL/RefScript/issues/39)
+- [#40](https://github.com/UCSD-PL/RefScript/issues/40)
 
 ## Interesting Features
 
@@ -41,40 +45,8 @@
 * overloads and dynamic-arguments-check
 * arithmetic array index invariants 
 
------------------------------------------
 
-## From old `TODO.markdown` file
-
-#### JS -> TS
-
-    + extent.js  // dynamic check on the number of arguments
-    + median.js  // dynamic check on the number of arguments 
-    + index.js   // multiple imports dependent on functionality of unstable files
-    + nest.js    // Strange and large requires greater familiarity with ts
-
-#### TS -> RS
-
-    + mean.js    // difficulty with overloaded functions; dynamic check on the number of arguments
-    + entries.ts // clones dictionaries.
-
-**Todo**
-
-    6    21    170    values.ts
-    6    26    193    entries.ts
-	
-    24   96    832    index.ts
-    26   122   768    range.ts
-    29   96    735    set.ts
-    50   201   1214   bisect.ts
-
-    67   213   1894   map.ts
-    99   258   2179   nest.ts
-
-    555  2230  14937  total
-
-### Code Transforms
-
-
+## Code Transforms
 
 You can transform
 

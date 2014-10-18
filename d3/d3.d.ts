@@ -300,7 +300,7 @@ declare module D3 {
         * @param map Array of objects to get the values from
         */
 
-        /*@ values : (map: [#Immutable]{[k:string]:T}) => {v: #Array[#Mutable,T] | true} */
+        /*@ values : forall T . (map: [#Immutable]{[k:string]:T}) => {v: #Array[#Mutable,T] | true} */
         values<T>(map:{[k:string]:T}): T[];
 //        /**
 //        * List the key-value entries of an associative array.
