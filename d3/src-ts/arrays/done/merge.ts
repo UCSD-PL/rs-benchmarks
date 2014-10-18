@@ -1,5 +1,8 @@
-/// <reference path="../../d3.d.ts" />
-d3.merge = function<T>(arrays: T[][]): T[] {
+/// <reference path="../../../d3.d.ts" />
+
+/*@ d3_merge :: forall T . (map: IArray<IArray<T>>) => {v: IArray<T> | true}*/
+
+function d3_merge<T>(arrays: T[][]): T[] {
   var n = arrays.length,
       i = -1,
       j = 0;
@@ -12,7 +15,7 @@ d3.merge = function<T>(arrays: T[][]): T[] {
     i++;
   }
 
-  var merged:T[] = new Array(j);
+  var merged:T[] = new Array<T>(j);
 
   //while (--n >= 0) {
   n--;

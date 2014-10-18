@@ -1,4 +1,4 @@
-/// <reference path="../../d3.d.ts" />
+/// <reference path="../../../d3.d.ts" />
 
 /*@ qualif Bot(v:a,s:string): keyIn(v,s) */
 /*@ qualif Bot(v:a,s:string): enumProp(v,s) */

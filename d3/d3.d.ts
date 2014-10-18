@@ -267,7 +267,9 @@ declare module D3 {
         * @param arr Array to reorder
         * @param indexes Array containing the order the elements should be returned in
         */
-        /*@ permute : forall T . (array: #Array[#Immutable, T], indexes: #Array[#Immutable, #idx[array]]) => { #Array[#Immutable, T] | (len v) = (len indexes) } */
+        /*@ permute : forall T . (array: #Array[#Immutable, T], 
+                                  indexes: #Array[#Immutable, #idx[array]]) 
+                              => { #Array[#Immutable, T] | (len v) = (len indexes) } */
         permute(arr: any[], indexes: any[]): any[];
 //        /**
 //        * Transpose a variable number of arrays.

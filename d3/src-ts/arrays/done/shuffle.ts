@@ -1,7 +1,11 @@
-/// <reference path="../../d3.d.ts" />
-/// <reference path="../../d3.rsc.ts" />
+/// <reference path="../../../d3.d.ts" />
+/// <reference path="../../../d3.rsc.ts" />
 
-d3.shuffle = function<T>(array: T[]):T[] {
+// d3.shuffle = function<T>(array: T[]):T[] {
+
+
+/*@ d3_shuffle :: forall T . (arr: #Array[#Immutable, T]) => {v: #Array[#Immutable, T] | true} */
+function d3_shuffle<T>(array: T[]):T[] {
   var m = array.length;
   while (m) {
       // ORIG Math.random() * m-- | 0;

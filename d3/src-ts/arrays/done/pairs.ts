@@ -1,5 +1,5 @@
-/// <reference path="../../d3.d.ts" />
-/// <reference path="../../d3.rsc.ts" />
+/// <reference path="../../../d3.d.ts" />
+/// <reference path="../../../d3.rsc.ts" />
 
 // Why is this not scraped from the output type?
 /*@ qualif RemoveMe(v:a): len(v) = 2 */
