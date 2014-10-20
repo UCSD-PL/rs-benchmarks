@@ -7,44 +7,44 @@ module ts {
 
     export interface StringSet extends Map<any> { }
 
-    /*@  forEach :: forall T U . (array: IArray<T>, callback: (element: T) => U) => { U | true } + undefined */
-    export function forEach<T, U>(array: T[], callback: (element: T) => U): U {
-        /*@ result :: U */
-        var result: U;
-        if (array) {
-            var cnt = false;
-            for (var i = 0, len = array.length; i < len && cnt; i++) {
-                if (result = callback(array[i])) cnt = false;
-            }
-        }
-        return result;
-    }
-
-    /*@  contains :: forall T . (array: IArray<T>, value: T) => { boolean | true } */
-    export function contains<T>(array: T[], value: T): boolean {
-        if (array) {
-            var len = array.length;
-            for (var i = 0; i < len; i++) {
-                if (array[i] === value) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /*@  indexOf :: forall T . (array: IArray<T>, value: T) => { number | true } */
-    export function indexOf<T>(array: T[], value: T): number {
-        if (array) {
-            var len = array.length;
-            for (var i = 0; i < len; i++) {
-                if (array[i] === value) {
-                    return i;
-                }
-            }
-        }
-        return -1;
-    }
+//     /*@  forEach :: forall T U . (array: IArray<T>, callback: (element: T) => U) => { U | true } + undefined */
+//     export function forEach<T, U>(array: T[], callback: (element: T) => U): U {
+//         /*@ result :: U */
+//         var result: U;
+//         if (array) {
+//             var cnt = false;
+//             for (var i = 0, len = array.length; i < len && cnt; i++) {
+//                 if (result = callback(array[i])) cnt = false;
+//             }
+//         }
+//         return result;
+//     }
+// 
+//     /*@  contains :: forall T . (array: IArray<T>, value: T) => { boolean | true } */
+//     export function contains<T>(array: T[], value: T): boolean {
+//         if (array) {
+//             var len = array.length;
+//             for (var i = 0; i < len; i++) {
+//                 if (array[i] === value) {
+//                     return true;
+//                 }
+//             }
+//         }
+//         return false;
+//     }
+// 
+//     /*@  indexOf :: forall T . (array: IArray<T>, value: T) => { number | true } */
+//     export function indexOf<T>(array: T[], value: T): number {
+//         if (array) {
+//             var len = array.length;
+//             for (var i = 0; i < len; i++) {
+//                 if (array[i] === value) {
+//                     return i;
+//                 }
+//             }
+//         }
+//         return -1;
+//     }
 
 //     export function filter<T>(array: T[], f: (x: T) => boolean): T[] {
 //         var result: T[];
@@ -191,16 +191,15 @@ module ts {
 //         return text.replace(/{(\d+)}/g, (match, index?) => args[+index + baseIndex]);
 //     }
 
-// TODO
-    export var localizedDiagnosticMessages: Map<string> = undefined;
-
-    export function getLocaleSpecificMessage(message: string) {
-        if (ts.localizedDiagnosticMessages) {
-            message = localizedDiagnosticMessages[message];
-        }
-
-        return message;
-    }
+//     export var localizedDiagnosticMessages: Map<string> = undefined;
+// 
+//     export function getLocaleSpecificMessage(message: string) {
+//         if (ts.localizedDiagnosticMessages) {
+//             message = localizedDiagnosticMessages[message];
+//         }
+// 
+//         return message;
+//     }
 
 //     export function createFileDiagnostic(file: SourceFile, start: number, length: number, message: DiagnosticMessage, ...args: any[]): Diagnostic;
 //     export function createFileDiagnostic(file: SourceFile, start: number, length: number, message: DiagnosticMessage): Diagnostic {
@@ -520,14 +519,15 @@ module ts {
 //         var extLen = extension.length;
 //         return pathLen > extLen && path.substr(pathLen - extLen, extLen) === extension;
 //     }
-// 
-//     export interface ObjectAllocator {
-//         getNodeConstructor(kind: SyntaxKind): new () => Node;
-//         getSymbolConstructor(): new (flags: SymbolFlags, name: string) => Symbol;
-//         getTypeConstructor(): new (checker: TypeChecker, flags: TypeFlags) => Type;
-//         getSignatureConstructor(): new (checker: TypeChecker) => Signature;
-//     }
-// 
+
+    // PV: added object types with constructor signature instead of constructor func sig
+    export interface ObjectAllocator {
+        getNodeConstructor(kind: SyntaxKind): { new (): Node };
+        getSymbolConstructor(): { new (flags: SymbolFlags, name: string): Symbol };
+        getTypeConstructor(): { new (checker: TypeChecker, flags: TypeFlags): Type };
+        getSignatureConstructor(): { new (checker: TypeChecker): Signature };
+    }
+
 //     function Symbol(flags: SymbolFlags, name: string) {
 //         this.flags = flags;
 //         this.name = name;

@@ -746,6 +746,7 @@ module ts {
         name: string;                  // Name of symbol
         id?: number;                   // Unique id (used to look up SymbolLinks)
         mergeId?: number;              // Merge id (used to look up merged symbol)
+        /*@ declarations : IArray<Declaration<Immutable>> */
         declarations?: Declaration[];  // Declarations associated with this symbol
         parent?: Symbol;               // Parent symbol
         members?: SymbolTable;         // Class, interface or literal instance members
@@ -1146,4 +1147,21 @@ module ts {
         useCaseSensitiveFileNames(): boolean;
         getNewLine(): string;
     }
+
+
+////////////////////////////////////////////////////////////// 
+// RefScript 
+
+
+/* predicate Inst(X, Key, Val, Type) = ((keyVal(X, Key) = Val) => instanceof (X, Type)) */
+
+/* predicate InstHorse(V) = Inst(V,"kind","horse","Horse") */
+/* predicate InstSnake(V) = Inst(V,"kind","snake","Snake") */
+/* predicate InstTiger(V) = Inst(V,"kind","tiger","Tiger") */
+
+
+
+
+
+
 }
