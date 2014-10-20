@@ -191,7 +191,7 @@ module ts {
 //         return text.replace(/{(\d+)}/g, (match, index?) => args[+index + baseIndex]);
 //     }
 
-// TODO : HERE
+// TODO
     export var localizedDiagnosticMessages: Map<string> = undefined;
 
     export function getLocaleSpecificMessage(message: string) {
