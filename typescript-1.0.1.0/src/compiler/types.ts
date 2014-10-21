@@ -3,6 +3,23 @@
 
 module ts {
 
+
+
+////////////////////////////////////////////////////////////// 
+// RefScript 
+
+
+/*@ predicate FlagInstance(X, i, Type) = (bv_idx(keyVal(X, "flags"), i) => instanceof (X, Type)) */
+
+/*@ predicate FlagInstTransient(V) = FlagInstance(V, 25, "TransientSymbol") */
+
+/*@ alias ISymbolF = { v: Symbol<Immutable> | FlagInstTransient(v) } */
+
+
+//
+////////////////////////////////////////////////////////////// 
+
+
     export interface TextRange {
         pos: number;
         end: number;
@@ -745,6 +762,7 @@ module ts {
         flags: SymbolFlags;            // Symbol flags
         name: string;                  // Name of symbol
         id?: number;                   // Unique id (used to look up SymbolLinks)
+        /*@ mergeId : [#Mutable] number */
         mergeId?: number;              // Merge id (used to look up merged symbol)
         /*@ declarations : IArray<Declaration<Immutable>> */
         declarations?: Declaration[];  // Declarations associated with this symbol
@@ -754,6 +772,8 @@ module ts {
         exportSymbol?: Symbol;         // Exported symbol associated with this symbol
         valueDeclaration?: Declaration // First value declaration of the symbol
     }
+
+    /*@ alias ISymbol = ts.Symbol<Immutable> */
 
     export interface SymbolLinks {
         target?: Symbol;               // Resolved (non-alias) target of an alias
@@ -1147,21 +1167,5 @@ module ts {
         useCaseSensitiveFileNames(): boolean;
         getNewLine(): string;
     }
-
-
-////////////////////////////////////////////////////////////// 
-// RefScript 
-
-
-/* predicate Inst(X, Key, Val, Type) = ((keyVal(X, Key) = Val) => instanceof (X, Type)) */
-
-/* predicate InstHorse(V) = Inst(V,"kind","horse","Horse") */
-/* predicate InstSnake(V) = Inst(V,"kind","snake","Snake") */
-/* predicate InstTiger(V) = Inst(V,"kind","tiger","Tiger") */
-
-
-
-
-
 
 }

@@ -523,7 +523,10 @@ module ts {
     // PV: added object types with constructor signature instead of constructor func sig
     export interface ObjectAllocator {
         getNodeConstructor(kind: SyntaxKind): { new (): Node };
-        getSymbolConstructor(): { new (flags: SymbolFlags, name: string): Symbol };
+        getSymbolConstructor(): { 
+          /*@ new (flags: SymbolFlags, name: string) => { v: ISymbol | keyVal(v, "flags") = flags } */
+          new (flags: SymbolFlags, name: string): Symbol 
+        };
         getTypeConstructor(): { new (checker: TypeChecker, flags: TypeFlags): Type };
         getSignatureConstructor(): { new (checker: TypeChecker): Signature };
     }

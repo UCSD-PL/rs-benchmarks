@@ -5,13 +5,17 @@
 //  <reference path="binder.ts"/>
 //  <reference path="emitter.ts"/>
 
+
+
 module ts {
 
     var nextSymbolId = 1;
     var nextNodeId = 1;
+
+    /*@ nextMergeId :: { number | v > 0 } */
     var nextMergeId = 1;
 
-    /*@ getDeclarationOfKind :: (symbol: Symbol, kind: SyntaxKind) => { Declaration<Immutable> | keyVal(v,"kind") = kind } + { undefined | true } */
+    /*@ getDeclarationOfKind :: (symbol: ISymbol, kind: SyntaxKind) => { Declaration<Immutable> | keyVal(v,"kind") = kind } + { undefined | true } */
     export function getDeclarationOfKind(symbol: Symbol, kind: SyntaxKind): Declaration {
         var declarations = symbol.declarations;
         for (var i = 0; i < declarations.length; i++) {
@@ -46,8 +50,9 @@ module ts {
 
         var typeCount = 0;
 
-        /*@ emptyArray :: forall T . { IArray<T> | (len v) = 0 }  */
-        var emptyArray: any[] = [];
+        /*@ emptyArray :: forall T . () => { IArray<T> | (len v) = 0 }  */
+        function emptyArray(): any[] { return []; };
+        // var emptyArray: any[] = [];
         var emptySymbols: SymbolTable = {};
 
         var compilerOptions = program.getCompilerOptions();
@@ -117,7 +122,9 @@ module ts {
 //         var stringLiteralTypes: Map<StringLiteralType> = {};
 //         var emitExtends = false;
 // 
+//         /*@ mergedSymbols :: Array<Mutable,ISymbol> */
 //         var mergedSymbols: Symbol[] = [];
+
 //         var symbolLinks: SymbolLinks[] = [];
 //         var nodeLinks: NodeLinks[] = [];
 //         var potentialThisCollisions: Node[] = [];
@@ -136,29 +143,34 @@ module ts {
 //                 : createCompilerDiagnostic(message, arg0, arg1, arg2);
 //             addDiagnostic(diagnostic);
 //         }
+
 // 
+//         /*@ createSymbol :: (flags: SymbolFlags, name: string) => { ISymbol | keyVal(v, "flags") = flags } */
 //         function createSymbol(flags: SymbolFlags, name: string): Symbol {
 //             return new Symbol(flags, name);
 //         }
-// 
-//         function getExcludedSymbolFlags(flags: SymbolFlags): SymbolFlags {
-//             var result: SymbolFlags = 0;
-//             if (flags & SymbolFlags.Variable) result |= SymbolFlags.VariableExcludes;
-//             if (flags & SymbolFlags.Property) result |= SymbolFlags.PropertyExcludes;
-//             if (flags & SymbolFlags.EnumMember) result |= SymbolFlags.EnumMemberExcludes;
-//             if (flags & SymbolFlags.Function) result |= SymbolFlags.FunctionExcludes;
-//             if (flags & SymbolFlags.Class) result |= SymbolFlags.ClassExcludes;
-//             if (flags & SymbolFlags.Interface) result |= SymbolFlags.InterfaceExcludes;
-//             if (flags & SymbolFlags.Enum) result |= SymbolFlags.EnumExcludes;
-//             if (flags & SymbolFlags.ValueModule) result |= SymbolFlags.ValueModuleExcludes;
-//             if (flags & SymbolFlags.Method) result |= SymbolFlags.MethodExcludes;
-//             if (flags & SymbolFlags.GetAccessor) result |= SymbolFlags.GetAccessorExcludes;
-//             if (flags & SymbolFlags.SetAccessor) result |= SymbolFlags.SetAccessorExcludes;
-//             if (flags & SymbolFlags.TypeParameter) result |= SymbolFlags.TypeParameterExcludes;
-//             if (flags & SymbolFlags.Import) result |= SymbolFlags.ImportExcludes;
-//             return result;
-//         }
-// 
+
+        // XXX: DONE
+        /*@ getExcludedSymbolFlags :: (flags: SymbolFlags) => { SymbolFlags | true } */
+        function getExcludedSymbolFlags(flags: SymbolFlags): SymbolFlags {
+            var result: SymbolFlags = 0;
+            if (flags & SymbolFlags.Variable)      result = result | SymbolFlags.VariableExcludes;
+            if (flags & SymbolFlags.Property)      result = result | SymbolFlags.PropertyExcludes;
+//             if (flags & SymbolFlags.EnumMember)    result = result | SymbolFlags.EnumMemberExcludes;
+//             if (flags & SymbolFlags.Function)      result = result | SymbolFlags.FunctionExcludes;
+//             if (flags & SymbolFlags.Class)         result = result | SymbolFlags.ClassExcludes;
+//             if (flags & SymbolFlags.Interface)     result = result | SymbolFlags.InterfaceExcludes;
+//             if (flags & SymbolFlags.Enum)          result = result | SymbolFlags.EnumExcludes;
+//             if (flags & SymbolFlags.ValueModule)   result = result | SymbolFlags.ValueModuleExcludes;
+//             if (flags & SymbolFlags.Method)        result = result | SymbolFlags.MethodExcludes;
+//             if (flags & SymbolFlags.GetAccessor)   result = result | SymbolFlags.GetAccessorExcludes;
+//             if (flags & SymbolFlags.SetAccessor)   result = result | SymbolFlags.SetAccessorExcludes;
+//             if (flags & SymbolFlags.TypeParameter) result = result | SymbolFlags.TypeParameterExcludes;
+//             if (flags & SymbolFlags.Import)        result = result | SymbolFlags.ImportExcludes;
+            return result ;
+        }
+
+//         /*@ recordMergedSymbol :: (target: ISymbol, source: ISymbol) => { void | true } */
 //         function recordMergedSymbol(target: Symbol, source: Symbol) {
 //             if (!source.mergeId) source.mergeId = nextMergeId++;
 //             mergedSymbols[source.mergeId] = target;
@@ -225,13 +237,24 @@ module ts {
 //                 }
 //             }
 //         }
-// 
-//         function getSymbolLinks(symbol: Symbol): SymbolLinks {
-//             if (symbol.flags & SymbolFlags.Transient) return <TransientSymbol>symbol;
+
+
+
+// XXX 
+        /*@ getSymbolLinks :: (symbol: ISymbolF) => SymbolLinks<Immutable> */
+        function getSymbolLinks(symbol: Symbol): SymbolLinks {
+
+            if ((symbol.flags & SymbolFlags.Transient) === SymbolFlags.Transient) { 
+              // ORIG: if (symbol.flags & sft) { 
+              return <TransientSymbol>symbol;
+            }
+
+            throw new Error("");
+            
 //             if (!symbol.id) symbol.id = nextSymbolId++;
 //             return symbolLinks[symbol.id] || (symbolLinks[symbol.id] = {});
-//         }
-// 
+        }
+
 //         function getNodeLinks(node: Node): NodeLinks {
 //             if (!node.id) node.id = nextNodeId++;
 //             return nodeLinks[node.id] || (nodeLinks[node.id] = {});
