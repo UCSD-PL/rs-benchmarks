@@ -318,49 +318,57 @@ module SplayVERSION {
             var left:SplayTreeNode=dummy;
             var right:SplayTreeNode=dummy;
 //            dummy = left = right = new SplayTreeNode(null, null);
+            /*@ current :: SplayTreeNode<Mutable> */
             var current = root;
             var shouldBreak = false;
             while (!shouldBreak) {
                 if (key < current.key) {
-                    if (!current.left) {
+                    var currleft = current.left;
+                    if (!currleft) {
                         shouldBreak = true;
                     } else {
-                        if (key < current.left.key) {
+                        if (key < currleft.key) {
                             // Rotate right.
-                            var tmp = current.left;
-                            current.left = tmp.right;
+                            /*@ tmp :: SplayTreeNode<Mutable> */
+                            var tmp = currleft;
+                            currleft = tmp.right;
                             tmp.right = current;
                             current = tmp;
-                            if (!current.left) {
-                                shouldBreak = true;
-                            }
                         }
-                        if (!shouldBreak) {
+                        if (!currleft) {
+                            shouldBreak = true;
+                        } else {
+                            /*@ foo :: SplayTreeNode<Mutable> */
+                            var foo = currleft;
                             // Link right.
                             right.left = current;
                             right = current;
-                            current = current.left;
+                            current = foo;
                         }
                     }
                 } else if (key > current.key) {
-                    if (!current.right) {
+                    var currright = current.right;
+                    if (!currright) {
                         shouldBreak = true;
                     } else {
-                        if (key > current.right.key) {
+                        if (key > currright.key) {
                             // Rotate left.
-                            var tmp = current.right;
+                            /*@ tmp :: SplayTreeNode<Mutable> */
+                            var tmp = currright;
                             current.right = tmp.left;
                             tmp.left = current;
                             current = tmp;
-                            if (!current.right) {
+                            if (!currright) {
                                 shouldBreak = true;
                             }
                         }
                         if (!shouldBreak) {
+                            /*@ foo :: SplayTreeNode<Mutable> */
+                            var foo = currright;
                             // Link left.
                             left.right = current;
                             left = current;
-                            current = current.right;
+                            current = foo;
                         }
                     }
                 } else {
