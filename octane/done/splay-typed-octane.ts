@@ -33,6 +33,7 @@
 // also has to deal with a lot of changes to the large tree object
 // graph.
 
+
 module SplayVERSION {
 
     // Configuration.
@@ -256,7 +257,7 @@ module SplayVERSION {
                 return null;
             }
             /*@ current :: SplayTreeNode<Mutable> */
-            var current : SplayTreeNode = opt_startNode || root;
+            var current = opt_startNode || root;
             var right = current.right;
             while (right) {
                 current = <SplayTreeNode>right;
@@ -299,9 +300,9 @@ module SplayVERSION {
         /*@ exportKeys : () : {Array<Mutable, number> | true} */
         public exportKeys() {
             /*@ result :: Array<Mutable, number> */
-            var result:number[] = [];
+            var result = [];
             if (!this.isEmpty()) {
-                var f = function (node:SplayTreeNode):void 
+                var f = function (node)
                     /*@ <anonymous> (x:SplayTreeNode<Mutable>) => void */ 
                     { result.push(node.key); };
                 this.root_.traverse_(f);
@@ -345,11 +346,11 @@ module SplayVERSION {
                     } else {
                         if (key < currleft.key) {
                             // Rotate right.
-                            /*@ tmp :: SplayTreeNode<Mutable> */
-                            var tmp = currleft;
-                            currleft = tmp.right;
+                            var tmp = <SplayTreeNode>currleft;
+                            current.left = tmp.right;
                             tmp.right = current;
                             current = tmp;
+                            currleft = current.left;
                         }
                         if (!currleft) {
                             shouldBreak = true;
@@ -367,16 +368,15 @@ module SplayVERSION {
                     } else {
                         if (key > currright.key) {
                             // Rotate left.
-                            /*@ tmp :: SplayTreeNode<Mutable> */
-                            var tmp = currright;
+                            var tmp = <SplayTreeNode>currright;
                             current.right = tmp.left;
                             tmp.left = current;
                             current = tmp;
-                            if (!currright) {
-                                shouldBreak = true;
-                            }
+                            currright = current.right;
                         }
-                        if (!shouldBreak) {
+                        if (!currright) {
+                            shouldBreak = true;
+                        } else {
                             // Link left.
                             left.right = current;
                             left = current;
