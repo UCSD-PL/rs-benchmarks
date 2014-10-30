@@ -258,9 +258,7 @@ module SplayVERSION {
             var current : SplayTreeNode = opt_startNode || root;
             var right = current.right;
             while (right) {
-                /*@ foo :: SplayTreeNode<Mutable> */
-                var foo = right;
-                current = foo;
+                current = <SplayTreeNode>right;
                 right = current.right;
             }
             return current;
@@ -334,8 +332,7 @@ module SplayVERSION {
             var left:SplayTreeNode=dummy;
             var right:SplayTreeNode=dummy;
 //            dummy = left = right = new SplayTreeNode(null, null);
-            /*@ current :: SplayTreeNode<Mutable> */
-            var current = root;
+            var current = <SplayTreeNode>root;
             var shouldBreak = false;
             while (!shouldBreak) {
                 if (key < current.key) {
@@ -354,12 +351,10 @@ module SplayVERSION {
                         if (!currleft) {
                             shouldBreak = true;
                         } else {
-                            /*@ foo :: SplayTreeNode<Mutable> */
-                            var foo = currleft;
                             // Link right.
                             right.left = current;
                             right = current;
-                            current = foo;
+                            current = <SplayTreeNode>currleft;
                         }
                     }
                 } else if (key > current.key) {
@@ -379,12 +374,10 @@ module SplayVERSION {
                             }
                         }
                         if (!shouldBreak) {
-                            /*@ foo :: SplayTreeNode<Mutable> */
-                            var foo = currright;
                             // Link left.
                             left.right = current;
                             left = current;
-                            current = foo;
+                            current = <SplayTreeNode>currright;
                         }
                     }
                 } else {
@@ -437,7 +430,7 @@ module SplayVERSION {
          * @param {function(SplayTree.Node)} f Visitor function.
          * @private
          */
-        /*@ traverse_ : [#Mutable] (f: (arg:SplayTreeNode<Mutable>) => top) : void */
+        /*@ traverse_ : [#Mutable] (f: (arg:SplayTreeNode<Mutable>) => top) : { void | true } */
         public traverse_(f : (arg:SplayTreeNode) => any) {
             /*@ current :: SplayTreeNode<Mutable> + null */
             var current = this;

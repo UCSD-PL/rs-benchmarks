@@ -187,13 +187,11 @@ module CryptoVERSION {
         public static setup = 3;
 
         public am(i: number, x: number, w: BigInteger, j: number, c: number, n: number) {
-            switch (BigInteger.setup) {
-                case 1: return this.am1(i,x,w,j,c,n);
-                case 2: return this.am2(i,x,w,j,c,n);
-                case 3: return this.am3(i,x,w,j,c,n);
-                case 4: return this.am4(i,x,w,j,c,n);
-                default: return this.am3(i,x,w,j,c,n);
-            } 
+            if      (BigInteger.setup === 1) return this.am1(i,x,w,j,c,n);
+            else if (BigInteger.setup === 2) return this.am2(i,x,w,j,c,n);
+            else if (BigInteger.setup === 3) return this.am3(i,x,w,j,c,n);
+            else if (BigInteger.setup === 4) return this.am4(i,x,w,j,c,n);
+            else                             return this.am3(i,x,w,j,c,n);
         }
 
         // (protected) copy this to r
@@ -235,19 +233,19 @@ module CryptoVERSION {
                 var x = (k==8)?s[i]&0xff:intAt(s,i);
                 if(x < 0) {
                     if(s.charAt(i) == "-") mi = true;
-                    continue;
+                } else {
+                    mi = false;
+                    if(sh == 0)
+                        this_array[this.t++] = x;
+                    else if(sh+k > BI_DB) {
+                        this_array[this.t-1] |= (x&((1<<(BI_DB-sh))-1))<<sh;
+                        this_array[this.t++] = (x>>(BI_DB-sh));
+                    }
+                    else
+                        this_array[this.t-1] |= x<<sh;
+                    sh += k;
+                    if(sh >= BI_DB) sh -= BI_DB;
                 }
-                mi = false;
-                if(sh == 0)
-                    this_array[this.t++] = x;
-                else if(sh+k > BI_DB) {
-                    this_array[this.t-1] |= (x&((1<<(BI_DB-sh))-1))<<sh;
-                    this_array[this.t++] = (x>>(BI_DB-sh));
-                }
-                else
-                    this_array[this.t-1] |= x<<sh;
-                sh += k;
-                if(sh >= BI_DB) sh -= BI_DB;
             }
             if(k == 8 && (s[0]&0x80) != 0) {
                 this.s = -1;
@@ -636,14 +634,14 @@ module CryptoVERSION {
                 var x = intAt(s,i);
                 if(x < 0) {
                     if(s.charAt(i) == "-" && this.signum() == 0) mi = true;
-                    continue;
-                }
-                w = b*w+x;
-                if(++j >= cs) {
-                    this.dMultiply(d);
-                    this.dAddOffset(w,0);
-                    j = 0;
-                    w = 0;
+                } else {
+                    w = b*w+x;
+                    if(++j >= cs) {
+                        this.dMultiply(d);
+                        this.dAddOffset(w,0);
+                        j = 0;
+                        w = 0;
+                    }
                 }
             }
             if(j > 0) {
@@ -1562,14 +1560,15 @@ module CryptoVERSION {
             var qs = B>>1;
             this.e = parseInt(E,16);
             var ee = new BigInteger(E,16);
-            for(;;) {
-                for(;;) {
+            var shouldBreak = false;
+            while(!shouldBreak) {
+                this.p = new BigInteger(B-qs,1,rng);
+                while(!(this.p.subtract(BigInteger.ONE).gcd(ee).compareTo(BigInteger.ONE) == 0 && this.p.isProbablePrime(10))) {
                     this.p = new BigInteger(B-qs,1,rng);
-                    if(this.p.subtract(BigInteger.ONE).gcd(ee).compareTo(BigInteger.ONE) == 0 && this.p.isProbablePrime(10)) break;
                 }
-                for(;;) {
+                this.q = new BigInteger(qs,1,rng);
+                while(!(this.q.subtract(BigInteger.ONE).gcd(ee).compareTo(BigInteger.ONE) == 0 && this.q.isProbablePrime(10))) {
                     this.q = new BigInteger(qs,1,rng);
-                    if(this.q.subtract(BigInteger.ONE).gcd(ee).compareTo(BigInteger.ONE) == 0 && this.q.isProbablePrime(10)) break;
                 }
                 if(this.p.compareTo(this.q) <= 0) {
                     var t = this.p;
@@ -1585,7 +1584,7 @@ module CryptoVERSION {
                     this.dmp1 = this.d.mod(p1);
                     this.dmq1 = this.d.mod(q1);
                     this.coeff = this.q.modInverse(this.p);
-                    break;
+                    shouldBreak = true;
                 }
             }
         }
