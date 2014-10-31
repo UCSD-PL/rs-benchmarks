@@ -41,11 +41,12 @@ module SplayVERSION {
     var kSplayTreeModifications = 80;
     var kSplayTreePayloadDepth = 5;
 
+    /*@ splayTree :: SplayTree<Mutable> + null */
     var splayTree:SplayTree = null;
 
-
+    /*@ GeneratePayloadTree :: (depth:number, tag:string) => {top | true} */
     function GeneratePayloadTree(depth, tag) {
-        if (depth == 0) {
+        if (depth === 0) {
             return <any>{
                 array: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
                 string: 'String for key ' + tag + ' in leaf node'
@@ -58,38 +59,42 @@ module SplayVERSION {
         }
     }
 
-
+    /*@ GenerateKey :: () => {number | true} */
     function GenerateKey() {
         // The benchmark framework guarantees that Math.random is
         // deterministic; see base.js.
         return Math.random();
     }
 
-
+    /*@ InsertNewNode :: () => {number | true} */
     function InsertNewNode() {
+        var tree = splayTree;
+        if (!tree) throw new Error('splayTree is null! did you forget to call SplaySetup?');
         // Insert new node with a unique key.
-        var key:number = -1;
-        do {
+        var key = GenerateKey();
+        while (tree.find(key) != null) {
             key = GenerateKey();
-        } while (splayTree.find(key) != null);
+        }
         var payload = GeneratePayloadTree(kSplayTreePayloadDepth, String(key));
-        splayTree.insert(key, payload);
+        tree.insert(key, payload);
         return key;
     }
 
 
-
+    /*@ SplaySetup :: () => {void | true} */
     export function SplaySetup() {
         splayTree = new SplayTree();
         for (var i = 0; i < kSplayTreeSize; i++) InsertNewNode();
     }
 
-
+    /*@ SplayTearDown :: () => {void | true} */
     export function SplayTearDown() {
+        var tree = splayTree;
+        if (!tree) throw new Error('splayTree is null! did you forget to call SplaySetup?');
         // Allow the garbage collector to reclaim the memory
         // used by the splay tree no matter how we exit the
         // tear down function.
-        var keys = splayTree.exportKeys();
+        var keys = tree.exportKeys();
         splayTree = null;
 
         // Verify that the splay tree has the right size.
@@ -106,15 +111,17 @@ module SplayVERSION {
         }
     }
 
-
+    /*@ SplayRun :: () => {void | true} */
     export function SplayRun() {
+        var tree = splayTree;
+        if (!tree) throw new Error('splayTree is null! did you forget to call SplaySetup?');
         // Replace a few nodes in the splay tree.
         for (var i = 0; i < kSplayTreeModifications; i++) {
             console.log(".");
             var key = InsertNewNode();
-            var greatest = splayTree.findGreatestLessThan(key);
-            if (greatest == null) splayTree.remove(key);
-            else splayTree.remove(greatest.key);
+            var greatest = tree.findGreatestLessThan(key);
+            if (!greatest) tree.remove(key);
+            else tree.remove(greatest.key);
         }
     }
 
@@ -129,6 +136,7 @@ module SplayVERSION {
      * @constructor
      */
     class SplayTree {
+        /*@ new() => {void | true} */
         constructor() {}
 
         /**
@@ -137,12 +145,14 @@ module SplayVERSION {
          * @type {SplayTree.Node}
          * @private
          */
+        /*@ root_ : [Mutable] SplayTreeNode<Mutable> + null */
         private root_ : SplayTreeNode = null;
 
 
         /**
          * @return {boolean} Whether the tree is empty.
          */
+        /*@ isEmpty : () : {boolean | true} */
         public isEmpty() {
             return !this.root_;
         }
@@ -156,26 +166,30 @@ module SplayVERSION {
          * @param {number} key Key to insert into the tree.
          * @param {*} value Value to insert into the tree.
          */
-        public insert(key:number, value) {
-            if (this.isEmpty()) {
+        /*@ insert : (key:number, value:top) : {void | true} */
+        public insert(key, value) {
+            var root = this.root_;
+            if (!root) {
                 this.root_ = new SplayTreeNode(key, value);
                 return;
             }
             // Splay on the key to move the last node on the search path for
             // the key to the root of the tree.
             this.splay_(key);
-            if (this.root_.key == key) {
+            root = this.root_;
+            if (!root) throw new Error('This check should never fail'); 
+            if (root.key === key) {
                 return;
             }
             var node = new SplayTreeNode(key, value);
-            if (key > this.root_.key) {
-                node.left = this.root_;
-                node.right = this.root_.right;
-                this.root_.right = null;
+            if (key > root.key) {
+                node.left = root;
+                node.right = root.right;
+                root.right = null;
             } else {
-                node.right = this.root_;
-                node.left = this.root_.left;
-                this.root_.left = null;
+                node.right = root;
+                node.left = root.left;
+                root.left = null;
             }
             this.root_ = node;
         }
@@ -189,25 +203,31 @@ module SplayVERSION {
          * @param {number} key Key to find and remove from the tree.
          * @return {SplayTree.Node} The removed node.
          */
+        /*@ remove : (key:number) : {SplayTreeNode<Mutable> | true} */
         public remove(key) {
-            if (this.isEmpty()) {
+            var root = this.root_;
+            if (!root) {
                 throw new Error('Key not found: ' + key);
             }
             this.splay_(key);
-            if (this.root_.key != key) {
+            root = this.root_;
+            if (!root) throw new Error('This check should never fail'); 
+            if (root.key != key) {
                 throw new Error('Key not found: ' + key);
             }
-            var removed = this.root_;
-            if (!this.root_.left) {
-                this.root_ = this.root_.right;
+            var removed = root;
+            if (!root.left) {
+                this.root_ = root.right;
             } else {
-                var right = this.root_.right;
-                this.root_ = this.root_.left;
+                var right = root.right;
+                this.root_ = root.left;
                 // Splay to make sure that the new root has an empty right child.
                 this.splay_(key);
                 // Insert the original right child as the right child of the new
                 // root.
-                this.root_.right = right;
+                root = this.root_;
+                if (!root) throw new Error('This check should never fail'); 
+                root.right = right;
             }
             return removed;
         }
@@ -220,25 +240,34 @@ module SplayVERSION {
          * @param {number} key Key to find in the tree.
          * @return {SplayTree.Node} Node having the specified key.
          */
+        /*@ find : (key:number) : {SplayTreeNode<Mutable> + null | true} */
         public find(key) {
-            if (this.isEmpty()) {
+            var root = this.root_;
+            if (!root) {
                 return null;
             }
             this.splay_(key);
-            return this.root_.key == key ? this.root_ : null;
+            root = this.root_;
+            if (!root) throw new Error('This check should never fail'); 
+            return root.key === key ? root : null;
         }
 
 
         /**
          * @return {SplayTree.Node} Node having the maximum key value.
          */
-        public findMax(opt_startNode) : SplayTreeNode {
-            if (this.isEmpty()) {
+        /*@ findMax : (opt: SplayTreeNode<Mutable> + null) : {SplayTreeNode<Mutable> + null | true} */
+        public findMax(opt_startNode) {
+            var root = this.root_;
+            if (!root) {
                 return null;
             }
-            var current : SplayTreeNode = opt_startNode || this.root_;
-            while (current.right) {
-                current = current.right;
+            /*@ current :: SplayTreeNode<Mutable> */
+            var current = opt_startNode || root;
+            var right = current.right;
+            while (right) {
+                current = <SplayTreeNode>right;
+                right = current.right;
             }
             return current;
         }
@@ -248,19 +277,23 @@ module SplayVERSION {
          * @return {SplayTree.Node} Node having the maximum key value that
          *     is less than the specified key value.
          */
-        public findGreatestLessThan(key) : SplayTreeNode {
-            if (this.isEmpty()) {
+        /*@ findGreatestLessThan : (key: number) : {SplayTreeNode<Mutable> + null | true} */
+        public findGreatestLessThan(key) {
+            var root = this.root_;
+            if (!root) {
                 return null;
             }
             // Splay on the key to move the node with the given key or the last
             // node on the search path to the top of the tree.
             this.splay_(key);
+            root = this.root_;
+            if (!root) throw new Error('This check should never fail'); 
             // Now the result is either the root node or the greatest node in
             // the left subtree.
-            if (this.root_.key < key) {
-                return this.root_;
-            } else if (this.root_.left) {
-                return this.findMax(this.root_.left);
+            if (root.key < key) {
+                return root;
+            } else if (root.left) {
+                return this.findMax(root.left);
             } else {
                 return null;
             }
@@ -270,10 +303,16 @@ module SplayVERSION {
         /**
          * @return {Array<*>} An array containing all the keys of tree's nodes.
          */
-        public exportKeys() : any[] {
-            var result:any[] = [];
-            if (!this.isEmpty()) {
-                this.root_.traverse_(function (node) { result.push(node.key); });
+        /*@ exportKeys : () : {Array<Mutable, number> | true} */
+        public exportKeys() {
+            /*@ result :: Array<Mutable, number> */
+            var result = [];
+            var root = this.root_;
+            if (root) {
+                var f = function (node)
+                    /*@ <anonymous> (x:SplayTreeNode<Mutable>) => {void | true} */ 
+                    { result.push(node.key); };
+                root.traverse_(f);
             }
             return result;
         }
@@ -289,8 +328,10 @@ module SplayVERSION {
          * @param {number} key Key to splay the tree on.
          * @private
          */
+        /*@ splay_ : (key:number) : {void | true} */
         public splay_(key) {
-            if (this.isEmpty()) {
+            var root = this.root_;
+            if (!root) {
                 return;
             }
             // Create a dummy node.  The use of the dummy node is a bit
@@ -302,46 +343,55 @@ module SplayVERSION {
             var left:SplayTreeNode=dummy;
             var right:SplayTreeNode=dummy;
 //            dummy = left = right = new SplayTreeNode(null, null);
-            var current = this.root_;
-            while (true) {
+            var current = <SplayTreeNode>root;
+            var shouldBreak = false;
+            while (!shouldBreak) {
                 if (key < current.key) {
-                    if (!current.left) {
-                        break;
-                    }
-                    if (key < current.left.key) {
-                        // Rotate right.
-                        var tmp = current.left;
-                        current.left = tmp.right;
-                        tmp.right = current;
-                        current = tmp;
-                        if (!current.left) {
-                            break;
+                    var currleft = current.left;
+                    if (!currleft) {
+                        shouldBreak = true;
+                    } else {
+                        if (key < currleft.key) {
+                            // Rotate right.
+                            var tmp = <SplayTreeNode>currleft;
+                            current.left = tmp.right;
+                            tmp.right = current;
+                            current = tmp;
+                            currleft = current.left;
+                        }
+                        if (!currleft) {
+                            shouldBreak = true;
+                        } else {
+                            // Link right.
+                            right.left = current;
+                            right = current;
+                            current = <SplayTreeNode>currleft;
                         }
                     }
-                    // Link right.
-                    right.left = current;
-                    right = current;
-                    current = current.left;
                 } else if (key > current.key) {
-                    if (!current.right) {
-                        break;
-                    }
-                    if (key > current.right.key) {
-                        // Rotate left.
-                        var tmp = current.right;
-                        current.right = tmp.left;
-                        tmp.left = current;
-                        current = tmp;
-                        if (!current.right) {
-                            break;
+                    var currright = current.right;
+                    if (!currright) {
+                        shouldBreak = true;
+                    } else {
+                        if (key > currright.key) {
+                            // Rotate left.
+                            var tmp = <SplayTreeNode>currright;
+                            current.right = tmp.left;
+                            tmp.left = current;
+                            current = tmp;
+                            currright = current.right;
+                        }
+                        if (!currright) {
+                            shouldBreak = true;
+                        } else {
+                            // Link left.
+                            left.right = current;
+                            left = current;
+                            current = <SplayTreeNode>currright;
                         }
                     }
-                    // Link left.
-                    left.right = current;
-                    left = current;
-                    current = current.right;
                 } else {
-                    break;
+                    shouldBreak = true;
                 }
             }
             // Assemble.
@@ -360,18 +410,27 @@ module SplayVERSION {
      * @param {*} value Value.
      */
     class SplayTreeNode {
-        constructor(public key:number, public value) { }
+        public key:number;
+        public value:any;
+
+        /*@ new (key:number, value:top) => {void | true} */
+        constructor(key, value) {
+            this.key = key;
+            this.value = value;
+        }
 
         /**
          * @type {SplayTree.Node}
          */
-        public left : SplayTreeNode = null;
+        /*@ left : [Mutable] SplayTreeNode<Mutable> + null */
+        public left = null;
 
 
         /**
          * @type {SplayTree.Node}
          */
-        public right : SplayTreeNode = null;
+        /*@ right : [Mutable] SplayTreeNode<Mutable> + null */
+        public right = null;
 
 
         /**
@@ -381,8 +440,12 @@ module SplayVERSION {
          * @param {function(SplayTree.Node)} f Visitor function.
          * @private
          */
-        public traverse_(f : (arg:SplayTreeNode) => any) {
-            var current = this;
+        /*@ traverse_ : [Mutable] (f: (arg:SplayTreeNode<Mutable>) => top) : {void | true} */
+        public traverse_(f) {
+            var left = this.left;
+            if (left) left.traverse_(f);
+            f(this);
+            var current = this.right;
             while (current) {
                 var left = current.left;
                 if (left) left.traverse_(f);

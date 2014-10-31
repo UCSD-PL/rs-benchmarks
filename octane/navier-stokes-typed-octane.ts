@@ -33,7 +33,7 @@ module NavierStokes {
         solver.update();
         nsFrameCounter++;
 
-        if(nsFrameCounter==15)
+        if(nsFrameCounter===15)
             checkResult(solver.getDens());
     }
 
@@ -81,7 +81,7 @@ module NavierStokes {
 
     function prepareFrame(field:Field)
     {
-        if (framesTillAddingPoints == 0) {
+        if (framesTillAddingPoints === 0) {
             addPoints(field);
             framesTillAddingPoints = framesBetweenAddingPoints;
             framesBetweenAddingPoints++;
@@ -101,6 +101,7 @@ module NavierStokes {
         public getDens:() => number[]=null;
         public setResolution:(hRes:number, wRes:number) => boolean=null;
 
+        /*@ new (canvas:top) => void */
         constructor(canvas) {
             var iterations:number = 10;
             var visc:number = 0.5;
@@ -393,7 +394,7 @@ module NavierStokes {
                 return false;
             }
             this_setResolution(64, 64);
-			this.setResolution = this_setResolution;
+            this.setResolution = this_setResolution;
         }
     }
     export class Field {
@@ -405,6 +406,7 @@ module NavierStokes {
         public width : () => number = null;
         public height : () => number = null;
         
+        /*@ new (rowSize:number, width:number, height:number, dens:Array<number>, u:Array<number>, v:Array<number>) => void */
         constructor(rowSize:number, width:number, height:number, dens:number[], u:number[], v:number[]) {
             this.setDensity = function(x:number, y:number, d:number) {
                 dens[(x + 1) + (y + 1) * rowSize] = d;
