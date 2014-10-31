@@ -145,7 +145,7 @@ module RichardsTYPEDVERSION {
         public list;
         /*@ currentTcb : [Mutable] TaskControlBlock<Immutable> + null */
         public currentTcb;
-        /*@ currentId : [Mutable] number */
+        /*@ currentId : [Mutable] {number | -1<=v && v<NUMBER_OF_IDS} */
         public currentId;
 
         /*@ new(queueCount:number, 
@@ -153,7 +153,7 @@ module RichardsTYPEDVERSION {
                 blocks:{Array<Immutable, TaskControlBlock<Immutable> + null> | (len v) = NUMBER_OF_IDS}, 
                 list:TaskControlBlock<Immutable>, 
                 currentTcb:TaskControlBlock<Immutable>, 
-                currentId:number) => {void | true} */
+                currentId:{number | -1<=v && v<NUMBER_OF_IDS}) => {void | true} */
         constructor(queueCount = 0, //TODO: default argument assignments
                     holdCount = 0,
                     blocks = new Array(NUMBER_OF_IDS),
@@ -220,8 +220,10 @@ module RichardsTYPEDVERSION {
          */
         /*@ addRunningTask : (id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Immutable>, task:Task<Immutable>) : {void | true} */
         public addRunningTask(id, priority, queue, task) {
+            var currentTcb = this.currentTcb;
+            if (!currentTcb) throw new Error('currentTcb is null');
             this.addTask(id, priority, queue, task);
-            this.currentTcb.setRunning();
+            currentTcb.setRunning();
         }
 
         /**
@@ -233,11 +235,10 @@ module RichardsTYPEDVERSION {
          */
         /*@ addTask : (id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Immutable>, task:Task<Immutable>) : {void | true} */
         public addTask(id, priority, queue, task) {
-            var blocks = this.blocks;
             var currentTcb = new TaskControlBlock(this.list, id, priority, queue, task);
             this.currentTcb = currentTcb;
             this.list = currentTcb;
-            blocks[id] = currentTcb;
+            this.blocks[id] = currentTcb;
         }
 
         /**
@@ -264,11 +265,9 @@ module RichardsTYPEDVERSION {
          * Release a task that is currently blocked and return the next block to run.
          * @param {int} id the id of the task to suspend
          */
-        /*@ release : (id:number) : {TaskControlBlock<Immutable> + null | true} */
+        /*@ release : (id:{number | 0<=v && v<NUMBER_OF_IDS}) : {TaskControlBlock<Immutable> + null | true} */
         public release(id) {
-            var blocks = this.blocks;
-            if (id < 0 || id >= blocks.length) return null;
-            var tcb = blocks[id];
+            var tcb = this.blocks[id];
             if (!tcb) return tcb;
             var currentTcb = this.currentTcb;
             if (!currentTcb) throw new Error("Illegal state");
@@ -318,12 +317,13 @@ module RichardsTYPEDVERSION {
         public queue(packet) {
             var id = packet.id;
             var blocks = this.blocks;
-            if (id < 0 || id >= blocks.length) throw new Error("Illegal state");
             var t = blocks[id];
             if (!t) return t;
             this.queueCount++;
             packet.link = null;
-            packet.id = this.currentId;
+            var currentId = this.currentId;
+            if (currentId === -1) throw new Error("Illegal state");
+            packet.id = currentId;
             var currentTcb = this.currentTcb;
             if (!currentTcb) throw new Error("Illegal state");
             return t.checkPriorityAdd(currentTcb, packet);
@@ -338,7 +338,8 @@ module RichardsTYPEDVERSION {
         private state = 0;
         /*@ link : TaskControlBlock<Immutable> + null */
         public link;
-        public id:number;
+        /*@ id : {number | 0<=v && v<NUMBER_OF_IDS} */
+        public id;
         public priority;
         /*@ queue : [Mutable] Packet<Immutable> + null */
         public queue;
@@ -354,7 +355,7 @@ module RichardsTYPEDVERSION {
          * @param {Task} task the task
          * @constructor
          */
-        /*@ new(link:TaskControlBlock<Immutable> + null, id:number, priority:number, queue:Packet<Immutable>, task:Task<Immutable>) => {void | true} */
+        /*@ new(link:TaskControlBlock<Immutable> + null, id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Immutable>, task:Task<Immutable>) => {void | true} */
         constructor(link, id, priority, queue, task) {
             this.link = link;
             this.id = id;
