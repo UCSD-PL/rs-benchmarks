@@ -68,13 +68,15 @@ module SplayVERSION {
 
     /*@ InsertNewNode :: () => {number | true} */
     function InsertNewNode() {
+        var tree = splayTree;
+        if (!tree) throw new Error('splayTree is null! did you forget to call SplaySetup?');
         // Insert new node with a unique key.
         var key = GenerateKey();
-        while (splayTree.find(key) != null) {
+        while (tree.find(key) != null) {
             key = GenerateKey();
         }
         var payload = GeneratePayloadTree(kSplayTreePayloadDepth, String(key));
-        splayTree.insert(key, payload);
+        tree.insert(key, payload);
         return key;
     }
 
@@ -87,10 +89,12 @@ module SplayVERSION {
 
     /*@ SplayTearDown :: () => {void | true} */
     export function SplayTearDown() {
+        var tree = splayTree;
+        if (!tree) throw new Error('splayTree is null! did you forget to call SplaySetup?');
         // Allow the garbage collector to reclaim the memory
         // used by the splay tree no matter how we exit the
         // tear down function.
-        var keys = splayTree.exportKeys();
+        var keys = tree.exportKeys();
         splayTree = null;
 
         // Verify that the splay tree has the right size.
@@ -109,13 +113,15 @@ module SplayVERSION {
 
     /*@ SplayRun :: () => {void | true} */
     export function SplayRun() {
+        var tree = splayTree;
+        if (!tree) throw new Error('splayTree is null! did you forget to call SplaySetup?');
         // Replace a few nodes in the splay tree.
         for (var i = 0; i < kSplayTreeModifications; i++) {
             console.log(".");
             var key = InsertNewNode();
-            var greatest = splayTree.findGreatestLessThan(key);
-            if (!greatest) splayTree.remove(key);
-            else splayTree.remove(greatest.key);
+            var greatest = tree.findGreatestLessThan(key);
+            if (!greatest) tree.remove(key);
+            else tree.remove(greatest.key);
         }
     }
 
@@ -301,11 +307,12 @@ module SplayVERSION {
         public exportKeys() {
             /*@ result :: Array<Mutable, number> */
             var result = [];
-            if (!this.isEmpty()) {
+            var root = this.root_;
+            if (root) {
                 var f = function (node)
-                    /*@ <anonymous> (x:SplayTreeNode<Mutable>) => void */ 
+                    /*@ <anonymous> (x:SplayTreeNode<Mutable>) => {void | true} */ 
                     { result.push(node.key); };
-                this.root_.traverse_(f);
+                root.traverse_(f);
             }
             return result;
         }

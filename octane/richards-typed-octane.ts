@@ -47,17 +47,17 @@ module RichardsTYPEDVERSION {
     var EXPECTED_QUEUE_COUNT = 2322;
     var EXPECTED_HOLD_COUNT = 928;
 
-    var ID_IDLE       = 0;
-    var ID_WORKER     = 1;
-    var ID_HANDLER_A  = 2;
-    var ID_HANDLER_B  = 3;
+    // var ID_IDLE       = 0;
+    // var ID_WORKER     = 1;
+    // var ID_HANDLER_A  = 2;
+    // var ID_HANDLER_B  = 3;
     var ID_DEVICE_A   = 4;
     var ID_DEVICE_B   = 5;
-    /*@ NUMBER_OF_IDS :: number */
+    /*@ NUMBER_OF_IDS :: {number | v = 6} */
     var NUMBER_OF_IDS = 6;
     var KIND_DEVICE   = 0;
     var KIND_WORK     = 1;
-    /*@ DATA_SIZE :: number */
+    /*@ DATA_SIZE :: {number | v = 4} */
     var DATA_SIZE = 4;
 
     /**
@@ -168,16 +168,17 @@ module RichardsTYPEDVERSION {
             this.currentId = currentId;
         }
 
-        // /**
-        //  * Add an idle task to this scheduler.
-        //  * @param {int} id the identity of the task
-        //  * @param {int} priority the task's priority
-        //  * @param {Packet} queue the queue of work to be processed by the task
-        //  * @param {int} count the number of times to schedule the task
-        //  */
-        // public addIdleTask(id: number, priority: number, queue:Packet, count: number) {
-        //     this.addRunningTask(id, priority, queue, new IdleTask(this, 1, count));
-        // }
+        /**
+         * Add an idle task to this scheduler.
+         * @param {int} id the identity of the task
+         * @param {int} priority the task's priority
+         * @param {Packet} queue the queue of work to be processed by the task
+         * @param {int} count the number of times to schedule the task
+         */
+        /*@ addIdleTask : (id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Immutable>, count:number) : {void | true} */
+        public addIdleTask(id, priority, queue, count) {
+            this.addRunningTask(id, priority, queue, new IdleTask(this, 1, count));
+        }
 
         // /**
         //  * Add a work task to this scheduler.
@@ -199,27 +200,29 @@ module RichardsTYPEDVERSION {
         //     this.addTask(id, priority, queue, new HandlerTask(this));
         // }
 
-        // /**
-        //  * Add a handler task to this scheduler.
-        //  * @param {int} id the identity of the task
-        //  * @param {int} priority the task's priority
-        //  * @param {Packet} queue the queue of work to be processed by the task
-        //  */
-        // public addDeviceTask(id:number, priority:number, queue:Packet) {
-        //     this.addTask(id, priority, queue, new DeviceTask(this))
-        // }
+        /**
+         * Add a handler task to this scheduler.
+         * @param {int} id the identity of the task
+         * @param {int} priority the task's priority
+         * @param {Packet} queue the queue of work to be processed by the task
+         */
+        /*@ addDeviceTask : (id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Immutable>) : {void | true} */
+        public addDeviceTask(id, priority, queue) {
+            this.addTask(id, priority, queue, new DeviceTask(this, null))
+        }
 
-        // /**
-        //  * Add the specified task and mark it as running.
-        //  * @param {int} id the identity of the task
-        //  * @param {int} priority the task's priority
-        //  * @param {Packet} queue the queue of work to be processed by the task
-        //  * @param {Task} task the task to add
-        //  */
-        // public addRunningTask(id:number, priority:number, queue:Packet, task:Task) {
-        //     this.addTask(id, priority, queue, task);
-        //     this.currentTcb.setRunning();
-        // }
+        /**
+         * Add the specified task and mark it as running.
+         * @param {int} id the identity of the task
+         * @param {int} priority the task's priority
+         * @param {Packet} queue the queue of work to be processed by the task
+         * @param {Task} task the task to add
+         */
+        /*@ addRunningTask : (id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Immutable>, task:Task<Immutable>) : {void | true} */
+        public addRunningTask(id, priority, queue, task) {
+            this.addTask(id, priority, queue, task);
+            this.currentTcb.setRunning();
+        }
 
         /**
          * Add the specified task to this scheduler.
@@ -642,7 +645,7 @@ module RichardsTYPEDVERSION {
 
         /*@ link : [Mutable] Packet<Immutable> + null */
         public link;
-        /*@ id : [Mutable] number */
+        /*@ id : [Mutable] {number | 0<=v && v<NUMBER_OF_IDS} */
         public id;
         public kind:number;
         /*@ a1 : [Mutable] number */
@@ -659,7 +662,7 @@ module RichardsTYPEDVERSION {
          * @param {int} kind the type of this packet
          * @constructor
          */
-        /*@ new(link:Packet<Immutable>, id:number, kind:number, a1:number) => {void | true} */
+        /*@ new(link:Packet<Immutable>, id:{number | 0<=v && v<NUMBER_OF_IDS}, kind:number, a1:number) => {void | true} */
         constructor(link, id, kind, a1 = 0) {
             this.a2 = new Array(DATA_SIZE);
             this.link = link;
