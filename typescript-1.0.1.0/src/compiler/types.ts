@@ -16,6 +16,17 @@ module ts {
 /*@ alias ISymbolF = { v: Symbol<Immutable> | FlagInstTransient(v) } */
 
 
+
+/*@ predicate SyntaxInstance(X, Key, Val, Type) = ((keyVal(X, Key) ~~ Val) => instanceof (X, Type)) */
+
+// XXX: alias the number to SyntaxKind.ClassDeclaration
+/*@ predicate InstClassDeclaration(V) = SyntaxInstance(V, "kind", 169, "ClassDeclaration") */
+
+/*@ alias INode  =      Node<Immutable> */
+/*@ alias INodeK = { v: Node<Immutable> | InstClassDeclaration(v) } */
+
+
+
 //
 ////////////////////////////////////////////////////////////// 
 
@@ -761,6 +772,7 @@ module ts {
     export interface Symbol {
         flags: SymbolFlags;            // Symbol flags
         name: string;                  // Name of symbol
+        /*@ id : [#Mutable] number */
         id?: number;                   // Unique id (used to look up SymbolLinks)
         /*@ mergeId : [#Mutable] number */
         mergeId?: number;              // Merge id (used to look up merged symbol)

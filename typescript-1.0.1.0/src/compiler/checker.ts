@@ -8,11 +8,14 @@
 
 
 module ts {
+    /*@ alias nat = { number | v > 0 } */
 
+    /*@ nextSymbolId :: nat */
     var nextSymbolId = 1;
+
     var nextNodeId = 1;
 
-    /*@ nextMergeId :: { number | v > 0 } */
+    /*@ nextMergeId :: nat */
     var nextMergeId = 1;
 
     /*@ getDeclarationOfKind :: (symbol: ISymbol, kind: SyntaxKind) => { Declaration<Immutable> | keyVal(v,"kind") = kind } + { undefined | true } */
@@ -125,7 +128,9 @@ module ts {
 //         /*@ mergedSymbols :: Array<Mutable,ISymbol> */
 //         var mergedSymbols: Symbol[] = [];
 
-//         var symbolLinks: SymbolLinks[] = [];
+        /*@ symbolLinks :: Array<Mutable, SymbolLinks<Immutable>> */
+        var symbolLinks: SymbolLinks[] = [];
+
 //         var nodeLinks: NodeLinks[] = [];
 //         var potentialThisCollisions: Node[] = [];
 // 
@@ -238,9 +243,6 @@ module ts {
 //             }
 //         }
 
-
-
-// XXX 
         /*@ getSymbolLinks :: (symbol: ISymbolF) => SymbolLinks<Immutable> */
         function getSymbolLinks(symbol: Symbol): SymbolLinks {
 
@@ -248,11 +250,15 @@ module ts {
               // ORIG: if (symbol.flags & sft) { 
               return <TransientSymbol>symbol;
             }
-
-            throw new Error("");
             
-//             if (!symbol.id) symbol.id = nextSymbolId++;
-//             return symbolLinks[symbol.id] || (symbolLinks[symbol.id] = {});
+            if (!symbol.id) symbol.id = nextSymbolId++;
+
+            var s = symbolLinks[symbol.id];
+            if(s) { return s; } 
+            else { var o = {}; symbolLinks[symbol.id] = o; return o; }
+
+            // ORIG: return symbolLinks[symbol.id] || (symbolLinks[symbol.id] = {});
+
         }
 
 //         function getNodeLinks(node: Node): NodeLinks {
@@ -3448,42 +3454,82 @@ module ts {
 //         function hasAncestor(node: Node, kind: SyntaxKind): boolean {
 //             return getAncestor(node, kind) !== undefined;
 //         }
-// 
-//         function getAncestor(node: Node, kind: SyntaxKind): Node {
-//             switch (kind) {
-//                 // special-cases that can be come first
-//                 case SyntaxKind.ClassDeclaration:
-//                     while (node) {
-//                         switch (node.kind) {
-//                             case SyntaxKind.ClassDeclaration:
-//                                 return <ClassDeclaration>node;
-//                             case SyntaxKind.EnumDeclaration:
-//                             case SyntaxKind.InterfaceDeclaration:
-//                             case SyntaxKind.ModuleDeclaration:
-//                             case SyntaxKind.ImportDeclaration:
-//                                 // early exit cases - declarations cannot be nested in classes
-//                                 return undefined;
-//                             default:
-//                                 node = node.parent;
-//                                 continue;
-//                         }
+
+
+        // PV: Rewriting below
+        // function getAncestor(node: Node, kind: SyntaxKind): Node {
+        //     switch (kind) {
+        //         // special-cases that can be come first
+        //         case SyntaxKind.ClassDeclaration:
+        //             while (node) {
+        //                 switch (node.kind) {
+        //                     case SyntaxKind.ClassDeclaration:
+        //                         return <ClassDeclaration>node;
+        //                     case SyntaxKind.EnumDeclaration:
+        //                     case SyntaxKind.InterfaceDeclaration:
+        //                     case SyntaxKind.ModuleDeclaration:
+        //                     case SyntaxKind.ImportDeclaration:
+        //                         // early exit cases - declarations cannot be nested in classes
+        //                         return undefined;
+        //                     default:
+        //                         node = node.parent;
+        //                         continue;
+        //                 }
+        //             }
+        //             break;
+        //         default:
+        //             while (node) {
+        //                 if (node.kind === kind) {
+        //                     return node;
+        //                 }
+        //                 else {
+        //                     node = node.parent;
+        //                 }
+        //             }
+        //             break;
+        //     }
+
+        //     return undefined;
+        // }
+
+
+        // PV: Returns a node with the same SyntaxKind with `kind` 
+        //     and in some case undefined
+
+        /*@ getAncestor :: (node: INodeK + undefined, kind: SyntaxKind) => INodeK + { undefined | true } 
+         */
+        function getAncestor(node: Node, kind: SyntaxKind): Node {
+            if (kind === SyntaxKind.ClassDeclaration) {
+                while (typeof node !== "undefined") {
+                    if (node.kind === SyntaxKind.ClassDeclaration) {
+                        return <ClassDeclaration>node;
+                    }
+                    else if (kind === SyntaxKind.EnumDeclaration      ||
+                             kind === SyntaxKind.InterfaceDeclaration ||
+                             kind === SyntaxKind.ModuleDeclaration    ||
+                             kind === SyntaxKind.ImportDeclaration) {
+                        // early exit cases - declarations cannot be nested in classes
+                        return undefined;
+                    }
+                    else {
+                        node = node.parent;
+                    }
+                }
+            }
+            else {
+//                 while (node) {
+//                     if (node.kind === kind) {
+//                         return node;
 //                     }
-//                     break;
-//                 default:
-//                     while (node) {
-//                         if (node.kind === kind) {
-//                             return node;
-//                         }
-//                         else {
-//                             node = node.parent;
-//                         }
+//                     else {
+//                         node = node.parent;
 //                     }
-//                     break;
-//             }
-// 
-//             return undefined;
-//         }
-// 
+//                 }
+            }
+
+            return undefined;
+        }
+
 //         // EXPRESSION TYPE CHECKING
 // 
 //         function checkIdentifier(node: Identifier): Type {
