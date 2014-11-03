@@ -66,7 +66,7 @@ module RichardsTYPEDVERSION {
     /*@ KIND_WORK :: {number | v = 1} */
     var KIND_WORK     = 1;
     /*@ DATA_SIZE :: {number | v = 4} */
-    var DATA_SIZE     = 4;
+    var DATA_SIZE = 4;
 
     /**
      * The task is running and is currently scheduled.
@@ -232,9 +232,9 @@ module RichardsTYPEDVERSION {
          */
         /*@ addRunningTask : (id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Immutable> + null, task:Task<Immutable>) : {void | true} */
         public addRunningTask(id, priority, queue, task) {
-            var currentTcb = this.currentTcb;
-            if (!currentTcb) throw new Error('currentTcb is null');
             this.addTask(id, priority, queue, task);
+            var currentTcb = this.currentTcb;
+            if (!currentTcb) throw new Error('This check should never fail'); // since addTask sets this.currentTcb
             currentTcb.setRunning();
         }
 
@@ -247,10 +247,9 @@ module RichardsTYPEDVERSION {
          */
         /*@ addTask : (id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Immutable> + null, task:Task<Immutable>) : {void | true} */
         public addTask(id, priority, queue, task) {
-            var currentTcb = new TaskControlBlock(this.list, id, priority, queue, task);
-            this.currentTcb = currentTcb;
-            this.list = currentTcb;
-            this.blocks[id] = currentTcb;
+            this.currentTcb = new TaskControlBlock(this.list, id, priority, queue, task);
+            this.list = this.currentTcb;
+            this.blocks[id] = this.currentTcb;
         }
 
         /**
@@ -327,9 +326,7 @@ module RichardsTYPEDVERSION {
          */
         /*@ queue : (packet: Packet<Immutable>) : {TaskControlBlock<Immutable> + null | true}*/
         public queue(packet) {
-            var id = packet.id;
-            var blocks = this.blocks;
-            var t = blocks[id];
+            var t = this.blocks[packet.id];
             if (!t) return t;
             this.queueCount++;
             packet.link = null;
