@@ -47,15 +47,23 @@ module RichardsTYPEDVERSION {
     var EXPECTED_QUEUE_COUNT = 2322;
     var EXPECTED_HOLD_COUNT = 928;
 
-    // var ID_IDLE       = 0;
-    // var ID_WORKER     = 1;
-    // var ID_HANDLER_A  = 2;
-    // var ID_HANDLER_B  = 3;
+    /*@ ID_IDLE :: {number | v = 0} */
+    var ID_IDLE       = 0;
+    /*@ ID_WORKER :: {number | v = 1} */
+    var ID_WORKER     = 1;
+    /*@ ID_HANDLER_A :: {number | v = 2} */
+    var ID_HANDLER_A  = 2;
+    /*@ ID_HANDLER_B :: {number | v = 3} */
+    var ID_HANDLER_B  = 3;
+    /*@ ID_DEVICE_A :: {number | v = 4} */
     var ID_DEVICE_A   = 4;
+    /*@ ID_DEVICE_B :: {number | v = 5} */
     var ID_DEVICE_B   = 5;
     /*@ NUMBER_OF_IDS :: {number | v = 6} */
     var NUMBER_OF_IDS = 6;
+    /*@ KIND_DEVICE :: {number | v = 0} */
     var KIND_DEVICE   = 0;
+    /*@ KIND_WORK :: {number | v = 1} */
     var KIND_WORK     = 1;
     /*@ DATA_SIZE :: {number | v = 4} */
     var DATA_SIZE = 4;
@@ -84,48 +92,50 @@ module RichardsTYPEDVERSION {
     var STATE_SUSPENDED_RUNNABLE = STATE_SUSPENDED | STATE_RUNNABLE;
     var STATE_NOT_HELD = ~STATE_HELD;
 
-        //     export function testRichards() {
-        //         for (var i =0; i< 50; i++) {
-        //             runRichards();
-        //         }
-        //     }
-            
-        //     /**
-        //      * The Richards benchmark simulates the task dispatcher of an
-        //      * operating system.
-        //      **/
-        //     function runRichards() {
-        //         var scheduler = new Scheduler();
-        //         scheduler.addIdleTask(ID_IDLE, 0, null, COUNT);
+    /*@ testRichards :: () => {void | true} */
+    export function testRichards() {
+        for (var i =0; i< 50; i++) {
+            runRichards();
+        }
+    }
+    
+    /**
+     * The Richards benchmark simulates the task dispatcher of an
+     * operating system.
+     **/
+    /*@ runRichards :: () => {void | true} */
+    function runRichards() {
+        var scheduler = new Scheduler(0, 0, new Array(NUMBER_OF_IDS), null, null, -1);
+        scheduler.addIdleTask(ID_IDLE, 0, null, COUNT);
 
-        //         var queue = new Packet(null, ID_WORKER, KIND_WORK);
-        //         queue = new Packet(queue,  ID_WORKER, KIND_WORK);
-        //         scheduler.addWorkerTask(ID_WORKER, 1000, queue);
+        var queue = new Packet(null, ID_WORKER, KIND_WORK, 0);
+        queue = new Packet(queue,  ID_WORKER, KIND_WORK, 0);
+        scheduler.addWorkerTask(ID_WORKER, 1000, queue);
 
-        //         queue = new Packet(null, ID_DEVICE_A, KIND_DEVICE);
-        //         queue = new Packet(queue,  ID_DEVICE_A, KIND_DEVICE);
-        //         queue = new Packet(queue,  ID_DEVICE_A, KIND_DEVICE);
-        //         scheduler.addHandlerTask(ID_HANDLER_A, 2000, queue);
+        queue = new Packet(null, ID_DEVICE_A, KIND_DEVICE, 0);
+        queue = new Packet(queue,  ID_DEVICE_A, KIND_DEVICE, 0);
+        queue = new Packet(queue,  ID_DEVICE_A, KIND_DEVICE, 0);
+        scheduler.addHandlerTask(ID_HANDLER_A, 2000, queue);
 
-        //         queue = new Packet(null, ID_DEVICE_B, KIND_DEVICE);
-        //         queue = new Packet(queue,  ID_DEVICE_B, KIND_DEVICE);
-        //         queue = new Packet(queue,  ID_DEVICE_B, KIND_DEVICE);
-        //         scheduler.addHandlerTask(ID_HANDLER_B, 3000, queue);
+        queue = new Packet(null, ID_DEVICE_B, KIND_DEVICE, 0);
+        queue = new Packet(queue,  ID_DEVICE_B, KIND_DEVICE, 0);
+        queue = new Packet(queue,  ID_DEVICE_B, KIND_DEVICE, 0);
+        scheduler.addHandlerTask(ID_HANDLER_B, 3000, queue);
 
-        //         scheduler.addDeviceTask(ID_DEVICE_A, 4000, null);
+        scheduler.addDeviceTask(ID_DEVICE_A, 4000, null);
 
-        //         scheduler.addDeviceTask(ID_DEVICE_B, 5000, null);
+        scheduler.addDeviceTask(ID_DEVICE_B, 5000, null);
 
-        //         scheduler.schedule();
+        scheduler.schedule();
 
-        //         if (scheduler.queueCount != EXPECTED_QUEUE_COUNT ||
-        //             scheduler.holdCount != EXPECTED_HOLD_COUNT) {
-        //             var msg =
-        //                 "Error during execution: queueCount = " + scheduler.queueCount +
-        //                 ", holdCount = " + scheduler.holdCount + ".";
-        //             throw new Error(msg); //TODO
-        //         }
-        //     }
+        if (scheduler.queueCount != EXPECTED_QUEUE_COUNT ||
+            scheduler.holdCount != EXPECTED_HOLD_COUNT) {
+            var msg =
+                "Error during execution: queueCount = " + scheduler.queueCount +
+                ", holdCount = " + scheduler.holdCount + ".";
+            throw new Error(msg); //TODO
+        }
+    }
 
 
     /**
@@ -145,15 +155,15 @@ module RichardsTYPEDVERSION {
         public list;
         /*@ currentTcb : [Mutable] TaskControlBlock<Immutable> + null */
         public currentTcb;
-        /*@ currentId : [Mutable] number */
+        /*@ currentId : [Mutable] {number | -1<=v && v<NUMBER_OF_IDS} */
         public currentId;
 
         /*@ new(queueCount:number, 
                 holdCount:number, 
                 blocks:{Array<Immutable, TaskControlBlock<Immutable> + null> | (len v) = NUMBER_OF_IDS}, 
-                list:TaskControlBlock<Immutable>, 
-                currentTcb:TaskControlBlock<Immutable>, 
-                currentId:number) => {void | true} */
+                list:TaskControlBlock<Immutable> + null, 
+                currentTcb:TaskControlBlock<Immutable> + null, 
+                currentId:{number | -1<=v && v<NUMBER_OF_IDS}) => {void | true} */
         constructor(queueCount = 0, //TODO: default argument assignments
                     holdCount = 0,
                     blocks = new Array(NUMBER_OF_IDS),
@@ -175,30 +185,21 @@ module RichardsTYPEDVERSION {
          * @param {Packet} queue the queue of work to be processed by the task
          * @param {int} count the number of times to schedule the task
          */
-        /*@ addIdleTask : (id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Immutable>, count:number) : {void | true} */
+        /*@ addIdleTask : (id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Immutable> + null, count:number) : {void | true} */
         public addIdleTask(id, priority, queue, count) {
             this.addRunningTask(id, priority, queue, new IdleTask(this, 1, count));
         }
 
-        // /**
-        //  * Add a work task to this scheduler.
-        //  * @param {int} id the identity of the task
-        //  * @param {int} priority the task's priority
-        //  * @param {Packet} queue the queue of work to be processed by the task
-        //  */
-        // public addWorkerTask(id:number, priority:number, queue:Packet) {
-        //     this.addTask(id, priority, queue, new WorkerTask(this, ID_HANDLER_A, 0));
-        // }
-
-        // /**
-        //  * Add a handler task to this scheduler.
-        //  * @param {int} id the identity of the task
-        //  * @param {int} priority the task's priority
-        //  * @param {Packet} queue the queue of work to be processed by the task
-        //  */
-        // public addHandlerTask(id:number, priority:number, queue:Packet) {
-        //     this.addTask(id, priority, queue, new HandlerTask(this));
-        // }
+        /**
+         * Add a work task to this scheduler.
+         * @param {int} id the identity of the task
+         * @param {int} priority the task's priority
+         * @param {Packet} queue the queue of work to be processed by the task
+         */
+        /*@ addWorkerTask : (id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Immutable> + null) : {void | true} */
+        public addWorkerTask(id, priority, queue) {
+            this.addTask(id, priority, queue, new WorkerTask(this, ID_HANDLER_A, 0));
+        }
 
         /**
          * Add a handler task to this scheduler.
@@ -206,7 +207,18 @@ module RichardsTYPEDVERSION {
          * @param {int} priority the task's priority
          * @param {Packet} queue the queue of work to be processed by the task
          */
-        /*@ addDeviceTask : (id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Immutable>) : {void | true} */
+        /*@ addHandlerTask : (id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Immutable> + null) : {void | true} */
+        public addHandlerTask(id, priority, queue) {
+            this.addTask(id, priority, queue, new HandlerTask(this, null, null));
+        }
+
+        /**
+         * Add a handler task to this scheduler.
+         * @param {int} id the identity of the task
+         * @param {int} priority the task's priority
+         * @param {Packet} queue the queue of work to be processed by the task
+         */
+        /*@ addDeviceTask : (id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Immutable> + null) : {void | true} */
         public addDeviceTask(id, priority, queue) {
             this.addTask(id, priority, queue, new DeviceTask(this, null))
         }
@@ -218,10 +230,12 @@ module RichardsTYPEDVERSION {
          * @param {Packet} queue the queue of work to be processed by the task
          * @param {Task} task the task to add
          */
-        /*@ addRunningTask : (id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Immutable>, task:Task<Immutable>) : {void | true} */
+        /*@ addRunningTask : (id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Immutable> + null, task:Task<Immutable>) : {void | true} */
         public addRunningTask(id, priority, queue, task) {
             this.addTask(id, priority, queue, task);
-            this.currentTcb.setRunning();
+            var currentTcb = this.currentTcb;
+            if (!currentTcb) throw new Error('This check should never fail'); // since addTask sets this.currentTcb
+            currentTcb.setRunning();
         }
 
         /**
@@ -231,13 +245,11 @@ module RichardsTYPEDVERSION {
          * @param {Packet} queue the queue of work to be processed by the task
          * @param {Task} task the task to add
          */
-        /*@ addTask : (id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Immutable>, task:Task<Immutable>) : {void | true} */
+        /*@ addTask : (id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Immutable> + null, task:Task<Immutable>) : {void | true} */
         public addTask(id, priority, queue, task) {
-            var blocks = this.blocks;
-            var currentTcb = new TaskControlBlock(this.list, id, priority, queue, task);
-            this.currentTcb = currentTcb;
-            this.list = currentTcb;
-            blocks[id] = currentTcb;
+            this.currentTcb = new TaskControlBlock(this.list, id, priority, queue, task);
+            this.list = this.currentTcb;
+            this.blocks[id] = this.currentTcb;
         }
 
         /**
@@ -264,11 +276,9 @@ module RichardsTYPEDVERSION {
          * Release a task that is currently blocked and return the next block to run.
          * @param {int} id the id of the task to suspend
          */
-        /*@ release : (id:number) : {TaskControlBlock<Immutable> + null | true} */
+        /*@ release : (id:{number | 0<=v && v<NUMBER_OF_IDS}) : {TaskControlBlock<Immutable> + null | true} */
         public release(id) {
-            var blocks = this.blocks;
-            if (id < 0 || id >= blocks.length) return null;
-            var tcb = blocks[id];
+            var tcb = this.blocks[id];
             if (!tcb) return tcb;
             var currentTcb = this.currentTcb;
             if (!currentTcb) throw new Error("Illegal state");
@@ -316,14 +326,13 @@ module RichardsTYPEDVERSION {
          */
         /*@ queue : (packet: Packet<Immutable>) : {TaskControlBlock<Immutable> + null | true}*/
         public queue(packet) {
-            var id = packet.id;
-            var blocks = this.blocks;
-            if (id < 0 || id >= blocks.length) throw new Error("Illegal state");
-            var t = blocks[id];
+            var t = this.blocks[packet.id];
             if (!t) return t;
             this.queueCount++;
             packet.link = null;
-            packet.id = this.currentId;
+            var currentId = this.currentId;
+            if (currentId === -1) throw new Error("Illegal state");
+            packet.id = currentId;
             var currentTcb = this.currentTcb;
             if (!currentTcb) throw new Error("Illegal state");
             return t.checkPriorityAdd(currentTcb, packet);
@@ -338,7 +347,8 @@ module RichardsTYPEDVERSION {
         private state = 0;
         /*@ link : TaskControlBlock<Immutable> + null */
         public link;
-        public id:number;
+        /*@ id : {number | 0<=v && v<NUMBER_OF_IDS} */
+        public id;
         public priority;
         /*@ queue : [Mutable] Packet<Immutable> + null */
         public queue;
@@ -354,7 +364,11 @@ module RichardsTYPEDVERSION {
          * @param {Task} task the task
          * @constructor
          */
-        /*@ new(link:TaskControlBlock<Immutable> + null, id:number, priority:number, queue:Packet<Immutable>, task:Task<Immutable>) => {void | true} */
+        /*@ new(link:TaskControlBlock<Immutable> + null, 
+                id:{number | 0<=v && v<NUMBER_OF_IDS}, 
+                priority:number, 
+                queue:Packet<Immutable> + null, 
+                task:Task<Immutable>) => {void | true} */
         constructor(link, id, priority, queue, task) {
             this.link = link;
             this.id = id;
@@ -530,117 +544,118 @@ module RichardsTYPEDVERSION {
         }
     }
 
-    // class WorkerTask extends Task {
-    //     public scheduler:Scheduler;
-    //     /*@ v1 : [Mutable] number */
-    //     public v1;
-    //     /*@ v2 : [Mutable] number */
-    //     public v2;
-    //     /**
-    //      * A task that manipulates work packets.
-    //      * @param {Scheduler} scheduler the scheduler that manages this task
-    //      * @param {int} v1 a seed used to specify how work packets are manipulated
-    //      * @param {int} v2 another seed used to specify how work packets are manipulated
-    //      * @constructor
-    //      */
-    //     /*@ new(scheduler:Scheduler<Immutable>, v1:number, v2:number) => {void | true} */
-    //     constructor(scheduler, v1, v2) {
-    //         super();
-    //         this.scheduler = scheduler;
-    //         this.v1 = v1;
-    //         this.v2 = v2;
-    //     }
+    class WorkerTask extends Task {
+        public scheduler:Scheduler;
+        /*@ v1 : [Mutable] {number | 0<=v && v<NUMBER_OF_IDS} */
+        public v1;
+        /*@ v2 : [Mutable] {number | 0<=v} */
+        public v2;
+        /**
+         * A task that manipulates work packets.
+         * @param {Scheduler} scheduler the scheduler that manages this task
+         * @param {int} v1 a seed used to specify how work packets are manipulated
+         * @param {int} v2 another seed used to specify how work packets are manipulated
+         * @constructor
+         */
+        /*@ new(scheduler:Scheduler<Immutable>, 
+                v1:{number | 0<=v && v<NUMBER_OF_IDS}, 
+                v2:{number | 0<=v}) => {void | true} */
+        constructor(scheduler, v1, v2) {
+            super();
+            this.scheduler = scheduler;
+            this.v1 = v1;
+            this.v2 = v2;
+        }
 
-    //     @ run : (packet: Packet<Immutable> + null) : {TaskControlBlock<Immutable> + null | true} 
-    //     public run(packet?) {
-    //         if (!packet) {
-    //             return this.scheduler.suspendCurrent();
-    //         } else {
-    //             if (this.v1 === ID_HANDLER_A) {
-    //                 this.v1 = ID_HANDLER_B;
-    //             } else {
-    //                 this.v1 = ID_HANDLER_A;
-    //             }
-    //             packet.id = this.v1;
-    //             packet.a1 = 0;
-    //             for (var i = 0; i < DATA_SIZE; i++) {
-    //                 this.v2++;
-    //                 if (this.v2 > 26) this.v2 = 1;
-    //                 packet.a2[i] = this.v2;
-    //             }
-    //             return this.scheduler.queue(packet);
-    //         }
-    //     }
+        /*@ run : (packet: Packet<Immutable> + null) : {TaskControlBlock<Immutable> + null | true} */
+        public run(packet?) {
+            if (!packet) {
+                return this.scheduler.suspendCurrent();
+            } else {
+                if (this.v1 === ID_HANDLER_A) {
+                    this.v1 = ID_HANDLER_B;
+                } else {
+                    this.v1 = ID_HANDLER_A;
+                }
+                (<Packet>packet).id = this.v1;
+                (<Packet>packet).a1 = 0;
+                for (var i = 0; i < DATA_SIZE; i++) {
+                    this.v2++;
+                    if (this.v2 > 26) this.v2 = 1;
+                    packet.a2[i] = this.v2;
+                }
+                return this.scheduler.queue(packet);
+            }
+        }
 
-    //     /*@ toString : () : {string | true} */
-    //     public toString() {
-    //         return "WorkerTask";
-    //     }
-    // }
+        /*@ toString : () : {string | true} */
+        public toString() {
+            return "WorkerTask";
+        }
+    }
 
-    // class HandlerTask extends Task {
-    //     public scheduler:Scheduler;
-    //     /*@ v1 : [Mutable] Packet<Immutable> + null */
-    //     public v1;
-    //     /*@ v2 : [Mutable] Packet<Immutable> + null */
-    //     public v2;
+    class HandlerTask extends Task {
+        public scheduler:Scheduler;
+        /*@ v1 : [Mutable] Packet<Immutable> + null */
+        public v1;
+        /*@ v2 : [Mutable] Packet<Immutable> + null */
+        public v2;
 
-    //     /**
-    //      * A task that manipulates work packets and then suspends itself.
-    //      * @param {Scheduler} scheduler the scheduler that manages this task
-    //      * @constructor
-    //      */
-    //     /*@ new(scheduler:Scheduler<Immutable>, v1:Packet<Immutable> + null, v2:Packet<Immutable> + null) => {void | true} */
-    //     constructor(scheduler, v1?, v2?) {
-    //         super();
-    //         this.scheduler = scheduler;
-    //         this.v1 = v1;
-    //         this.v2 = v2;
-    //     }
+        /**
+         * A task that manipulates work packets and then suspends itself.
+         * @param {Scheduler} scheduler the scheduler that manages this task
+         * @constructor
+         */
+        /*@ new(scheduler:Scheduler<Immutable>, v1:Packet<Immutable> + null, v2:Packet<Immutable> + null) => {void | true} */
+        constructor(scheduler, v1?, v2?) {
+            super();
+            this.scheduler = scheduler;
+            this.v1 = v1;
+            this.v2 = v2;
+        }
 
-    //     /*@ run : (packet: Packet<Immutable> + null) : {TaskControlBlock<Immutable> + null | true} */
-    //     public run(packet?) {
-    //         if (packet) {
-    //             if (packet.kind === KIND_WORK) {
-    //                 this.v1 = packet.addTo(this.v1);
-    //             } else {
-    //                 this.v2 = packet.addTo(this.v2);
-    //             }
-    //         }
-    //         var v1 = this.v1;
-    //         if (v1) {
-    //             var count = v1.a1;
-    //             var v:Packet = null;
-    //             if (count < DATA_SIZE) {
-    //                 var v2 = this.v2;
-    //                 if (v2) {
-    //                     v = v2;
-    //                     this.v2 = v2.link;
-    //                     v.a1 = <number>v1.a2[count];
-    //                     v1.a1 = count + 1;
-    //                     return this.scheduler.queue(v);
-    //                 }
-    //             } else {
-    //                 v = v1;
-    //                 this.v1 = v1.link;
-    //                 return this.scheduler.queue(v);
-    //             }
-    //         }
-    //         return this.scheduler.suspendCurrent();
-    //     }
+        /*@ run : (packet: Packet<Immutable> + null) : {TaskControlBlock<Immutable> + null | true} */
+        public run(packet?) {
+            if (packet) {
+                if (packet.kind === KIND_WORK) {
+                    this.v1 = packet.addTo(this.v1);
+                } else {
+                    this.v2 = packet.addTo(this.v2);
+                }
+            }
+            var v1 = this.v1;
+            if (v1) {
+                var count = v1.a1;
+                if (count < DATA_SIZE) {
+                    var v2 = this.v2;
+                    if (v2) {
+                        var v = v2;
+                        this.v2 = v2.link;
+                        (<Packet>v).a1 = (<Packet>v1).a2[count];
+                        (<Packet>v1).a1 = count + 1;
+                        return this.scheduler.queue(v);
+                    }
+                } else {
+                    var v = v1;
+                    this.v1 = v1.link;
+                    return this.scheduler.queue(v);
+                }
+            }
+            return this.scheduler.suspendCurrent();
+        }
 
-    //     /*@ toString : () : {string | true} */
-    //     public toString() {
-    //         return "HandlerTask";
-    //     }
-    // }
+        /*@ toString : () : {string | true} */
+        public toString() {
+            return "HandlerTask";
+        }
+    }
 
     /* --- *
      * P a c k e t
      * --- */
 
     class Packet {
-        /*@ a2 : {Array<Immutable, number> | (len v) >= 0} */
+        /*@ a2 : {Array<Immutable, {number | 0<=v}> | (len v) = DATA_SIZE} */
         public a2;
 
         /*@ link : [Mutable] Packet<Immutable> + null */
@@ -648,7 +663,7 @@ module RichardsTYPEDVERSION {
         /*@ id : [Mutable] {number | 0<=v && v<NUMBER_OF_IDS} */
         public id;
         public kind:number;
-        /*@ a1 : [Mutable] number */
+        /*@ a1 : [Mutable] {number | 0<=v} */
         public a1;
         /**
          * A simple package of data that is manipulated by the tasks.  The exact layout
@@ -662,7 +677,10 @@ module RichardsTYPEDVERSION {
          * @param {int} kind the type of this packet
          * @constructor
          */
-        /*@ new(link:Packet<Immutable>, id:{number | 0<=v && v<NUMBER_OF_IDS}, kind:number, a1:number) => {void | true} */
+        /*@ new(link:Packet<Immutable> + null, 
+                id:{number | 0<=v && v<NUMBER_OF_IDS}, 
+                kind:number, 
+                a1:{number | 0<=v}) => {void | true} */
         constructor(link, id, kind, a1 = 0) {
             this.a2 = new Array(DATA_SIZE);
             this.link = link;
