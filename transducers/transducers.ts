@@ -189,50 +189,51 @@ module transducers {
         return (x instanceof Reduced) //TODO:|| (x && x.__transducers_reduced__);
     }
 
-            /**
-             * Ensure that a value is reduced. If already reduced will not re-wrap.
-             * @method transducers.ensureReduced
-             * @param {Object} x any JavaScript value
-             * @return {transducers.Reduced} a reduced value.
-             * @example
-             *     var t = transducers;
-             *     var x = t.ensureReduced(1);
-             *     var y = t.ensureReduced(x);
-             *     x === y; // true
-             */
-            // /*@ ensureReduced :: forall T . (x:Dummy<Immutable>) => {Reduced<Immutable, T> | true} */
-            // function ensureReduced<T extends Dummy>(x:T):Reduced<T> {
-            //     if (x instanceof Reduced) {//TODO:(isReduced(x)) {
-            //         return <Reduced<T>>x;
-            //     } else {
-            //         return reduced(x);
-            //     }
-            // }
+    /**
+     * Ensure that a value is reduced. If already reduced will not re-wrap.
+     * @method transducers.ensureReduced
+     * @param {Object} x any JavaScript value
+     * @return {transducers.Reduced} a reduced value.
+     * @example
+     *     var t = transducers;
+     *     var x = t.ensureReduced(1);
+     *     var y = t.ensureReduced(x);
+     *     x === y; // true
+     */
+    /*@ ensureReduced :: (x:Dummy<Immutable>) => {Reduced<Immutable, top> | true} */
+    // TODO: Needs more specific type (as does unreduced)
+    function ensureReduced(x:any):any {
+        if (x instanceof Reduced) {//TODO:(isReduced(x)) {
+            return x;
+        } else {
+            return reduced(x);
+        }
+    }
 
     /*@ deref :: forall T . (x:Reduced<Immutable, T>) => {T | true} */
     function deref<T>(x:Reduced<T>):T {
         return x.value;
     }
 
-            /**
-             * Ensure a value is not reduced. Unwraps if reduced.
-             * @method transducers.unreduced
-             * @param {Object} x any JavaScript value
-             * @return {Object} a JavaScript value
-             * @example
-             *     var t = transducers;
-             *     var x = t.reduced(1);
-             *     t.unreduced(x); // 1
-             *     t.unreduced(t.unreduced(x)); // 1
-             */
-            // /*@ unreduced :: (x:top) => {top | true} */
-            // function unreduced(x:any) {
-            //     if (x instanceof Reduced) {//TODO:(isReduced(x)) {
-            //         return deref(x);
-            //     } else {
-            //         return x;
-            //     }
-            // }
+    /**
+     * Ensure a value is not reduced. Unwraps if reduced.
+     * @method transducers.unreduced
+     * @param {Object} x any JavaScript value
+     * @return {Object} a JavaScript value
+     * @example
+     *     var t = transducers;
+     *     var x = t.reduced(1);
+     *     t.unreduced(x); // 1
+     *     t.unreduced(t.unreduced(x)); // 1
+     */
+    /*@ unreduced :: (x:Dummy<Immutable>) => {top | true} */
+    function unreduced(x:any):any {
+        if (x instanceof Reduced) {//TODO:(isReduced(x)) {
+            return deref(x);
+        } else {
+            return x;
+        }
+    }
 
     /**
      * Identity function.
@@ -387,54 +388,55 @@ module transducers {
             //     }
             // };
 
-            // class Take<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
-            //     /*@ n : [Mutable] number */
-            //     public n: number;
-            //     public xf: Transformer<IN, INTER, OUT>;
-            //     /*@ new(n:number, xf:Transformer<Immutable>) => {void | true} */
-            //     constructor(n:number, xf:Transformer<IN, INTER, OUT>) {
-            //         this.n = n;
-            //         this.xf = xf;
-            //     }
+    //TODO: the types on this class have been weakened because of ensureReduced
+    class Take<IN, OUT> implements Transformer<IN, Dummy, OUT> {
+        /*@ n : [Mutable] number */
+        public n: number;
+        public xf: Transformer<IN, Dummy, OUT>;
+        /*@ new(n:number, xf:Transformer<Immutable, IN, Dummy<Immutable>, OUT>) => {void | true} */
+        constructor(n:number, xf:Transformer<IN, Dummy, OUT>) {
+            this.n = n;
+            this.xf = xf;
+        }
 
-            //     init():INTER {
-            //         return this.xf.init();
-            //     }
-            //     result(result:INTER):OUT {
-            //         return this.xf.result(result);
-            //     }
-            //     step(result:INTER, input:IN):INTER {
-            //         if(this.n > 0) {
-            //             result = this.xf.step(result, input);
-            //             this.n--;
-            //             return result;
-            //         }
-            //         var retval = ensureReduced(result);
-            //         this.n--;
-            //         return retval;
-            //     }
-            // }
+        init():Dummy {
+            return this.xf.init();
+        }
+        result(result:Dummy):OUT {
+            return this.xf.result(result);
+        }
+        step(result:Dummy, input:IN):Dummy {
+            if(this.n > 0) {
+                result = this.xf.step(result, input);
+                this.n--;
+                return result;
+            }
+            var retval = ensureReduced(result);
+            this.n--;
+            return retval;
+        }
+    }
 
-            // /**
-            //  * A take transducer constructor. Will take n values before
-            //  * returning a reduced result.
-            //  * @method transducers.take
-            //  * @param {Number} n the number of inputs to receive.
-            //  * @return {transducers.Take} a take transducer
-            //  * @example
-            //  *     var t = transducers;
-            //  *     var xf = t.take(3);
-            //  *     t.into([], xf, [0,1,2,3,4,5]); // [0,1,2];
-            //  */
-            // transducers.take = function(n) {
-            //     if(TRANSDUCERS_DEV && (typeof n != "number")) {
-            //         throw new Error("take must be given an integer");
-            //     } else {
-            //         return function(xf) {
-            //             return new transducers.Take(n, xf);
-            //         };
-            //     }
-            // };
+    /**
+     * A take transducer constructor. Will take n values before
+     * returning a reduced result.
+     * @method transducers.take
+     * @param {Number} n the number of inputs to receive.
+     * @return {transducers.Take} a take transducer
+     * @example
+     *     var t = transducers;
+     *     var xf = t.take(3);
+     *     t.into([], xf, [0,1,2,3,4,5]); // [0,1,2];
+     */
+    function take<IN, OUT>(n:number): (xf: Transformer<IN, Dummy, OUT>) => Take<IN, OUT> {
+        if(TRANSDUCERS_DEV && (typeof n != "number")) {
+            throw new Error("take must be given an integer");
+        } else {
+            return function(xf) {
+                return new Take(n, xf);
+            };
+        }
+    }
 
             // /**
             //  * @constructor
