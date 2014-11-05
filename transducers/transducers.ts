@@ -20,9 +20,9 @@ module transducers {
     declare var goog:Goog;
 
     interface Transformer<IN, INTER, OUT> {
-        init():QQ<INTER>
-        result(result:QQ<INTER>):QQ<OUT>
-        step(result:QQ<INTER>, input:QQ<IN>):QQ<INTER>
+        init():INTER
+        result(result:INTER):OUT
+        step(result:INTER, input:IN):QQ<INTER>
     }
 
             // "use strict";
@@ -105,22 +105,22 @@ module transducers {
     class Wrap<IN, OUT> implements Transformer<IN, OUT, OUT> {
         /*@ stepFn : (x:OUT, y:IN)=>QQ<Immutable, OUT> */
         public stepFn: (result:OUT, input:IN)=>QQ<OUT>;
-        /*@ new(stepFn:(result:OUT, input:IN)=>QQ<Immutable,OUT>) => {void | true} */
+        /*@ new(stepFn:(result:OUT, input:IN)=>QQ<Immutable, OUT>) => {void | true} */
         constructor(stepFn:(result:OUT, input:IN)=>QQ<OUT>) {
             this.stepFn = stepFn;
         }
 
-        /*@ init : () : {QQ<Immutable, OUT> | true} */
-        init():QQ<OUT> {
+        /*@ init : () : {OUT | true} */
+        init():OUT {
             throw new Error("init not implemented");
         }
-        /*@ result : (result:QQ<Immutable, OUT>) : {QQ<Immutable, OUT> | true} */
-        result(result:QQ<OUT>):QQ<OUT> {
+        /*@ result : (result:OUT) : {OUT | true} */
+        result(result:OUT):OUT {
             return result;
         }
-        /*@ step : (result:QQ<Immutable, OUT>, input:QQ<Immutable, IN>) : {QQ<Immutable, OUT> | true} */
-        step(result:QQ<OUT>, input:QQ<IN>):QQ<OUT> {
-            return this.stepFn(result.value, input.value);
+        /*@ step : (result:OUT, input:IN) : {QQ<Immutable, OUT> | true} */
+        step(result:OUT, input:IN):QQ<OUT> {
+            return this.stepFn(result, input);
         }
     }
 
@@ -187,43 +187,11 @@ module transducers {
         return x.__transducers_reduced__; //TODO:(x instanceof Reduced || (x && x.__transducers_reduced__);
     }
 
-    /**
-     * Ensure that a value is reduced. If already reduced will not re-wrap.
-     * @method transducers.ensureReduced
-     * @param {Object} x any JavaScript value
-     * @return {transducers.Reduced} a reduced value.
-     * @example
-     *     var t = transducers;
-     *     var x = t.ensureReduced(1);
-     *     var y = t.ensureReduced(x);
-     *     x === y; // true
-     */
-    /*@ ensureReduced :: forall T . (x:QQ<Immutable, T>) => {QQ<Immutable, T> | true} */
-    function ensureReduced<T>(x:QQ<T>):QQ<T> {
-        x.__transducers_reduced__ = false;
-        return x;
-    }
+    // NOTICE: ensureReduced and unreduced removed as irrelevant to the new formulation of Reduced as QQ
 
     /*@ deref :: forall T . (x:QQ<Immutable, T>) => {T | true} */
     function deref<T>(x:QQ<T>):T {
         return x.value;
-    }
-
-    /**
-     * Ensure a value is not reduced. Unwraps if reduced.
-     * @method transducers.unreduced
-     * @param {Object} x any JavaScript value
-     * @return {Object} a JavaScript value
-     * @example
-     *     var t = transducers;
-     *     var x = t.reduced(1);
-     *     t.unreduced(x); // 1
-     *     t.unreduced(t.unreduced(x)); // 1
-     */
-    /*@ unreduced :: forall T . (x:QQ<Immutable, T>) => {QQ<Immutable, T> | true} */
-    function unreduced<T>(x:QQ<T>):QQ<T> {
-        x.__transducers_reduced__ = false;
-        return x;
     }
 
     /**
@@ -268,25 +236,25 @@ module transducers {
             // };
 
     class Map<IN, INTER, OUT, T> implements Transformer<IN, INTER, OUT> {
-        public f: (x: IN) => QQ<T>;
+        public f: (x: IN) => T;
         public xf: Transformer<T, INTER, OUT>;
-        /*@ new(f:(x: IN) => QQ<Immutable, T>, xf:Transformer<Immutable, T, INTER, OUT>) => {void | true} */
-        constructor(f:(x: IN) => QQ<T>, xf:Transformer<T, INTER, OUT>) {
+        /*@ new(f:(x: IN) => T, xf:Transformer<Immutable, T, INTER, OUT>) => {void | true} */
+        constructor(f:(x: IN) => T, xf:Transformer<T, INTER, OUT>) {
             this.f = f;
             this.xf = xf;
         }
 
-        /*@ init : () : {QQ<Immutable, INTER> | true} */
-        init():QQ<INTER> {
+        /*@ init : () : {INTER | true} */
+        init():INTER {
             return this.xf.init();
         }
-        /*@ result : (result:QQ<Immutable, INTER>) : {QQ<Immutable, OUT> | true} */
-        result(result:QQ<INTER>):QQ<OUT> {
+        /*@ result : (result:INTER) : {OUT | true} */
+        result(result:INTER):OUT {
             return this.xf.result(result);
         }
-        /*@ step : (result:QQ<Immutable, INTER>, input:QQ<Immutable, IN>) : {QQ<Immutable, INTER> | true} */
-        step(result:QQ<INTER>, input:QQ<IN>):QQ<INTER> {
-            return this.xf.step(result, this.f(input.value));
+        /*@ step : (result:INTER, input:IN) : {QQ<Immutable, INTER> | true} */
+        step(result:INTER, input:IN):QQ<INTER> {
+            return this.xf.step(result, this.f(input));
         }
     }
 
@@ -301,7 +269,7 @@ module transducers {
      *     var xf = t.map(inc);
      *     t.into([], xf, [1,2,3]); // [2,3,4]
      */
-    function map<IN, INTER, OUT, T>(f: (z:IN)=>QQ<T>): (xf: Transformer<T, INTER, OUT>) => Map<IN, INTER, OUT, T> {
+    function map<IN, INTER, OUT, T>(f: (z:IN)=>T): (xf: Transformer<T, INTER, OUT>) => Map<IN, INTER, OUT, T> {
         if(TRANSDUCERS_DEV && (f === null)) {
             throw new Error("At least one argument must be supplied to map");
         } else {
@@ -320,20 +288,20 @@ module transducers {
             this.xf = xf;
         }
 
-        /*@ init : () : {QQ<Immutable, INTER> | true} */
-        init():QQ<INTER> {
+        /*@ init : () : {INTER | true} */
+        init():INTER {
             return this.xf.init();
         }
-        /*@ result : (result:QQ<Immutable, INTER>) : {QQ<Immutable, OUT> | true} */
-        result(result:QQ<INTER>):QQ<OUT> {
+        /*@ result : (result:INTER) : {OUT | true} */
+        result(result:INTER):OUT {
             return this.xf.result(result);
         }
-        /*@ step : (result:QQ<Immutable, INTER>, input:QQ<Immutable, IN>) : {QQ<Immutable, INTER> | true} */
-        step(result:QQ<INTER>, input:QQ<IN>):QQ<INTER> {
-            if(this.pred(input.value)) {
+        /*@ step : (result:INTER, input:IN) : {QQ<Immutable, INTER> | true} */
+        step(result:INTER, input:IN):QQ<INTER> {
+            if(this.pred(input)) {
                 return this.xf.step(result, input);
             } else {
-                return result;
+                return new QQ(result, false);
             }
         }
     }
@@ -389,24 +357,24 @@ module transducers {
             this.xf = xf;
         }
 
-        /*@ init : () : {QQ<Immutable, INTER> | true} */
-        init():QQ<INTER> {
+        /*@ init : () : {INTER | true} */
+        init():INTER {
             return this.xf.init();
         }
-        /*@ result : (result:QQ<Immutable, INTER>) : {QQ<Immutable, OUT> | true} */
-        result(result:QQ<INTER>):QQ<OUT> {
+        /*@ result : (result:INTER) : {OUT | true} */
+        result(result:INTER):OUT {
             return this.xf.result(result);
         }
-        /*@ step : (result:QQ<Immutable, INTER>, input:QQ<Immutable, IN>) : {QQ<Immutable, INTER> | true} */
-        step(result:QQ<INTER>, input:QQ<IN>):QQ<INTER> {
+        /*@ step : (result:INTER, input:IN) : {QQ<Immutable, INTER> | true} */
+        step(result:INTER, input:IN):QQ<INTER> {
             if(this.n > 0) {
-                result = this.xf.step(result, input);
+                var retval1 = this.xf.step(result, input);
                 this.n--;
-                return result;
+                return retval1;
             }
-            var retval = ensureReduced(result);
+            var retval2:QQ<INTER> = reduced(result); //TODO: modified semantics here...
             this.n--;
-            return retval;
+            return retval2;
         }
     }
 
@@ -431,53 +399,53 @@ module transducers {
         }
     }
 
-    // class TakeWhile<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
-    //     public pred: (z:IN) => boolean;
-    //     public xf: Transformer<IN, INTER, OUT>;
-    //     /*@ new(pred:(z:IN) => boolean, xf:Transformer<Immutable, IN, INTER, OUT>) => {void | true} */
-    //     constructor(pred: (z:IN) => boolean, xf: Transformer<IN, INTER, OUT>) {
-    //         this.pred = pred;
-    //         this.xf = xf;
-    //     }
+    class TakeWhile<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
+        public pred: (z:IN) => boolean;
+        public xf: Transformer<IN, INTER, OUT>;
+        /*@ new(pred:(z:IN) => boolean, xf:Transformer<Immutable, IN, INTER, OUT>) => {void | true} */
+        constructor(pred: (z:IN) => boolean, xf: Transformer<IN, INTER, OUT>) {
+            this.pred = pred;
+            this.xf = xf;
+        }
 
-    //     /*@ init : () : {QQ<Immutable, INTER> | true} */
-    //     init():QQ<INTER> {
-    //         return this.xf.init();
-    //     }
-    //     /*@ result : (result:QQ<Immutable, INTER>) : {QQ<Immutable, OUT> | true} */
-    //     result(result:QQ<INTER>):QQ<OUT> {
-    //         return this.xf.result(result);
-    //     }
-    //     /*@ step : (result:QQ<Immutable, INTER>, input:QQ<Immutable, IN>) : {QQ<Immutable, INTER> | true} */
-    //     step(result:QQ<INTER>, input:QQ<IN>):QQ<INTER> {
-    //         if(this.pred(input.value)) {
-    //             return this.xf.step(result, input);
-    //         } else {
-    //             return reduced(result);
-    //         }
-    //     }
-    // }
+        /*@ init : () : {INTER | true} */
+        init():INTER {
+            return this.xf.init();
+        }
+        /*@ result : (result:INTER) : {OUT | true} */
+        result(result:INTER):OUT {
+            return this.xf.result(result);
+        }
+        /*@ step : (result:INTER, input:IN) : {QQ<Immutable, INTER> | true} */
+        step(result:INTER, input:IN):QQ<INTER> {
+            if(this.pred(input)) {
+                return this.xf.step(result, input);
+            } else {
+                return reduced(result);
+            }
+        }
+    }
 
-    // /**
-    //  * Like the take transducer except takes as long as the pred
-    //  * return true for inputs.
-    //  * @method transducers.takeWhile
-    //  * @param {Function} pred a predicate function
-    //  * @return {transducers.TakeWhile} a takeWhile transducer
-    //  * @example
-    //  *     var t = transducers;
-    //  *     var xf = t.takeWhile(function(n) { return n < 3; });
-    //  *     t.into([], xf, [0,1,2,3,4,5]); // [0,1,2];
-    //  */
-    // function takeWhile<IN, INTER, OUT>(pred: (z:IN)=>boolean): (xf: Transformer<IN, INTER, OUT>) => TakeWhile<IN, INTER, OUT> {
-    //     if(TRANSDUCERS_DEV && (typeof pred != "function")) {
-    //         throw new Error("takeWhile must given a function");
-    //     } else {
-    //         return function(xf) {
-    //             return new TakeWhile(pred, xf);
-    //         };
-    //     }
-    // }
+    /**
+     * Like the take transducer except takes as long as the pred
+     * return true for inputs.
+     * @method transducers.takeWhile
+     * @param {Function} pred a predicate function
+     * @return {transducers.TakeWhile} a takeWhile transducer
+     * @example
+     *     var t = transducers;
+     *     var xf = t.takeWhile(function(n) { return n < 3; });
+     *     t.into([], xf, [0,1,2,3,4,5]); // [0,1,2];
+     */
+    function takeWhile<IN, INTER, OUT>(pred: (z:IN)=>boolean): (xf: Transformer<IN, INTER, OUT>) => TakeWhile<IN, INTER, OUT> {
+        if(TRANSDUCERS_DEV && (typeof pred != "function")) {
+            throw new Error("takeWhile must given a function");
+        } else {
+            return function(xf) {
+                return new TakeWhile(pred, xf);
+            };
+        }
+    }
 
     class TakeNth<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
         /*@ i : [Mutable] number */
@@ -491,21 +459,21 @@ module transducers {
             this.xf = xf;
         }
 
-        /*@ init : () : {QQ<Immutable, INTER> | true} */
-        init():QQ<INTER> {
+        /*@ init : () : {INTER | true} */
+        init():INTER {
             return this.xf.init();
         }
-        /*@ result : (result:QQ<Immutable, INTER>) : {QQ<Immutable, OUT> | true} */
-        result(result:QQ<INTER>):QQ<OUT> {
+        /*@ result : (result:INTER) : {OUT | true} */
+        result(result:INTER):OUT {
             return this.xf.result(result);
         }
-        /*@ step : (result:QQ<Immutable, INTER>, input:QQ<Immutable, IN>) : {QQ<Immutable, INTER> | true} */
-        step(result:QQ<INTER>, input:QQ<IN>):QQ<INTER> {
+        /*@ step : (result:INTER, input:IN) : {QQ<Immutable, INTER> | true} */
+        step(result:INTER, input:IN):QQ<INTER> {
             this.i++;
             if((this.i % this.n) === 0) {
                 return this.xf.step(result, input);
             } else {
-                return result;
+                return new QQ(result, false);
             }
         }
     }
@@ -543,19 +511,19 @@ module transducers {
             this.xf = xf;
         }
 
-        /*@ init : () : {QQ<Immutable, INTER> | true} */
-        init():QQ<INTER> {
+        /*@ init : () : {INTER | true} */
+        init():INTER {
             return this.xf.init();
         }
-        /*@ result : (result:QQ<Immutable, INTER>) : {QQ<Immutable, OUT> | true} */
-        result(result:QQ<INTER>):QQ<OUT> {
+        /*@ result : (result:INTER) : {OUT | true} */
+        result(result:INTER):OUT {
             return this.xf.result(result);
         }
-        /*@ step : (result:QQ<Immutable, INTER>, input:QQ<Immutable, IN>) : {QQ<Immutable, INTER> | true} */
-        step(result:QQ<INTER>, input:QQ<IN>):QQ<INTER> {
+        /*@ step : (result:INTER, input:IN) : {QQ<Immutable, INTER> | true} */
+        step(result:INTER, input:IN):QQ<INTER> {
             if(this.n > 0) {
                 this.n--;
-                return result;
+                return new QQ(result, false);
             } else {
                 return this.xf.step(result, input);
             }
@@ -594,18 +562,18 @@ module transducers {
             this.xf = xf;
         }
 
-        /*@ init : () : {QQ<Immutable, INTER> | true} */
-        init():QQ<INTER> {
+        /*@ init : () : {INTER | true} */
+        init():INTER {
             return this.xf.init();
         }
-        /*@ result : (result:QQ<Immutable, INTER>) : {QQ<Immutable, OUT> | true} */
-        result(result:QQ<INTER>):QQ<OUT> {
+        /*@ result : (result:INTER) : {OUT | true} */
+        result(result:INTER):OUT {
             return this.xf.result(result);
         }
-        /*@ step : (result:QQ<Immutable, INTER>, input:QQ<Immutable, IN>) : {QQ<Immutable, INTER> | true} */
-        step(result:QQ<INTER>, input:QQ<IN>):QQ<INTER> {
-            if(this.drop && this.pred(input.value)) {
-                return result;
+        /*@ step : (result:INTER, input:IN) : {QQ<Immutable, INTER> | true} */
+        step(result:INTER, input:IN):QQ<INTER> {
+            if(this.drop && this.pred(input)) {
+                return new QQ(result, false);
             } else {
                 if(this.drop) this.drop = false;
                 return this.xf.step(result, input);
@@ -760,19 +728,19 @@ module transducers {
             this.xf = xf;
         }
 
-        /*@ init : () : {QQ<Immutable, INTER> | true} */
-        init():QQ<INTER> {
+        /*@ init : () : {INTER | true} */
+        init():INTER {
             return this.xf.init();
         }
-        /*@ result : (result:QQ<Immutable, INTER>) : {QQ<Immutable, OUT> | true} */
-        result(result:QQ<INTER>):QQ<OUT> {
+        /*@ result : (result:INTER) : {OUT | true} */
+        result(result:INTER):OUT {
             return this.xf.result(result);
         }
-        /*@ step : (result:QQ<Immutable, INTER>, input:QQ<Immutable, IN>) : {QQ<Immutable, INTER> | true} */
-        step(result:QQ<INTER>, input:QQ<IN>):QQ<INTER> {
-            var v = this.f(input.value);
+        /*@ step : (result:INTER, input:IN) : {QQ<Immutable, INTER> | true} */
+        step(result:INTER, input:IN):QQ<INTER> {
+            var v = this.f(input);
             if(v === null) {
-                return result;
+                return new QQ(result, false);
             } else {
                 return this.xf.step(result, input);
             }
@@ -812,20 +780,20 @@ module transducers {
             this.xf = xf;
         }
 
-        /*@ init : () : {QQ<Immutable, INTER> | true} */
-        init():QQ<INTER> {
+        /*@ init : () : {INTER | true} */
+        init():INTER {
             return this.xf.init();
         }
-        /*@ result : (result:QQ<Immutable, INTER>) : {QQ<Immutable, OUT> | true} */
-        result(result:QQ<INTER>):QQ<OUT> {
+        /*@ result : (result:INTER) : {OUT | true} */
+        result(result:INTER):OUT {
             return this.xf.result(result);
         }
-        /*@ step : (result:QQ<Immutable, INTER>, input:QQ<Immutable, IN>) : {QQ<Immutable, INTER> | true} */
-        step(result:QQ<INTER>, input:QQ<IN>):QQ<INTER> {
+        /*@ step : (result:INTER, input:IN) : {QQ<Immutable, INTER> | true} */
+        step(result:INTER, input:IN):QQ<INTER> {
             this.i++;
-            var v:any = this.f(this.i, input.value);
+            var v:any = this.f(this.i, input);
             if(v === null) {
-                return result;
+                return new QQ(result, false);
             } else {
                 return this.xf.step(result, input);
             }
