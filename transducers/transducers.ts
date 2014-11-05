@@ -904,43 +904,40 @@ module transducers {
             //     return transducers.comp(transducers.map(f), transducers.cat);
             // };
 
-            // transducers.stringReduce = function(xf, init, string) {
-            //     var acc = init;
-            //     for(var i = 0; i < string.length; i++) {
-            //         acc = xf.step(acc, string.charAt(i));
-            //         if(transducers.isReduced(acc)) {
-            //             acc = transducers.deref(acc);
-            //             break;
-            //         }
-            //     }
-            //     return xf.result(acc);
-            // };
-
-    function arrayReduce(xf, init, array) {
+    function stringReduce<INTER, OUT>(xf:Transformer<string, INTER, OUT>, init:INTER, str:string) {
         var acc = init;
-        for(var i = 0; i < array.length; i++) {
-            acc = xf.step(acc, array[i]);
-            if(isReduced(acc)) {
-                acc = deref(acc);
-                break;
-            }
+        var shouldBreak = false;
+        for(var i = 0; i < str.length; i++) {
+            var wrappedAcc = xf.step(acc, str.charAt(i));
+            shouldBreak = isReduced(wrappedAcc);
+            acc = deref(wrappedAcc);
         }
         return xf.result(acc);
     }
 
-            // transducers.objectReduce = function(xf, init, obj) {
-            //     var acc = init;
-            //     for(var p in obj) {
-            //         if(obj.hasOwnProperty(p)) {
-            //             acc = xf.step(acc, [p, obj[p]]);
-            //             if(transducers.isReduced(acc)) {
-            //                 acc = transducers.deref(acc);
-            //                 break;
-            //             }
-            //         }
-            //     }
-            //     return xf.result(acc);
-            // };
+    function arrayReduce<IN, INTER, OUT>(xf:Transformer<IN, INTER, OUT>, init:INTER, array:IN[]) {
+        var acc = init;
+        var shouldBreak = false;
+        for(var i = 0; i < array.length && !shouldBreak; i++) {
+            var wrappedAcc = xf.step(acc, array[i]);
+            shouldBreak = isReduced(wrappedAcc);
+            acc = deref(wrappedAcc);
+        }
+        return xf.result(acc);
+    }
+
+    function objectReduce<INTER, OUT>(xf:Transformer<any[], INTER, OUT>, init:INTER, ob:{[key:string]:any}) {
+        var acc = init;
+        var shouldBreak = false;
+        for(var p in ob) {
+            if(ob.hasOwnProperty(p)) {
+                var wrappedAcc = xf.step(acc, [p, ob[p]]);
+                shouldBreak = isReduced(wrappedAcc);
+                acc = deref(wrappedAcc);
+            }
+        }
+        return xf.result(acc);
+    }
 
             // transducers.iterableReduce = function(xf, init, iter) {
             //     if(iter["@@iterator"]) {
