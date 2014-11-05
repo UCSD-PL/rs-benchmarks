@@ -604,120 +604,138 @@ module transducers {
 
     var NONE = {};
 
-            // /**
-            //  * @constructor
-            //  */
-            // transducers.PartitionBy = function(f, xf) {
-            //     this.f = f;
-            //     this.xf = xf;
-            //     this.a = [];
-            //     this.pval = transducers.NONE;
-            // };
-            // transducers.PartitionBy.prototype.init = function() {
-            //     return this.xf.init()
-            // };
-            // transducers.PartitionBy.prototype.result = function(result) {
-            //     if(this.a.length > 0) {
-            //         result = transducers.unreduced(this.xf.step(result, this.a));
-            //         this.a = [];
-            //     }
-            //     return this.xf.result(result);
-            // };
-            // transducers.PartitionBy.prototype.step = function(result, input) {
-            //     var pval = this.pval;
-            //         val  = this.f(input);
+    class PartitionBy<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
+        public f: (z:IN) => any;
+        public xf: Transformer<Array<IN>, INTER, OUT>;
+        /*@ a : [Mutable] Array<Mutable, IN> */
+        public a: Array<IN>;
+        /*@ pval : [Mutable] top */
+        public pval: any;
+        /*@ new(f:(z:IN) => top, xf:Transformer<Immutable, Array<Mutable,IN>, INTER, OUT>) => {void | true} */
+        constructor(f: (z:IN) => any, xf: Transformer<Array<IN>, INTER, OUT>) {
+            this.f = f;
+            this.xf = xf;
+            this.a = [];
+            this.pval = NONE;
+        }
 
-            //     this.pval = val;
+        /*@ init : () : {INTER | true} */
+        init():INTER {
+            return this.xf.init();
+        }
+        /*@ result : (result:INTER) : {OUT | true} */
+        result(result:INTER):OUT {
+            if(this.a.length > 0) {
+                result = this.xf.step(result, this.a).value;
+                this.a = [];
+            }
+            return this.xf.result(result);
+        }
+        /*@ step : (result:INTER, input:IN) : {QQ<Immutable, INTER> | true} */
+        step(result:INTER, input:IN):QQ<INTER> {
+            var pval = this.pval,
+                val  = this.f(input);
 
-            //     // NOTE: we should probably allow someone to define
-            //     // equality? - David
-            //     if((pval == transducers.NONE) ||
-            //        (pval == val)) {
-            //         this.a.push(input);
-            //         return result;
-            //     } else {
-            //         var ret = this.xf.step(result, this.a);
-            //         this.a = [];
-            //         if(!transducers.isReduced(ret)) {
-            //             this.a.push(input);
-            //         }
-            //         return ret;
-            //     }
-            // };
+            this.pval = val;
 
-            // /**
-            //  * A partitioning transducer. Collects inputs into
-            //  * arrays as long as predicate remains true for contiguous
-            //  * inputs.
-            //  * @method transducers.partitionBy
-            //  * @param {Function} f a partition function. When the result
-            //  *   for an input changes from the previous result will create
-            //  *   a partition.
-            //  * @return {transducers.PartitionBy} a partitionBy transducer
-            //  * @example
-            //  *     var t = transducers;
-            //  *     var xf = t.partitionBy(function(x) { return typeof x == "string"; });
-            //  *     t.into([], xf, [0,1,"foo","bar",2,3,"bar","baz"]); // [[0,1],["foo","bar"],[2,3],["bar","baz"]];
-            //  */
-            // transducers.partitionBy = function(f) {
-            //     if(TRANSDUCERS_DEV && (typeof f != "function")) {
-            //         throw new Error("partitionBy must be given an function");
-            //     } else {
-            //         return function(xf) {
-            //             return new transducers.PartitionBy(f, xf);
-            //         };
-            //     }
-            // };
+            // NOTE: we should probably allow someone to define
+            // equality? - David
+            if((pval === NONE) ||
+               (pval === val)) {
+                this.a.push(input);
+                return new QQ(result, false);
+            } else {
+                var ret = this.xf.step(result, this.a);
+                this.a = [];
+                if(!isReduced(ret)) {
+                    this.a.push(input);
+                }
+                return ret;
+            }
+        }
+    }
 
-            // /**
-            //  * @constructor
-            //  */
-            // transducers.PartitionAll = function(n, xf) {
-            //     this.n = n;
-            //     this.xf = xf;
-            //     this.a = [];
-            // };
-            // transducers.PartitionAll.prototype.init = function() {
-            //     return this.xf.init();
-            // };
-            // transducers.PartitionAll.prototype.result = function(result) {
-            //     if(this.a.length > 0) {
-            //         result = transducers.unreduced(this.xf.step(result, this.a));
-            //         this.a = [];
-            //     }
-            //     return this.xf.result(result);
-            // };
-            // transducers.PartitionAll.prototype.step = function(result, input) {
-            //     this.a.push(input);
-            //     if(this.n == this.a.length) {
-            //         var a = this.a;
-            //         this.a = [];
-            //         return this.xf.step(result, a);
-            //     } else {
-            //         return result;
-            //     }
-            // };
+    /**
+     * A partitioning transducer. Collects inputs into
+     * arrays as long as predicate remains true for contiguous
+     * inputs.
+     * @method transducers.partitionBy
+     * @param {Function} f a partition function. When the result
+     *   for an input changes from the previous result will create
+     *   a partition.
+     * @return {transducers.PartitionBy} a partitionBy transducer
+     * @example
+     *     var t = transducers;
+     *     var xf = t.partitionBy(function(x) { return typeof x == "string"; });
+     *     t.into([], xf, [0,1,"foo","bar",2,3,"bar","baz"]); // [[0,1],["foo","bar"],[2,3],["bar","baz"]];
+     */
+    function partitionBy<IN, INTER, OUT>(f: (z:IN)=>any): (xf: Transformer<Array<IN>, INTER, OUT>) => PartitionBy<IN, INTER, OUT> {
+        if(TRANSDUCERS_DEV && (typeof f != "function")) {
+            throw new Error("partitionBy must be given an function");
+        } else {
+            return function(xf) {
+                return new PartitionBy(f, xf);
+            };
+        }
+    }
 
-            // /**
-            //  * A partitioning transducer. Collects inputs into
-            //  * arrays of size N.
-            //  * @method transducers.partitionAll
-            //  * @param {Number} n an integer
-            //  * @return {transducers.PartitionAll} a partitionAll transducer
-            //  * @example
-            //  *     var t = transducers;
-            //  *     var xf = t.partitionAll(3);
-            //  *     t.into([], xf, [0,1,2,3,4,5]); // [[0,1,2],[3,4,5]]
-            //  */
-            // transducers.partitionAll = function(n) {
-            //     if(TRANSDUCERS_DEV && (typeof n != "number")) {
-            //         throw new Error("partitionAll must be given a number");
-            //     } else {
-            //         return function(xf) {
-            //             return new transducers.PartitionAll(n, xf);
-            //         };
-            //     }
-            // };
+    class PartitionAll<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
+        public n: number;
+        public xf: Transformer<Array<IN>, INTER, OUT>;
+        /*@ a : [Mutable] Array<Mutable, IN> */
+        public a: Array<IN>;
+        /*@ new(n:number, xf:Transformer<Immutable, Array<Mutable,IN>, INTER, OUT>) => {void | true} */        
+        constructor(n:number, xf:Transformer<Array<IN>, INTER, OUT>) {
+            this.n = n;
+            this.xf = xf;
+            this.a = [];
+        }
+
+        /*@ init : () : {INTER | true} */
+        init():INTER {
+            return this.xf.init();
+        }
+        /*@ result : (result:INTER) : {OUT | true} */
+        result(result:INTER):OUT {
+            if(this.a.length > 0) {
+                result = this.xf.step(result, this.a).value;
+                this.a = [];
+            }
+            return this.xf.result(result);
+        }
+        /*@ step : (result:INTER, input:IN) : {QQ<Immutable, INTER> | true} */
+        step(result:INTER, input:IN):QQ<INTER> {
+            this.a.push(input);
+            if(this.n === this.a.length) {
+                var a = this.a;
+                this.a = [];
+                return this.xf.step(result, a);
+            } else {
+                return new QQ(result, false);
+            }
+        }
+    }
+
+    /**
+     * A partitioning transducer. Collects inputs into
+     * arrays of size N.
+     * @method transducers.partitionAll
+     * @param {Number} n an integer
+     * @return {transducers.PartitionAll} a partitionAll transducer
+     * @example
+     *     var t = transducers;
+     *     var xf = t.partitionAll(3);
+     *     t.into([], xf, [0,1,2,3,4,5]); // [[0,1,2],[3,4,5]]
+     */
+    function partitionAll<IN, INTER, OUT>(n:number): (xf: Transformer<Array<IN>, INTER, OUT>) => PartitionAll<IN, INTER, OUT> {
+        if(TRANSDUCERS_DEV && (typeof n != "number")) {
+            throw new Error("partitionAll must be given a number");
+        } else {
+            return function(xf) {
+                return new PartitionAll(n, xf);
+            };
+        }
+    }
 
     class Keep<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
         public f: (z:IN) => any;
@@ -898,17 +916,17 @@ module transducers {
             //     return xf.result(acc);
             // };
 
-            // transducers.arrayReduce = function(xf, init, array) {
-            //     var acc = init;
-            //     for(var i = 0; i < array.length; i++) {
-            //         acc = xf.step(acc, array[i]);
-            //         if(transducers.isReduced(acc)) {
-            //             acc = transducers.deref(acc);
-            //             break;
-            //         }
-            //     }
-            //     return xf.result(acc);
-            // };
+    function arrayReduce(xf, init, array) {
+        var acc = init;
+        for(var i = 0; i < array.length; i++) {
+            acc = xf.step(acc, array[i]);
+            if(isReduced(acc)) {
+                acc = deref(acc);
+                break;
+            }
+        }
+        return xf.result(acc);
+    }
 
             // transducers.objectReduce = function(xf, init, obj) {
             //     var acc = init;
