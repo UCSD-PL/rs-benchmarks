@@ -20,9 +20,9 @@ module transducers {
     declare var goog:Goog;
 
     interface Transformer<IN, INTER, OUT> {
-        init():INTER;
-        result(result:INTER):OUT;
-        step(result:INTER, input:IN):QQ<INTER>;
+        init:()=>INTER;
+        result:(result:INTER)=>OUT;
+        step:(result:INTER, input:IN)=>QQ<INTER>;
     }
 
     // Note: this is actually a special case of transducer: one that preserves all types
@@ -80,10 +80,10 @@ module transducers {
         return goog.typeOf(x) === "object";
     }
 
-    /*@ isIterable :: (x:{[s:string]:top}) => {top | true} */
-    function isIterable(x:{[s:string]:any}) {
-        return x["@@iterator"] || x["next"];
-    }
+            // /*@ isIterable :: (x:{[s:string]:top}) => {top | true} */
+            // function isIterable(x:{[s:string]:any}) {
+            //     return x["@@iterator"] || x["next"];
+            // }
 
             // transducers.slice = function(arrayLike, start, n) {
             //     if(n == null) {
@@ -875,10 +875,10 @@ module transducers {
             //         init: function() {
             //             return xf.init();
             //         },
-            //         result: function(result:INTER) {
+            //         result: function(result:OUT) {
             //             return result;
             //         },
-            //         step: function(result:INTER, input:IN) {
+            //         step: function(result:OUT, input:IN) {
             //             var ret = xf.step(result, input);
             //             if(isReduced(ret)) {
             //                 return reduced(ret);
@@ -983,34 +983,34 @@ module transducers {
             //     return xf.result(acc);
             // };
 
-            // /**
-            //  * Given a transducer, an intial value and a 
-            //  * collection - returns the reduction.
-            //  * @method transducers.reduce
-            //  * @param {Transducer|Function} xf a transducer or two-arity function
-            //  * @param {Object} init any JavaScript value
-            //  * @param {String|Array|Object|Iterable} coll any iterable JavaScript value
-            //  * @return {Object} a iterable JavaScript value: string, array
-            //  *   iterable, or object.
-            //  */
-            // //TODO: this looks really hard to annotate
-            // function reduce(xf:any, init:any, coll:any):any {
-            //     if(coll) {
-            //         xf = typeof xf === "function" ? wrap(xf) : xf;
-            //         if(isString(coll)) {
-            //             return stringReduce(xf, init, coll);
-            //         } else if(isArray(coll)) {
-            //             return arrayReduce(xf, init, coll);
-            //         // } else if(isIterable(coll)) {
-            //         //     return iterableReduce(xf, init, coll);
-            //         // } else if(isObject(coll)) {
-            //         //     return objectReduce(xf, init, coll);
-            //         } else {
-            //             throw new Error("Cannot reduce instance of " + coll.constructor.name);
-            //         }
-            //     }
-            //     return undefined
-            // }
+    /**
+     * Given a transducer, an intial value and a 
+     * collection - returns the reduction.
+     * @method transducers.reduce
+     * @param {Transducer|Function} xf a transducer or two-arity function
+     * @param {Object} init any JavaScript value
+     * @param {String|Array|Object|Iterable} coll any iterable JavaScript value
+     * @return {Object} a iterable JavaScript value: string, array
+     *   iterable, or object.
+     */
+    /*@ reduce :: forall IN INTER OUT . (xf: Transformer<Immutable, IN, INTER, OUT>, init:INTER, coll:Array<Immutable, IN>) => {OUT | true} */
+    function reduce(xf:any, init:any, coll:any):any {
+        // if(coll) {
+        //     xf = typeof xf === "function" ? wrap(xf) : xf;
+        //     if(isString(coll)) {
+        //         return stringReduce(xf, init, coll);
+        //     } else if(isArray(coll)) {
+                return arrayReduce(xf, init, coll);
+        //     } else if(isIterable(coll)) {
+        //         return iterableReduce(xf, init, coll);
+        //     } else if(isObject(coll)) {
+        //         return objectReduce(xf, init, coll);
+        //     } else {
+        //         throw new Error("Cannot reduce instance of " + coll.constructor.name);
+        //     }
+        // }
+        // return undefined
+    }
 
             // /**
             //  * Given a transducer, a builder function, an initial value
