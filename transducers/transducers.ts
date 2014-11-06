@@ -15,14 +15,19 @@
 module transducers {
 
     interface Goog {
-        typeOf(x:any):string
+        typeOf(x:any):string;
     }
     declare var goog:Goog;
 
     interface Transformer<IN, INTER, OUT> {
-        init():INTER
-        result(result:INTER):OUT
-        step(result:INTER, input:IN):QQ<INTER>
+        init():INTER;
+        result(result:INTER):OUT;
+        step(result:INTER, input:IN):QQ<INTER>;
+    }
+
+    // Note: this is actually a special case of transducer: one that preserves all types
+    interface Transducer<IN, INTER, OUT> {
+        (xf: Transformer<IN, INTER, OUT>): Transformer<IN, INTER, OUT>;
     }
 
             // "use strict";
@@ -75,9 +80,10 @@ module transducers {
         return goog.typeOf(x) === "object";
     }
 
-            // transducers.isIterable = function(x) {
-            //     return x["@@iterator"] || x["next"];
-            // };
+    /*@ isIterable :: (x:{[s:string]:top}) => {top | true} */
+    function isIterable(x:{[s:string]:any}) {
+        return x["@@iterator"] || x["next"];
+    }
 
             // transducers.slice = function(arrayLike, start, n) {
             //     if(n == null) {
@@ -135,13 +141,15 @@ module transducers {
      *     var t = transducers;
      *     var arrayPush = t.wrap(function(arr, x) { arr.push(x); return arr; });
      */
-    function wrap(stepFn:any):any {
-        if(typeof stepFn === "function") {
+    /*@ wrap :: forall IN OUT . (stepFn: (result:OUT, input:IN)=>QQ<Immutable, OUT>) => {Wrap<Immutable, IN, OUT> | true} */
+    function wrap<IN, OUT>(stepFn: (result:OUT, input:IN)=>QQ<OUT>):Wrap<IN, OUT> {
+        //TODO
+        // if(typeof stepFn === "function") {
             return new Wrap(stepFn);
-        } else {
-            return stepFn;
-        }
-    };
+        // } else {
+        //     return <Wrap<IN, OUT>>stepFn;
+        // }
+    }
 
     // =============================================================================
     // Main
@@ -202,6 +210,7 @@ module transducers {
      * @example
      *     transducers.identity(1); // 1
      */
+    /*@ identity :: forall T . (x:T) => {T | v = x} */
     function identity<T>(x:T):T {
         return x;
     }
@@ -269,13 +278,14 @@ module transducers {
      *     var xf = t.map(inc);
      *     t.into([], xf, [1,2,3]); // [2,3,4]
      */
+    /*@ map :: forall IN INTER OUT T . (f: (z:IN)=>T) => {(xf: Transformer<Immutable, T, INTER, OUT>) => Map<Immutable, IN, INTER, OUT, T> | true} */
     function map<IN, INTER, OUT, T>(f: (z:IN)=>T): (xf: Transformer<T, INTER, OUT>) => Map<IN, INTER, OUT, T> {
         if(TRANSDUCERS_DEV && (f === null)) {
             throw new Error("At least one argument must be supplied to map");
         } else {
-            return function(xf) {
-                return new Map(f, xf);
-            };
+            return function(xf) 
+                /*@ <anonymous> (xf: Transformer<Immutable, T, INTER, OUT>) => {Map<Immutable, IN, INTER, OUT, T> | true} */ 
+                { return new Map(f, xf); };
         }
     }
 
@@ -317,6 +327,7 @@ module transducers {
      *     var xf = t.filter(isEven);
      *     t.into([], xf, [0,1,2,3,4]); // [0,2,4];
      */
+    /*@ filter :: forall IN INTER OUT . (pred: (z:IN)=>boolean) => {(xf: Transformer<Immutable, IN, INTER, OUT>) => Filter<Immutable, IN, INTER, OUT> | true} */
     function filter<IN, INTER, OUT>(pred: (z:IN)=>boolean): (xf: Transformer<IN, INTER, OUT>) => Filter<IN, INTER, OUT> {
         if(TRANSDUCERS_DEV && (typeof pred != "function")) {
             throw new Error("filter must be given a function");
@@ -389,6 +400,7 @@ module transducers {
      *     var xf = t.take(3);
      *     t.into([], xf, [0,1,2,3,4,5]); // [0,1,2];
      */
+    /*@ take :: forall IN INTER OUT . (n:number) => {(xf: Transformer<Immutable, IN, INTER, OUT>) => Take<Immutable, IN, INTER, OUT> | true} */
     function take<IN, INTER, OUT>(n:number): (xf: Transformer<IN, INTER, OUT>) => Take<IN, INTER, OUT> {
         if(TRANSDUCERS_DEV && (typeof n != "number")) {
             throw new Error("take must be given an integer");
@@ -437,6 +449,7 @@ module transducers {
      *     var xf = t.takeWhile(function(n) { return n < 3; });
      *     t.into([], xf, [0,1,2,3,4,5]); // [0,1,2];
      */
+    /*@ takeWhile :: forall IN INTER OUT . (pred: (z:IN)=>boolean) => {(xf: Transformer<Immutable, IN, INTER, OUT>) => TakeWhile<Immutable, IN, INTER, OUT> | true} */
     function takeWhile<IN, INTER, OUT>(pred: (z:IN)=>boolean): (xf: Transformer<IN, INTER, OUT>) => TakeWhile<IN, INTER, OUT> {
         if(TRANSDUCERS_DEV && (typeof pred != "function")) {
             throw new Error("takeWhile must given a function");
@@ -488,6 +501,7 @@ module transducers {
      *     var xf = t.takeNth(3);
      *     t.into([], xf, [0,1,2,3,4,5]); // [2,5];
      */
+    /*@ takeNth :: forall IN INTER OUT . (n:number) => {(xf: Transformer<Immutable, IN, INTER, OUT>) => TakeNth<Immutable, IN, INTER, OUT> | true} */
     function takeNth<IN, INTER, OUT>(n:number): (xf: Transformer<IN, INTER, OUT>) => TakeNth<IN, INTER, OUT> {
         if(TRANSDUCERS_DEV && (typeof n != "number")) {
             throw new Error("takeNth must be given a number");
@@ -540,6 +554,7 @@ module transducers {
      *     var xf = t.drop(3);
      *     t.into([], xf, [0,1,2,3,4,5]); // [3,4,5];
      */
+    /*@ drop :: forall IN INTER OUT . (n:number) => {(xf: Transformer<Immutable, IN, INTER, OUT>) => Drop<Immutable, IN, INTER, OUT> | true} */
     function drop<IN, INTER, OUT>(n:number): (xf: Transformer<IN, INTER, OUT>) => Drop<IN, INTER, OUT> {
         if(TRANSDUCERS_DEV && (typeof n !== "number")) {
             throw new Error("drop must be given an integer");
@@ -592,6 +607,7 @@ module transducers {
      *     var xf = t.dropWhile(function(n) { return n < 3; });
      *     t.into([], xf, [0,1,2,3,4,5]); // [3,4,5];
      */
+    /*@ dropWhile :: forall IN INTER OUT . (pred: (z:IN)=>boolean) => {(xf: Transformer<Immutable, IN, INTER, OUT>) => DropWhile<Immutable, IN, INTER, OUT> | true} */
     function dropWhile<IN, INTER, OUT>(pred: (z:IN)=>boolean): (xf: Transformer<IN, INTER, OUT>) => DropWhile<IN, INTER, OUT> {
         if(TRANSDUCERS_DEV && (typeof pred != "function")) {
             throw new Error("dropWhile must be given a function");
@@ -669,6 +685,7 @@ module transducers {
      *     var xf = t.partitionBy(function(x) { return typeof x == "string"; });
      *     t.into([], xf, [0,1,"foo","bar",2,3,"bar","baz"]); // [[0,1],["foo","bar"],[2,3],["bar","baz"]];
      */
+    /*@ partitionBy :: forall IN INTER OUT . (f: (z:IN)=>top) => {(xf: Transformer<Immutable, Array<Mutable, IN>, INTER, OUT>) => PartitionBy<Immutable, IN, INTER, OUT> | true} */
     function partitionBy<IN, INTER, OUT>(f: (z:IN)=>any): (xf: Transformer<Array<IN>, INTER, OUT>) => PartitionBy<IN, INTER, OUT> {
         if(TRANSDUCERS_DEV && (typeof f != "function")) {
             throw new Error("partitionBy must be given an function");
@@ -727,6 +744,7 @@ module transducers {
      *     var xf = t.partitionAll(3);
      *     t.into([], xf, [0,1,2,3,4,5]); // [[0,1,2],[3,4,5]]
      */
+    /*@ partitionAll :: forall IN INTER OUT . (n:number) => {(xf: Transformer<Immutable, Array<Mutable, IN>, INTER, OUT>) => PartitionAll<Immutable, IN, INTER, OUT> | true} */
     function partitionAll<IN, INTER, OUT>(n:number): (xf: Transformer<Array<IN>, INTER, OUT>) => PartitionAll<IN, INTER, OUT> {
         if(TRANSDUCERS_DEV && (typeof n != "number")) {
             throw new Error("partitionAll must be given a number");
@@ -776,6 +794,7 @@ module transducers {
      *     var xf = t.keep(function(x) { if(typeof x == "string") return "cool"; });
      *     t.into([], xf, [0,1,"foo",3,4,"bar"]); // ["foo","bar"]
      */
+    /*@ keep :: forall IN INTER OUT . (f: (z:IN)=>top) => {(xf: Transformer<Immutable, IN, INTER, OUT>) => Keep<Immutable, IN, INTER, OUT> | true} */
     function keep<IN, INTER, OUT>(f: (z:IN)=>any): (xf: Transformer<IN, INTER, OUT>) => Keep<IN, INTER, OUT> {
         if(TRANSDUCERS_DEV && (typeof f != "function")) {
             throw new Error("keep must be given a function");
@@ -829,6 +848,7 @@ module transducers {
      *     var xf = t.keepIndexed(function(i, x) { if(typeof x == "string") return "cool"; });
      *     t.into([], xf, [0,1,"foo",3,4,"bar"]); // ["foo","bar"]
      */
+    /*@ keepIndexed :: forall IN INTER OUT . (f: (idx:number, z:IN)=>top) => {(xf: Transformer<Immutable, IN, INTER, OUT>) => KeepIndexed<Immutable, IN, INTER, OUT> | true} */
     function keepIndexed<IN, INTER, OUT>(f: (idx:number, z:IN)=>any): (xf: Transformer<IN, INTER, OUT>) => KeepIndexed<IN, INTER, OUT> {
         if(TRANSDUCERS_DEV && (typeof f != "function")) {
             throw new Error("keepIndexed must be given a function");
@@ -839,8 +859,8 @@ module transducers {
         }
     }
 
-            // // randomSample
-            // // iteration
+    // randomSample
+    // iteration
 
             // /**
             //  * Given a transformer returns a transformer which preserves
@@ -849,24 +869,25 @@ module transducers {
             //  * @param {transformer} xf a transformer
             //  * @return {transformer} a transformer which preserves reduced
             //  */
-            // transducers.preservingReduced = function(xf) {
+            // /*@ preservingReduced :: forall IN INTER OUT . (xf: Transformer<Immutable, IN, INTER, OUT>) => {Transformer<Immutable, IN, INTER, OUT> | true} */
+            // function preservingReduced<IN, INTER, OUT>(xf: Transformer<IN, INTER, OUT>) {
             //     return {
             //         init: function() {
             //             return xf.init();
             //         },
-            //         result: function(result) {
+            //         result: function(result:INTER) {
             //             return result;
             //         },
-            //         step: function(result, input) {
+            //         step: function(result:INTER, input:IN) {
             //             var ret = xf.step(result, input);
-            //             if(transducers.isReduced(ret)) {
-            //                 return transducers.reduced(ret);
+            //             if(isReduced(ret)) {
+            //                 return reduced(ret);
             //             } else {
-            //                 return ret;
+            //                 return new QQ(ret, false);
             //             }
             //         }
-            //     };
-            // };
+            //     }
+            // }
 
             // /**
             //  * Given a transformer return a concatenating transformer
@@ -874,20 +895,20 @@ module transducers {
             //  * @param {transformer} xf a transformer
             //  * @return {transformer} a concatenating transformer
             //  */
-            // transducers.cat = function(xf) {
-            //     var rxf = transducers.preservingReduced(xf);
+            // function cat<IN, INTER, OUT>(xf: Transformer<IN, INTER, OUT>) {
+            //     var rxf = preservingReduced(xf);
             //     return {
             //         init: function() {
             //             return xf.init();
             //         },
-            //         result: function(result) {
+            //         result: function(result:INTER) {
             //             return xf.result(result);
             //         },
-            //         step: function(result, input) {
-            //             return transducers.reduce(rxf, result, input);
+            //         step: function(result:INTER, input:IN) {
+            //             return reduce(rxf, result, input);
             //         }
-            //     };
-            // };
+            //     }
+            // }
 
             // /**
             //  * A mapping concatenating transformer
@@ -904,6 +925,7 @@ module transducers {
             //     return transducers.comp(transducers.map(f), transducers.cat);
             // };
 
+    /*@ stringReduce :: forall INTER OUT . (xf:Transformer<Immutable, string, INTER, OUT>, init:INTER, str:string) => {OUT | true} */
     function stringReduce<INTER, OUT>(xf:Transformer<string, INTER, OUT>, init:INTER, str:string) {
         var acc = init;
         var shouldBreak = false;
@@ -915,6 +937,7 @@ module transducers {
         return xf.result(acc);
     }
 
+    /*@ arrayReduce :: forall IN INTER OUT . (xf:Transformer<Immutable, IN, INTER, OUT>, init:INTER, array:Array<Immutable, IN>) => {OUT | true} */
     function arrayReduce<IN, INTER, OUT>(xf:Transformer<IN, INTER, OUT>, init:INTER, array:IN[]) {
         var acc = init;
         var shouldBreak = false;
@@ -926,18 +949,19 @@ module transducers {
         return xf.result(acc);
     }
 
-    function objectReduce<INTER, OUT>(xf:Transformer<any[], INTER, OUT>, init:INTER, ob:{[key:string]:any}) {
-        var acc = init;
-        var shouldBreak = false;
-        for(var p in ob) {
-            if(ob.hasOwnProperty(p)) {
-                var wrappedAcc = xf.step(acc, [p, ob[p]]);
-                shouldBreak = isReduced(wrappedAcc);
-                acc = deref(wrappedAcc);
-            }
-        }
-        return xf.result(acc);
-    }
+            // /*@ objectReduce :: forall INTER OUT . (xf:Transformer<Immutable, Array<Immutable, top>, INTER, OUT>, init:INTER, ob:{[key:string]:top}) => {OUT | true} */
+            // function objectReduce<INTER, OUT>(xf:Transformer<any[], INTER, OUT>, init:INTER, ob:{[key:string]:any}) {
+            //     var acc = init;
+            //     var shouldBreak = false;
+            //     for(var p in ob) {
+            //         if(ob.hasOwnProperty(p)) {
+            //             var wrappedAcc = xf.step(acc, [p, ob[p]]);
+            //             shouldBreak = isReduced(wrappedAcc);
+            //             acc = deref(wrappedAcc);
+            //         }
+            //     }
+            //     return xf.result(acc);
+            // }
 
             // transducers.iterableReduce = function(xf, init, iter) {
             //     if(iter["@@iterator"]) {
@@ -969,22 +993,24 @@ module transducers {
             //  * @return {Object} a iterable JavaScript value: string, array
             //  *   iterable, or object.
             //  */
-            // transducers.reduce = function(xf, init, coll) {
+            // //TODO: this looks really hard to annotate
+            // function reduce(xf:any, init:any, coll:any):any {
             //     if(coll) {
-            //         xf = typeof xf == "function" ? transducers.wrap(xf) : xf;
-            //         if(transducers.isString(coll)) {
-            //             return transducers.stringReduce(xf, init, coll);
-            //         } else if(transducers.isArray(coll)) {
-            //             return transducers.arrayReduce(xf, init, coll);
-            //         } else if(transducers.isIterable(coll)) {
-            //             return transducers.iterableReduce(xf, init, coll);
-            //         } else if(transducers.isObject(coll)) {
-            //             return transducers.objectReduce(xf, init, coll);
+            //         xf = typeof xf === "function" ? wrap(xf) : xf;
+            //         if(isString(coll)) {
+            //             return stringReduce(xf, init, coll);
+            //         } else if(isArray(coll)) {
+            //             return arrayReduce(xf, init, coll);
+            //         // } else if(isIterable(coll)) {
+            //         //     return iterableReduce(xf, init, coll);
+            //         // } else if(isObject(coll)) {
+            //         //     return objectReduce(xf, init, coll);
             //         } else {
             //             throw new Error("Cannot reduce instance of " + coll.constructor.name);
             //         }
             //     }
-            // };
+            //     return undefined
+            // }
 
             // /**
             //  * Given a transducer, a builder function, an initial value
@@ -1004,20 +1030,21 @@ module transducers {
             //  *     var xf = t.comp(t.map(inc),t.filter(isEven));
             //  *     t.transduce(xf, apush, [], [1,2,3,4]); // [2,4]
             //  */
-            // transducers.transduce = function(xf, f, init, coll) {
-            //     f = typeof f == "function" ? transducers.wrap(f) : f;
+            // function transduce(xf:any, f:any, init:any, coll:any) {
+            //     f = typeof f === "function" ? wrap(f) : f;
             //     xf = xf(f);
-            //     return transducers.reduce(xf, init, coll);
-            // };
+            //     return reduce(xf, init, coll);
+            // }
 
             // transducers.stringAppend = function(string, x) {
             //     return string + x;
             // };
 
-            // transducers.arrayPush = function(arr, x) {
-            //     arr.push(x);
-            //     return arr;
-            // };
+    /*@ arrayPush :: forall T . (arr:Array<Mutable, T>, x:T) => {Array<Mutable, T> | true} */
+    function arrayPush<T>(arr:T[], x:T) {
+        arr.push(x);
+        return arr;
+    }
 
             // transducers.addEntry = function(obj, entry) {
             //     obj[entry[0]] = entry[1];
@@ -1050,22 +1077,28 @@ module transducers {
             //     }
             // };
 
-            // /**
-            //  * @constructor
-            //  */
-            // transducers.Completing = function(cf, xf) {
-            //     this.cf = cf;
-            //     this.xf = xf;
-            // };
-            // transducers.Completing.prototype.init = function() {
-            //     return this.xf.init();
-            // };
-            // transducers.Completing.prototype.result = function(result) {
-            //     return this.cf(result);
-            // };
-            // transducers.Completing.prototype.step = function(result, step) {
-            //     return this.xf.step(result, step);
-            // };
+    class Completing<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
+        public cf: (z:INTER) => OUT;
+        public xf: Transformer<IN, INTER, any>;
+        /*@ new(cf:(z:INTER) => OUT, xf:Transformer<Immutable, IN, INTER, top>) => {void | true} */
+        constructor(cf: (z:INTER) => OUT, xf: Transformer<IN, INTER, any>) {
+            this.cf = cf;
+            this.xf = xf;
+        }
+
+        /*@ init : () : {INTER | true} */
+        init():INTER {
+            return this.xf.init();
+        }
+        /*@ result : (result:INTER) : {OUT | true} */
+        result(result:INTER):OUT {
+            return this.cf(result);
+        }
+        /*@ step : (result:INTER, input:IN) : {QQ<Immutable, INTER> | true} */
+        step(result:INTER, step:IN):QQ<INTER> {
+            return this.xf.step(result, step);
+        }
+    }
 
             // /**
             //  * A completing transducer constructor. Useful to provide cleanup
@@ -1075,56 +1108,55 @@ module transducers {
             //  * @param {Function} cf a function to apply at the end of the reduction/transduction
             //  * @return {Transducer} a transducer
             //  */
-            // transducers.completing = function(xf, cf) {
-            //     xf = typeof xf == "function" ? transducers.wrap(xf) : xf;
-            //     cf = cf || transducers.identity;
-            //     if(TRANSDUCERS_DEV && (xf != null) && !transducers.isObject(xf)) {
+            // function completing<IN, INTER, OUT>(xf: any, cf: (z:INTER) => OUT): Completing<IN, INTER, OUT> {
+            //     var wxf:Transformer<IN, INTER, OUT> = typeof xf === "function" ? wrap(xf) : xf;
+            //     cf = cf || identity;
+            //     if(TRANSDUCERS_DEV && (wxf != null) && !isObject(wxf)) {
             //         throw new Error("completing must be given a transducer as first argument");
             //     } else {
-            //         return new transducers.Completing(cf, xf);
+            //         return new Completing(cf, wxf);
             //     }
-            // };
+            // }
 
-            // /**
-            //  * Convert a transducer transformer object into a function so
-            //  * that it can be used with existing reduce implementation i.e. native,
-            //  * Underscore, lodash
-            //  * @method transducers.toFn
-            //  * @param {Transducer} xf a transducer
-            //  * @param {Function} builder a function which take the accumulator and the
-            //  *   the next input and return a new accumulator value.
-            //  * @return {Function} a two-arity function compatible with existing reduce
-            //  *   implementations
-            //  * @example
-            //  *     var t = transducers;
-            //  *     var arr = [0,1,2,3,4,5],
-            //  *     var apush = function(arr, x) { arr.push(x); return arr; },
-            //  *     var xf = t.comp(t.map(inc),t.filter(isEven));
-            //  *     arr.reduce(t.toFn(xf, apush), []); // [2,4,6]
-            //  */
-            // transducers.toFn = function(xf, builder) {
-            //     if(typeof builder == "function") {
-            //         builder = transducers.wrap(builder);
+            /**
+             * Convert a transducer transformer object into a function so
+             * that it can be used with existing reduce implementation i.e. native,
+             * Underscore, lodash
+             * @method transducers.toFn
+             * @param {Transducer} xf a transducer
+             * @param {Function} builder a function which take the accumulator and the
+             *   the next input and return a new accumulator value.
+             * @return {Function} a two-arity function compatible with existing reduce
+             *   implementations
+             * @example
+             *     var t = transducers;
+             *     var arr = [0,1,2,3,4,5],
+             *     var apush = function(arr, x) { arr.push(x); return arr; },
+             *     var xf = t.comp(t.map(inc),t.filter(isEven));
+             *     arr.reduce(t.toFn(xf, apush), []); // [2,4,6]
+             */
+            // function toFn<IN, INTER, OUT>(xf: Transducer<IN, INTER, OUT>, builder:any) {
+            //     if(typeof builder === "function") {
+            //         builder = wrap(builder);
             //     }
             //     var rxf = xf(builder);
             //     return rxf.step.bind(rxf);
-            // };
+            // }
 
-            // // =============================================================================
-            // // Utilities
+    // =============================================================================
+    // Utilities
 
-            // /**
-            //  * A transformer which simply returns the first input.
-            //  * @method transducers.first
-            //  * @return {Transducer} a transducer transformer
-            //  */
-            // transducers.first = transducers.wrap(function(result, input) {
-            //     return transducers.reduced(input);
-            // });
+    /**
+     * A transformer which simply returns the first input.
+     * @method transducers.first
+     * @return {Transducer} a transducer transformer
+     */
+    var first:Wrap<any, any> = wrap(function(result:any, input:any) 
+        /*@ <anonymous> (result:top, input:top) => {QQ<Immutable, top> | true} */ 
+        { return reduced(input); }
+    );
 
     // =============================================================================
     // Exporting
     // NOTICE: this section was removed as irrelevant to the JS->RS port
-
-            // });
 }
