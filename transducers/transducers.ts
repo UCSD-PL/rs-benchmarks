@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//TODO: move to prelude?
+/*@ qualif Bot(v:a, s:string): keyIn(v,s) */
+/*@ qualif Bot(v:a, s:string): enumProp(v,s) */
+
 module transducers {
 
     interface Goog {
@@ -59,7 +63,7 @@ module transducers {
     // =============================================================================
     // Utilities
 
-    /*@ isString :: (x:top) => {boolean | true} */
+    /*@ isString :: (x:top) => {boolean | (Prop v) <=> (ttag(x) = "string")} */
     function isString(x:any) {
         return typeof x === "string";
     }
@@ -80,6 +84,7 @@ module transducers {
         return goog.typeOf(x) === "object";
     }
 
+            // PORTME
             // /*@ isIterable :: (x:{[s:string]:top}) => {top | true} */
             // function isIterable(x:{[s:string]:any}) {
             //     return x["@@iterator"] || x["next"];
@@ -93,20 +98,24 @@ module transducers {
             //     }
             // };
 
-            /**
-             * Take a predicate function and return its complement.
-             * @method transducers.complement
-             * @param {function} a predicate function
-             * @return {function} the complement predicate function
-             * @example
-             *     var isEven = function(n) { return n % 2 == 0; };
-             *     var isOdd = transducers.complement(isEven);
-             */
-            // function complement(f:Function):Function {
-            //     return function(varArgs) {
-            //         return !f.apply(null, transducers.slice(arguments, 0));
-            //     };
-            // };
+    /**
+     * Take a predicate function and return its complement.
+     * @method transducers.complement
+     * @param {function} a predicate function
+     * @return {function} the complement predicate function
+     * @example
+     *     var isEven = function(n) { return n % 2 == 0; };
+     *     var isOdd = transducers.complement(isEven);
+     */
+    //TODO: this now only supports unary functions
+    /*@ complement :: forall T . (f:(x:T)=>top) => {(y:T)=>boolean | true} */
+    function complement<T>(f:Function) {
+        return function(y:T)
+        /*@ <anonymous> (y:T) => boolean */
+        {
+            return !f(y);
+        };
+    }
 
     class Wrap<IN, OUT> implements Transformer<IN, OUT, QQ<OUT>> {
         /*@ stepFn : (x:OUT, y:IN)=>QQ<Immutable, OUT> */
@@ -214,7 +223,8 @@ module transducers {
     function identity<T>(x:T):T {
         return x;
     }
-                
+
+            // PORTME
             // /**
             //  * Function composition. Take N function and return their composition.
             //  * @method transducers.comp
@@ -338,25 +348,26 @@ module transducers {
         }
     }
 
-            // /**
-            //  * Similar to filter except the predicate is used to
-            //  * eliminate values.
-            //  * @method transducers.remove 
-            //  * @param {Function} pred a predicate function
-            //  * @return {transducers.Filter} returns a removing transducer
-            //  * @example
-            //  *     var t = transducers;
-            //  *     var isEven = function(n) { return n % 2 == 0; };
-            //  *     var xf = t.remove(isEven);
-            //  *     t.into([], xf, [0,1,2,3,4]); // [1,3];
-            //  */
-            // transducers.remove = function(pred) {
-            //     if(TRANSDUCERS_DEV && (typeof pred != "function")) {
-            //         throw new Error("remove must be given a function");
-            //     } else {
-            //         return transducers.filter(transducers.complement(pred));
-            //     }
-            // };
+    /**
+     * Similar to filter except the predicate is used to
+     * eliminate values.
+     * @method transducers.remove 
+     * @param {Function} pred a predicate function
+     * @return {transducers.Filter} returns a removing transducer
+     * @example
+     *     var t = transducers;
+     *     var isEven = function(n) { return n % 2 == 0; };
+     *     var xf = t.remove(isEven);
+     *     t.into([], xf, [0,1,2,3,4]); // [1,3];
+     */
+    /*@ remove :: forall IN INTER OUT . (pred: (z:IN)=>boolean) => {(xf: Transformer<Immutable, IN, INTER, OUT>) => Filter<Immutable, IN, INTER, OUT> | true} */
+    function remove<IN, INTER, OUT>(pred: (z:IN)=>boolean): (xf: Transformer<IN, INTER, OUT>) => Filter<IN, INTER, OUT> {
+        if(TRANSDUCERS_DEV && (typeof pred != "function")) {
+            throw new Error("remove must be given a function");
+        } else {
+            return filter<IN, INTER, OUT>(complement(pred));
+        }
+    }
 
     class Take<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
         /*@ n : [Mutable] number */
@@ -906,20 +917,25 @@ module transducers {
         }
     }
 
-            // /**
-            //  * A mapping concatenating transformer
-            //  * @method transducers.mapcat
-            //  * @param {Function} f the mapping function
-            //  * @return {Transducer} a mapping concatenating transducer
-            //  * @example
-            //  *     var t = transducers;
-            //  *     var reverse = function(arr) { var arr = Array.prototype.slice.call(arr, 0); arr.reverse(); return arr; }
-            //  *     var xf = t.mapcat(reverse);
-            //  *     t.into([], xf, [[3,2,1],[6,5,4]]); // [1,2,3,4,5,6]
-            //  */
-            // transducers.mapcat = function(f) {
-            //     return transducers.comp(transducers.map(f), transducers.cat);
-            // };
+    /**
+     * A mapping concatenating transformer
+     * @method transducers.mapcat
+     * @param {Function} f the mapping function
+     * @return {Transducer} a mapping concatenating transducer
+     * @example
+     *     var t = transducers;
+     *     var reverse = function(arr) { var arr = Array.prototype.slice.call(arr, 0); arr.reverse(); return arr; }
+     *     var xf = t.mapcat(reverse);
+     *     t.into([], xf, [[3,2,1],[6,5,4]]); // [1,2,3,4,5,6]
+     */
+    /*@ mapcat :: forall IN INTER OUT S . (f: (z:S)=>Array<Immutable, IN>) => {(xf: Transformer<Immutable, IN, INTER, OUT>) => Map<Immutable, S, INTER, OUT, Array<Immutable, IN>> | true} */
+    function mapcat<IN, INTER, OUT, S>(f: (z:S)=>IN[]) {
+        return function(xf: Transformer<IN, INTER, OUT>) 
+        /*@ <anonymous> (xf: Transformer<Immutable, IN, INTER, OUT>) => {Map<Immutable, S, INTER, OUT, Array<Immutable, IN>> | true} */
+        {
+            return map(f)(cat(xf))
+        }
+    }
 
     /*@ stringReduce :: forall INTER OUT . (xf:Transformer<Immutable, string, INTER, OUT>, init:INTER, str:string) => {OUT | true} */
     function stringReduce<INTER, OUT>(xf:Transformer<string, INTER, OUT>, init:INTER, str:string) {
@@ -955,6 +971,7 @@ module transducers {
         return xf.result(wrappedAcc);
     }
 
+            // PORTME
             // /*@ objectReduce :: forall INTER OUT . (xf:Transformer<Immutable, Array<Immutable, top>, INTER, OUT>, init:INTER, ob:{[key:string]:top}) => {OUT | true} */
             // function objectReduce<INTER, OUT>(xf:Transformer<any[], INTER, OUT>, init:INTER, ob:{[key:string]:any}) {
             //     var acc = init;
@@ -999,25 +1016,28 @@ module transducers {
      * @return {Object} a iterable JavaScript value: string, array
      *   iterable, or object.
      */
-    /*@ reduce :: forall IN INTER OUT . (xf: Transformer<Immutable, IN, INTER, OUT>, init:INTER, coll:Array<Immutable, IN>) => {OUT | true} */
+    // PORTME
+    /*@ reduce :: /\ forall IN INTER OUT . (xf: Transformer<Immutable, IN, INTER, OUT>,     init:INTER, coll:Array<Immutable, IN>) => {OUT | true}
+                  /\ forall    INTER OUT . (xf: Transformer<Immutable, string, INTER, OUT>, init:INTER, coll:string)               => {OUT | true} */
     function reduce(xf:any, init:any, coll:any):any {
         // if(coll) {
         //     xf = typeof xf === "function" ? wrap(xf) : xf;
-        //     if(isString(coll)) {
-        //         return stringReduce(xf, init, coll);
-        //     } else if(isArray(coll)) {
+            if(isString(coll)) {
+                return stringReduce(xf, init, coll);
+            } else if(isArray(coll)) {
                 return arrayReduce(xf, init, coll);
         //     } else if(isIterable(coll)) {
         //         return iterableReduce(xf, init, coll);
         //     } else if(isObject(coll)) {
         //         return objectReduce(xf, init, coll);
-        //     } else {
-        //         throw new Error("Cannot reduce instance of " + coll.constructor.name);
-        //     }
+            } else {
+                throw new Error("Cannot reduce instance of ");// + coll.constructor.name); //TODO
+            }
         // }
         // return undefined
     }
 
+            // PORTME
             // /**
             //  * Given a transducer, a builder function, an initial value
             //  * and a iterable collection - returns the reduction.
@@ -1052,6 +1072,7 @@ module transducers {
         return arr;
     }
 
+            // PORTME
             // transducers.addEntry = function(obj, entry) {
             //     obj[entry[0]] = entry[1];
             //     return obj;
@@ -1106,6 +1127,7 @@ module transducers {
         }
     }
 
+            // PORTME
             // /**
             //  * A completing transducer constructor. Useful to provide cleanup
             //  * logic at the end of a reduction/transduction.
