@@ -150,14 +150,14 @@ module transducers {
      *     var t = transducers;
      *     var arrayPush = t.wrap(function(arr, x) { arr.push(x); return arr; });
      */
-    /*@ wrap :: forall IN OUT . (stepFn: (result:OUT, input:IN)=>QQ<Immutable, OUT>) => {Wrap<Immutable, IN, OUT> | true} */
-    function wrap<IN, OUT>(stepFn: (result:OUT, input:IN)=>QQ<OUT>):Wrap<IN, OUT> {
-        //TODO
-        // if(typeof stepFn === "function") {
+    /*@ wrap :: /\ forall IN OUT . (stepFn: (result:OUT, input:IN)=>QQ<Immutable, OUT>) => {Wrap<Immutable, IN, OUT> | true}
+                /\ forall IN T OUT . (stepFn: Transformer<Immutable, IN, T, OUT>) => {Transformer<Immutable, IN, T, OUT> | true} */
+    function wrap<IN, OUT>(stepFn:any):any {
+        if(typeof stepFn === "function") {
             return new Wrap(stepFn);
-        // } else {
-        //     return <Wrap<IN, OUT>>stepFn;
-        // }
+        } else {
+            return stepFn;
+        }
     }
 
     // =============================================================================
