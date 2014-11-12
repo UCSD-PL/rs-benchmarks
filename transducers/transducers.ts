@@ -117,7 +117,7 @@ module transducers {
         };
     }
 
-    class Wrap<IN, OUT> implements Transformer<IN, OUT, QQ<OUT>> {
+    class Wrap<IN, OUT> implements Transformer<IN, OUT, OUT> {
         /*@ stepFn : (x:OUT, y:IN)=>QQ<Immutable, OUT> */
         public stepFn: (result:OUT, input:IN)=>QQ<OUT>;
         /*@ new(stepFn:(result:OUT, input:IN)=>QQ<Immutable, OUT>) => {void | true} */
@@ -129,9 +129,9 @@ module transducers {
         init():OUT {
             throw new Error("init not implemented");
         }
-        /*@ result : (result:OUT) : {OUT | true} */
-        result(result:QQ<OUT>):QQ<OUT> {
-            return result;
+        /*@ result : (result:QQ<Immutable, OUT>) : {OUT | true} */
+        result(result:QQ<OUT>):OUT {
+            return result.value; //TODO: to maintain the original generality this should actually just be 'result' and the return value is then QQ<OUT>
         }
         /*@ step : (result:OUT, input:IN) : {QQ<Immutable, OUT> | true} */
         step(result:OUT, input:IN):QQ<OUT> {
@@ -224,35 +224,37 @@ module transducers {
         return x;
     }
 
-            // PORTME
-            // /**
-            //  * Function composition. Take N function and return their composition.
-            //  * @method transducers.comp
-            //  * @param {Function} varArgs N functions
-            //  * @result {Function} a function that represent the composition of the arguments.
-            //  * @example
-            //  *     var t = transducers;
-            //  *     var inc = function(n) { return n + 1 };
-            //  *     var double = function(n) { return n * 2 };
-            //  *     var incDouble = t.comp(double, inc);
-            //  *     incDouble(3); // 8
-            //  */
-            // transducers.comp = function(varArgs) {
-            //     var arglen = arguments.length;
-            //     if(arglen == 2) {
-            //         var f = arguments[0],
-            //             g = arguments[1];
-            //         return function(varArgs) {
-            //             return f(g.apply(null, transducers.slice(arguments, 0)));
-            //         };
-            //     } if(arglen > 2) {
-            //         return transducers.reduce(transducers.comp, arguments[0], transducers.slice(arguments, 1));
-            //     } else {
-            //         if(TRANSDUCERS_DEV) {
-            //             throw new Error("comp must given at least 2 arguments");
-            //         }
-            //     }
-            // };
+    /**
+     * Function composition. Take N function and return their composition.
+     * @method transducers.comp
+     * @param {Function} varArgs N functions
+     * @result {Function} a function that represent the composition of the arguments.
+     * @example
+     *     var t = transducers;
+     *     var inc = function(n) { return n + 1 };
+     *     var double = function(n) { return n * 2 };
+     *     var incDouble = t.comp(double, inc);
+     *     incDouble(3); // 8
+     */
+    //TODO
+    /*@ comp :: /\ forall S T U . (f:(t:T)=>U, g:(s:S)=>T) => {(s2:S)=>U | true} */
+    // /\ forall T . (f:(t:T)=>T, g:Array<Immutable, (t2:T)=>T>) => {(t3:T)=>T | true}
+    function comp<S,T>(f:(s:S)=>T, g:any) {
+        if (typeof g === "function") {
+            return function(s:S) {
+                return f(g(s));
+            }
+        }
+        else return undefined;
+        // else {
+        //     return reduce(comp, f, g);
+        // }
+        // else {
+        //     if(TRANSDUCERS_DEV) {
+        //         throw new Error("comp must given at least 2 arguments");
+        //     }
+        // }
+    }
 
     class Map<IN, INTER, OUT, T> implements Transformer<IN, INTER, OUT> {
         public f: (x: IN) => T;
