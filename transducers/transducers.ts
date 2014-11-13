@@ -150,9 +150,23 @@ class Wrap<IN, OUT> implements Transformer<IN, OUT, OUT> {
  *     var t = transducers;
  *     var arrayPush = t.wrap(function(arr, x) { arr.push(x); return arr; });
  */
-/*@ wrap :: /\ forall IN OUT . (stepFn: (result:OUT, input:IN)=>QQ<Immutable, OUT>) => {Wrap<Immutable, IN, OUT> | true}
+/*@ wrap :: /\ forall IN OUT . (stepFn: (result:OUT, input:IN)=>OUT) => {Wrap<Immutable, IN, OUT> | true}
             /\ forall IN T OUT . (stepFn: Transformer<Immutable, IN, T, OUT>) => {Transformer<Immutable, IN, T, OUT> | true} */
 function wrap<IN, OUT>(stepFn:any):any {
+    if(typeof stepFn === "function") {
+        return generalWrap(addQQ0(stepFn));
+    } else {
+        return stepFn;
+    }
+}
+
+function addQQ0<T, U>(stepFn:(t:T, u:U)=>T):(t:T, u:U)=>QQ<T> {
+    return function(t:T, u:U) {return new QQ(stepFn(t,u), 0)};
+}
+
+/*@ generalWrap :: /\ forall IN OUT . (stepFn: (result:OUT, input:IN)=>QQ<Immutable, OUT>) => {Wrap<Immutable, IN, OUT> | true}
+                   /\ forall IN T OUT . (stepFn: Transformer<Immutable, IN, T, OUT>) => {Transformer<Immutable, IN, T, OUT> | true} */
+function generalWrap(stepFn:any):any {
     if(typeof stepFn === "function") {
         return new Wrap(stepFn);
     } else {
@@ -237,23 +251,21 @@ function identity<T>(x:T):T {
  *     incDouble(3); // 8
  */
 //TODO
-/*@ comp :: /\ forall S T U . (f:(t:T)=>U, g:(s:S)=>T) => {(s2:S)=>U | true} */
-// /\ forall T . (f:(t:T)=>T, g:Array<Immutable, (t2:T)=>T>) => {(t3:T)=>T | true}
-function comp<S,T>(f:(s:S)=>T, g:any) {
+/*@ comp :: /\ forall S T U . (f:(t:T)=>U, g:(s:S)=>T) => {(s2:S)=>U | true}
+            /\ forall T . (f:(t:T)=>T, g:{Array<Immutable, (t2:T)=>T> | (len g) > 0}) => {(t3:T)=>T | true} */
+function comp(f:any, g:any) {
     if (typeof g === "function") {
-        return function(s:S) {
-            return f(g(s));
-        }
+        return binaryComp(f,g);
+    } else {
+        return reduce(binaryComp, f, g);
     }
-    else return undefined;
-    // else {
-    //     return reduce(comp, f, g);
-    // }
-    // else {
-    //     if(TRANSDUCERS_DEV) {
-    //         throw new Error("comp must given at least 2 arguments");
-    //     }
-    // }
+}
+
+/*@ binaryComp :: forall S T U . (f:(t:T)=>U, g:(s:S)=>T) => {(s2:S)=>U | true} */
+function binaryComp<S,T,U>(f:(t:T)=>U, g:(s:S)=>T): (s2:S)=>U {
+    return function(s:S) {
+        return f(g(s));
+    }
 }
 
 class Map<IN, INTER, OUT, T> implements Transformer<IN, INTER, OUT> {
@@ -1020,10 +1032,11 @@ function arrayReduce<IN, INTER, OUT>(xf:Transformer<IN, INTER, OUT>, init:INTER,
  */
 // PORTME
 /*@ reduce :: /\ forall IN INTER OUT . (xf: Transformer<Immutable, IN, INTER, OUT>,     init:INTER, coll:Array<Immutable, IN>) => {OUT | true}
-              /\ forall    INTER OUT . (xf: Transformer<Immutable, string, INTER, OUT>, init:INTER, coll:string)               => {OUT | true} */
+              /\ forall    INTER OUT . (xf: Transformer<Immutable, string, INTER, OUT>, init:INTER, coll:string)               => {OUT | true}
+              /\ forall IN       OUT . (stepFn: (result:OUT, input:IN)=>OUT, init:OUT, coll:Array<Immutable, IN>) => {OUT | true} */
 function reduce(xf:any, init:any, coll:any):any {
     // if(coll) {
-    //     xf = typeof xf === "function" ? wrap(xf) : xf;
+        xf = typeof xf === "function" ? wrap(xf) : xf;
         if(isString(coll)) {
             return stringReduce(xf, init, coll);
         } else if(isArray(coll)) {
@@ -1181,7 +1194,7 @@ class Completing<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
  * @method transducers.first
  * @return {Transducer} a transducer transformer
  */
-var first:Wrap<any, any> = wrap(function(result:any, input:any) 
+var first:Wrap<any, any> = generalWrap(function(result:any, input:any) 
     /*@ <anonymous> (result:top, input:top) => {QQ<Immutable, top> | true} */ 
     { return new QQ(input, 1); }
 );
