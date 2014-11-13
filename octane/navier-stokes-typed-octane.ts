@@ -25,7 +25,9 @@
  */
 
 module NavierStokes {
+    /*@ solver :: FluidField<Immutable> + null */
     var solver:FluidField = null;
+    /*@ nsFrameCounter :: number */
     var nsFrameCounter = 0;
 
     export function runNavierStokes()
@@ -76,7 +78,9 @@ module NavierStokes {
         }
     }
 
+    /*@ framesTillAddingPoints :: number */
     var framesTillAddingPoints = 0;
+    /*@ framesBetweenAddingPoints :: number */
     var framesBetweenAddingPoints = 5;
 
     function prepareFrame(field:Field)
