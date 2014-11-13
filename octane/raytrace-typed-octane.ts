@@ -48,7 +48,7 @@ module VERSION {
                 this.blue = blue;
             }
 
-            /*@ add : (c1:Color<ReadOnly>, c2:Color<ReadOnly>) : {Color<Mutable> | true} */
+            /*@ add : (c1:Color<ReadOnly>, c2:Color<ReadOnly>) : {Color<Immutable> | true} */
             public static add(c1:Color, c2:Color) {
                 var result = new Color(0, 0, 0);
 
@@ -59,7 +59,7 @@ module VERSION {
                 return result;
             }
 
-            /*@ addScalar : (c1:Color<ReadOnly>, s:number) : {Color<Mutable> | true} */
+            /*@ addScalar : (c1:Color<ReadOnly>, s:number) : {Color<Immutable> | true} */
             public static addScalar(c1:Color, s:number) {
                 var result = new Color(0, 0, 0);
 
@@ -73,7 +73,7 @@ module VERSION {
             }
 
 
-            /*@ subtract : (c1:Color<ReadOnly>, c2:Color<ReadOnly>) : {Color<Mutable> | true} */
+            /*@ subtract : (c1:Color<ReadOnly>, c2:Color<ReadOnly>) : {Color<Immutable> | true} */
             public static subtract(c1:Color, c2:Color) {
                 var result = new Color(0, 0, 0);
 
@@ -84,7 +84,7 @@ module VERSION {
                 return result;
             }
 
-            /*@ multiply : (c1:Color<ReadOnly>, c2:Color<ReadOnly>) : {Color<Mutable> | true} */
+            /*@ multiply : (c1:Color<ReadOnly>, c2:Color<ReadOnly>) : {Color<Immutable> | true} */
             public static multiply(c1:Color, c2:Color) {
                 var result = new Color(0, 0, 0);
 
@@ -95,7 +95,7 @@ module VERSION {
                 return result;
             }
 
-            /*@ multiplyScalar : (c1:Color<ReadOnly>, f:number) : {Color<Mutable> | true} */
+            /*@ multiplyScalar : (c1:Color<ReadOnly>, f:number) : {Color<Immutable> | true} */
             public static multiplyScalar(c1:Color, f:number) {
                 var result = new Color(0, 0, 0);
 
@@ -107,7 +107,7 @@ module VERSION {
             }
 
 
-            /*@ divideFactor : (c1:Color<ReadOnly>, f:{number | v != 0}) : {Color<Mutable> | true} */
+            /*@ divideFactor : (c1:Color<ReadOnly>, f:{number | v != 0}) : {Color<Immutable> | true} */
             public static divideFactor(c1:Color, f:number) {
                 var result = new Color(0, 0, 0);
 
@@ -131,7 +131,7 @@ module VERSION {
                 return d;
             }
 
-            /*@ blend : (c1:Color<ReadOnly>, c2:Color<ReadOnly>, w:number) : {Color<Mutable> | true} */
+            /*@ blend : (c1:Color<ReadOnly>, c2:Color<ReadOnly>, w:number) : {Color<Immutable> | true} */
             public static blend(c1:Color, c2:Color, w:number) {
                 var result = new Color(0, 0, 0);
                 result = Color.add(
@@ -271,6 +271,7 @@ module VERSION {
             public camera : Camera;
             /*@ shapes : Array<Immutable, Shape<Immutable>> */
             public shapes : Shape[];
+            /*@ lights : Array<Immutable, Light<Immutable>> */
             public lights : Light[];
             public background : Background;
 
@@ -718,8 +719,8 @@ module VERSION {
             public getPixelColor(ray:Ray, scene:Scene) {
                 var info = this.testIntersection(ray, scene, null);
                 if (info.isHit) {
-                    // var color = this.rayTrace(info, ray, scene, 0); //TODO PORTME
-                    // return color;
+                    var color = this.rayTrace(info, ray, scene, 0);
+                    return color;
                 }
                 return scene.background.color;
             }
@@ -730,16 +731,17 @@ module VERSION {
                 var best = new IntersectionInfo(false, 0, null, null, null, null, null);
                 best.distance = 2000;
 
-                for (var i = 0; i < scene.shapes.length; i++) {
-                    // var shape = scene.shapes[i]; //TODO PORTME
+                var sceneShapes = scene.shapes;
+                for (var i = 0; i < sceneShapes.length; i++) {
+                    var shape = sceneShapes[i];
 
-                    // if (shape != exclude) {
-                    //     var info = shape.intersect(ray);
-                    //     if (info.isHit && info.distance >= 0 && info.distance < best.distance) {
-                    //         best = info;
-                    //         hits++;
-                    //     }
-                    // }
+                    if (shape != exclude) {
+                        var info = shape.intersect(ray);
+                        if (info.isHit && info.distance >= 0 && info.distance < best.distance) {
+                            best = info;
+                            hits++;
+                        }
+                    }
                 }
                 best.hitCount = hits;
                 return best;
@@ -755,105 +757,116 @@ module VERSION {
                 return new Ray(P, R1);
             }
 
-            // /*@ rayTrace : (info:IntersectionInfo<ReadOnly>, ray:Ray<ReadOnly>, scene:Scene<ReadOnly>, depth:number) : {Color<Mutable> | true} */
-            // public rayTrace(info:IntersectionInfo, ray:Ray, scene:Scene, depth:number) {
-            //     // Calc ambient
-            //     var color = Color.multiplyScalar(info.color, scene.background.ambience);
-            //     var oldColor = color;
-            //     var shininess = Math.pow(10, info.shape.material.gloss + 1);
+            /*@ rayTrace : (info:IntersectionInfo<ReadOnly>, ray:Ray<ReadOnly>, scene:Scene<ReadOnly>, depth:number) : {Color<Immutable> | true} */
+            public rayTrace(info:IntersectionInfo, ray:Ray, scene:Scene, depth:number) {
+                var infoColor = info.color;
+                var infoShape = info.shape;
+                var infoNormal = info.normal;
+                var infoPosition = info.position;
+                if (!infoColor || 
+                    !infoShape || 
+                    !infoNormal || 
+                    !infoPosition) throw new Error('incomplete IntersectionInfo'); //TODO is there a way to get rid of this check?
 
-            //     for (var i = 0; i < scene.lights.length; i++) {
-            //         var light = scene.lights[i];
+                // Calc ambient
+                var color = Color.multiplyScalar(infoColor, scene.background.ambience);
+                var oldColor = color;
+                var shininess = Math.pow(10, infoShape.material.gloss + 1);
 
-            //         // Calc diffuse lighting
-            //         var v = Vector.subtract(
-            //             light.position,
-            //             info.position
-            //         ).normalize();
+                var sceneLights = scene.lights;
+                for (var i = 0; i < sceneLights.length; i++) {
+                    var light = sceneLights[i];
 
-            //         if (this.options.renderDiffuse) {
-            //             var L = v.dot(info.normal);
-            //             if (L > 0) {
-            //                 color = Color.add(
-            //                     color,
-            //                     Color.multiply(
-            //                         info.color,
-            //                         Color.multiplyScalar(
-            //                             light.color,
-            //                             L
-            //                         )
-            //                     )
-            //                 );
-            //             }
-            //         }
+                    // Calc diffuse lighting
+                    var v = Vector.subtract(
+                        light.position,
+                        infoPosition
+                    ).normalize();
 
-            //         // The greater the depth the more accurate the colours, but
-            //         // this is exponentially (!) expensive
-            //         if (depth <= this.options.rayDepth) {
-            //             // calculate reflection ray
-            //             if (this.options.renderReflections && info.shape.material.reflection > 0) {
-            //                 var reflectionRay = this.getReflectionRay(info.position, info.normal, ray.direction);
-            //                 var refl = this.testIntersection(reflectionRay, scene, info.shape);
+                    if (this.options.renderDiffuse) {
+                        var L = v.dot(infoNormal);
+                        if (L > 0) {
+                            color = Color.add(
+                                color,
+                                Color.multiply(
+                                    infoColor,
+                                    Color.multiplyScalar(
+                                        light.color,
+                                        L
+                                    )
+                                )
+                            );
+                        }
+                    }
 
-            //                 if (refl.isHit && refl.distance > 0) {
-            //                     refl.color = this.rayTrace(refl, reflectionRay, scene, depth + 1);
-            //                 } else {
-            //                     refl.color = scene.background.color;
-            //                 }
+                    // The greater the depth the more accurate the colours, but
+                    // this is exponentially (!) expensive
+                    if (depth <= this.options.rayDepth) {
+                        // calculate reflection ray
+                        if (this.options.renderReflections && infoShape.material.reflection > 0) {
+                            var reflectionRay = this.getReflectionRay(infoPosition, infoNormal, ray.direction);
+                            var refl = this.testIntersection(reflectionRay, scene, infoShape);
 
-            //                 color = Color.blend(
-            //                     color,
-            //                     refl.color,
-            //                     info.shape.material.reflection
-            //                 );
-            //             }
+                            var reflColor;
+                            if (refl.isHit && refl.distance > 0) {
+                                reflColor = this.rayTrace(refl, reflectionRay, scene, depth + 1);
+                            } else {
+                                reflColor = scene.background.color;
+                            }
 
-            //             // Refraction
-            //             /* TODO */
-            //         }
+                            color = Color.blend(
+                                color,
+                                reflColor,
+                                infoShape.material.reflection
+                            );
+                        }
 
-            //         /* Render shadows and highlights */
+                        // Refraction
+                        /* TODO */
+                    }
 
-            //         var shadowInfo = new IntersectionInfo(false, 0, null, null, null, null, null);
+                    /* Render shadows and highlights */
 
-            //         if (this.options.renderShadows) {
-            //             var shadowRay = new Ray(info.position, v);
+                    var shadowInfo = new IntersectionInfo(false, 0, null, null, null, null, null);
 
-            //             shadowInfo = this.testIntersection(shadowRay, scene, info.shape);
-            //             if (shadowInfo.isHit && shadowInfo.shape != info.shape /*&& shadowInfo.shape.type != 'PLANE'*/) {
-            //                 var vA = Color.multiplyScalar(color, 1/2);
-            //                 var dB = (1/2 * Math.pow(shadowInfo.shape.material.transparency, 1/2));
-            //                 color = Color.addScalar(vA, dB);
-            //             }
-            //         }
+                    if (this.options.renderShadows) {
+                        var shadowRay = new Ray(infoPosition, v);
 
-            //         // Phong specular highlights
-            //         if (this.options.renderHighlights && !shadowInfo.isHit && info.shape.material.gloss > 0) {
-            //             var Lv = Vector.subtract(
-            //                 info.shape.position,
-            //                 light.position
-            //             ).normalize();
+                        shadowInfo = this.testIntersection(shadowRay, scene, infoShape);
+                        if (shadowInfo.isHit && shadowInfo.shape != infoShape /*&& shadowInfo.shape.type != 'PLANE'*/) {
+                            var vA = Color.multiplyScalar(color, 1/2);
+                            var dB = (1/2 * Math.pow(shadowInfo.shape.material.transparency, 1/2));
+                            color = Color.addScalar(vA, dB);
+                        }
+                    }
 
-            //             var E = Vector.subtract(
-            //                 scene.camera.position,
-            //                 info.shape.position
-            //             ).normalize();
+                    // Phong specular highlights
+                    if (this.options.renderHighlights && !shadowInfo.isHit && infoShape.material.gloss > 0) {
+                        var Lv = Vector.subtract(
+                            infoShape.position,
+                            light.position
+                        ).normalize();
 
-            //             var H = Vector.subtract(
-            //                 E,
-            //                 Lv
-            //             ).normalize();
+                        var E = Vector.subtract(
+                            scene.camera.position,
+                            infoShape.position
+                        ).normalize();
 
-            //             var glossWeight = Math.pow(Math.max(info.normal.dot(H), 0), shininess);
-            //             color = Color.add(
-            //                 Color.multiplyScalar(light.color, glossWeight),
-            //                 color
-            //             );
-            //         }
-            //     }
-            //     color.limit();
-            //     return color;
-            // }
+                        var H = Vector.subtract(
+                            E,
+                            Lv
+                        ).normalize();
+
+                        var glossWeight = Math.pow(Math.max(infoNormal.dot(H), 0), shininess);
+                        color = Color.add(
+                            Color.multiplyScalar(light.color, glossWeight),
+                            color
+                        );
+                    }
+                }
+                color.limit();
+                return color;
+            }
         }
         // }
 
