@@ -35,14 +35,14 @@ module VERSION {
         var checkNumber:number=0;
         export class Color {
             /*@ red : [Mutable] number */
-            public red;
+            public red=0;
             /*@ green : [Mutable] number */
-            public green;
+            public green=0;
             /*@ blue : [Mutable] number */
-            public blue;
+            public blue=0;
 
             /*@ new(red:number, green:number, blue:number) => {void | true} */
-            constructor(red = 0, green = 0, blue= 0) {
+            constructor(red?, green?, blue?) {
                 this.red = red;
                 this.green = green;
                 this.blue = blue;
@@ -162,10 +162,10 @@ module VERSION {
         export class Light {
             public position:Vector;
             public color:Color;
-            public intensity:number;
+            public intensity:number=10;
 
             /*@ new(position:Vector<Immutable>, color:Color<Immutable>, intensity:number) => {void | true} */
-            constructor(position:Vector, color:Color, intensity= 10) {
+            constructor(position:Vector, color:Color, intensity?) {
                 this.position = position;
                 this.color = color;
                 this.intensity = intensity;
@@ -179,14 +179,14 @@ module VERSION {
 
         export class Vector {
             /*@ x : [Mutable] number */
-            public x;
+            public x = 0;
             /*@ y : [Mutable] number */
-            public y;
+            public y = 0;
             /*@ z : [Mutable] number */
-            public z;
+            public z = 0;
 
             /*@ new(x:number, y:number, z:number) => {void | true} */
-            constructor(x= 0, y= 0, z= 0) {
+            constructor(x?, y?, z?) {
                 this.x = x;
                 this.y = y;
                 this.z = z;
@@ -291,18 +291,18 @@ module VERSION {
         // module Material {
 
         export class BaseMaterial {
-            public gloss:number;
-            public transparency:number;
-            public reflection:number;
-            public refraction:number;
-            public hasTexture:boolean;
+            public gloss:number = 2;
+            public transparency:number = 0;
+            public reflection:number = 0;
+            public refraction:number = 1/2;
+            public hasTexture:boolean = false;
 
             /*@ new(gloss:number, transparency:number, reflection:number, refraction:number, hasTexture:boolean) => {void | true} */
-            constructor(gloss = 2,             // [0...infinity] 0 = matt
-                        transparency = 0,      // 0=opaque
-                        reflection = 0,       // [0...infinity] 0 = no reflection
-                        refraction = 1/2,
-                        hasTexture = false) {
+            constructor(gloss?,             // [0...infinity] 0 = matt
+                        transparency?,      // 0=opaque
+                        reflection?,       // [0...infinity] 0 = no reflection
+                        refraction?,
+                        hasTexture?) {
                 this.gloss = gloss;
                 this.transparency = transparency;
                 this.reflection = reflection;
@@ -352,14 +352,14 @@ module VERSION {
         export class Chessboard extends BaseMaterial {
             public colorEven:Color;
             public colorOdd:Color;
-            public density:number;
+            public density:number = 1/2;
 
             /*@ new(colorEven:Color<Immutable>, colorOdd:Color<Immutable>, reflection:number, transparency:number, gloss:number, density:number) => {void | true} */
             constructor(colorEven:Color, colorOdd:Color, 
                         reflection:number, 
                         transparency:number, 
                         gloss:number, 
-                        density= 1/2) {
+                        density?) {
                 super(gloss, transparency, reflection, 1/2, true);
                 this.colorEven = colorEven;
                 this.colorOdd = colorOdd;
@@ -502,19 +502,19 @@ module VERSION {
 
         export class IntersectionInfo {
             /*@ isHit : [Mutable] boolean */
-            public isHit;
+            public isHit = false;
             /*@ hitCount : [Mutable] number */
-            public hitCount;
+            public hitCount = 0;
             /*@ shape : [Mutable] Shape<Immutable>? */
-            public shape;
+            public shape = null;
             /*@ position : [Mutable] Vector<Immutable>? */
-            public position;
+            public position = null;
             /*@ normal : [Mutable] Vector<Immutable>? */
-            public normal;
+            public normal = null;
             /*@ color : [Mutable] Color<Immutable>? */
-            public color;
+            public color = null;
             /*@ distance : [Mutable] number? */
-            public distance;
+            public distance = null;
 
             /*@ new(isHit:boolean,
                     hitCount:number,
@@ -523,13 +523,13 @@ module VERSION {
                     normal:Vector<Immutable>?,
                     color:Color<Immutable>?,
                     distance:number?) => {void | true} */
-            constructor(isHit= false,
-                        hitCount= 0,
-                        shape:Shape= null,
-                        position:Vector= null,
-                        normal:Vector= null,
-                        color:Color= null,
-                        distance:number= null) { 
+            constructor(isHit?,
+                        hitCount?,
+                        shape?:Shape,
+                        position?:Vector,
+                        normal?:Vector,
+                        color?:Color,
+                        distance?:number) { 
                 this.isHit = isHit;
                 this.hitCount = hitCount;
                 this.shape = shape;
@@ -599,10 +599,10 @@ module VERSION {
 
         export class Background {
             public color:Color;
-            public ambience:number;
+            public ambience:number = 0;
 
             /*@ new(color:Color<Immutable>, ambience:number) => {void | true} */
-            constructor(color:Color, ambience= 0) {
+            constructor(color:Color, ambience?) {
                 this.color = color;
                 this.ambience = ambience;
             }
