@@ -257,24 +257,24 @@ module VERSION {
             }
         }
 
-    //     export class Scene {
-    //         public camera : Camera = null;
-    //         public shapes : Shape[] = [];
-    //         public lights : Light[] = [];
-    //         public background : Background = null;
+        export class Scene {
+            public camera : Camera = null;
+            public shapes : Shape[] = [];
+            public lights : Light[] = [];
+            public background : Background = null;
 
-    //         /*@ new() => {void | true} */
-    //         constructor() {
-    //             this.camera = new Camera(
-    //                 new Vector(0, 0, -5),
-    //                 new Vector(0, 0, 1),
-    //                 new Vector(0, 1, 0)
-    //             );
-    //             this.shapes = new Array<Shape>(0);
-    //             this.lights = new Array<Light>(0);
-    //             this.background = new Background(new Color(0, 0, 1/2), 1/5);
-    //         }
-    //     }
+            /*@ new() => {void | true} */
+            constructor() {
+                this.camera = new Camera(
+                    new Vector(0, 0, -5),
+                    new Vector(0, 0, 1),
+                    new Vector(0, 1, 0)
+                );
+                this.shapes = new Array<Shape>(0);
+                this.lights = new Array<Light>(0);
+                this.background = new Background(new Color(0, 0, 1/2), 1/5);
+            }
+        }
 
         // module Material {
 
@@ -597,223 +597,224 @@ module VERSION {
             }
         }
 
-    //     function extend(dest, src) {
-    //         for (var p in src) {
-    //             dest[p] = src[p];
-    //         }
-    //         return dest;
-    //     }
+        /*@ extend :: (dest:[Mutable]{[s:string]:top}, src:[Mutable]{[s:string]:top}) => {[Mutable]{[s:string]:top} | true} */
+        function extend(dest, src) {
+            for (var p in src) {
+                dest[p] = src[p];
+            }
+            return dest;
+        }
 
-    //     export class Engine {
-    //         /*@ canvas : [Mutable] top */
-    //         public canvas = null; /* 2d context we can render to */
-    //         public options = null;
+        export class Engine {
+            /*@ canvas : [Mutable] top */
+            public canvas = null; /* 2d context we can render to */
+            public options = null;
 
-    //         /*@ new(options:top) => {void | true} */
-    //         constructor(options) {
-				// var this_options = extend({
-    //                 canvasHeight: 100,
-    //                 canvasWidth: 100,
-    //                 pixelWidth: 2,
-    //                 pixelHeight: 2,
-    //                 renderDiffuse: false,
-    //                 renderShadows: false,
-    //                 renderHighlights: false,
-    //                 renderReflections: false,
-    //                 rayDepth: 2
-    //             }, options || {});
+            /*@ new(options:top) => {void | true} */
+            constructor(options) {
+				var this_options = extend({
+                    canvasHeight: 100,
+                    canvasWidth: 100,
+                    pixelWidth: 2,
+                    pixelHeight: 2,
+                    renderDiffuse: false,
+                    renderShadows: false,
+                    renderHighlights: false,
+                    renderReflections: false,
+                    rayDepth: 2
+                }, options || {});
 
-    //             this_options.canvasHeight /= this_options.pixelHeight;
-    //             this_options.canvasWidth /= this_options.pixelWidth;
+                this_options.canvasHeight /= this_options.pixelHeight;
+                this_options.canvasWidth /= this_options.pixelWidth;
 
-				// this.options = this_options;
+				this.options = this_options;
 
-    //             /* TODO: dynamically include other scripts */
-    //         }
+                /* TODO: dynamically include other scripts */
+            }
 
-    //         public setPixel(x, y, color:Color) {
-    //             var pxW, pxH;
-    //             pxW = this.options.pixelWidth;
-    //             pxH = this.options.pixelHeight;
+            public setPixel(x, y, color:Color) {
+                var pxW, pxH;
+                pxW = this.options.pixelWidth;
+                pxH = this.options.pixelHeight;
 
-    //             if (this.canvas) {
-    //                 this.canvas.fillStyle = color.toString();
-    //                 this.canvas.fillRect(x * pxW, y * pxH, pxW, pxH);
-    //             } else {
-    //                 if (x === y) {
-    //                     checkNumber += color.brightness();
-    //                 }
-    //                 // print(x * pxW, y * pxH, pxW, pxH);
-    //             }
-    //         }
+                if (this.canvas) {
+                    this.canvas.fillStyle = color.toString();
+                    this.canvas.fillRect(x * pxW, y * pxH, pxW, pxH);
+                } else {
+                    if (x === y) {
+                        checkNumber += color.brightness();
+                    }
+                    // print(x * pxW, y * pxH, pxW, pxH);
+                }
+            }
 
-    //         public renderScene(scene:Scene, canvas) {
-    //             checkNumber = 0;
-    //             /* Get canvas */
-    //             if (canvas) {
-    //                 this.canvas = canvas.getContext("2d");
-    //             } else {
-    //                 this.canvas = null;
-    //             }
+            public renderScene(scene:Scene, canvas) {
+                checkNumber = 0;
+                /* Get canvas */
+                if (canvas) {
+                    this.canvas = canvas.getContext("2d");
+                } else {
+                    this.canvas = null;
+                }
 
-    //             var canvasHeight = this.options.canvasHeight;
-    //             var canvasWidth = this.options.canvasWidth;
+                var canvasHeight = this.options.canvasHeight;
+                var canvasWidth = this.options.canvasWidth;
 
-    //             for (var y = 0; y < canvasHeight; y++) {
-    //                 for (var x = 0; x < canvasWidth; x++) {
-    //                     var yp = y * 1 / canvasHeight * 2 - 1;
-    //                     var xp = x * 1 / canvasWidth * 2 - 1;
+                for (var y = 0; y < canvasHeight; y++) {
+                    for (var x = 0; x < canvasWidth; x++) {
+                        var yp = y * 1 / canvasHeight * 2 - 1;
+                        var xp = x * 1 / canvasWidth * 2 - 1;
 
-    //                     var ray = scene.camera.getRay(xp, yp);
+                        var ray = scene.camera.getRay(xp, yp);
 
-    //                     var color = this.getPixelColor(ray, scene);
+                        var color = this.getPixelColor(ray, scene);
 
-    //                     this.setPixel(x, y, color);
-    //                 }
-    //             }
-    //             if (checkNumber !== 2321) {
-    //                 throw new Error("Scene rendered incorrectly");
-    //             }
-    //         }
+                        this.setPixel(x, y, color);
+                    }
+                }
+                if (checkNumber !== 2321) {
+                    throw new Error("Scene rendered incorrectly");
+                }
+            }
 
-    //         public getPixelColor(ray:Ray, scene:Scene) {
-    //             var info = this.testIntersection(ray, scene, null);
-    //             if (info.isHit) {
-    //                 var color = this.rayTrace(info, ray, scene, 0);
-    //                 return color;
-    //             }
-    //             return scene.background.color;
-    //         }
+            public getPixelColor(ray:Ray, scene:Scene) {
+                var info = this.testIntersection(ray, scene, null);
+                if (info.isHit) {
+                    var color = this.rayTrace(info, ray, scene, 0);
+                    return color;
+                }
+                return scene.background.color;
+            }
 
-    //         public testIntersection(ray:Ray, scene:Scene, exclude:Shape) : IntersectionInfo {
-    //             var hits = 0;
-    //             var best = new IntersectionInfo();
-    //             best.distance = 2000;
+            public testIntersection(ray:Ray, scene:Scene, exclude:Shape) : IntersectionInfo {
+                var hits = 0;
+                var best = new IntersectionInfo();
+                best.distance = 2000;
 
-    //             for (var i = 0; i < scene.shapes.length; i++) {
-    //                 var shape = scene.shapes[i];
+                for (var i = 0; i < scene.shapes.length; i++) {
+                    var shape = scene.shapes[i];
 
-    //                 if (shape != exclude) {
-    //                     var info = shape.intersect(ray);
-    //                     if (info.isHit && info.distance >= 0 && info.distance < best.distance) {
-    //                         best = info;
-    //                         hits++;
-    //                     }
-    //                 }
-    //             }
-    //             best.hitCount = hits;
-    //             return best;
-    //         }
+                    if (shape != exclude) {
+                        var info = shape.intersect(ray);
+                        if (info.isHit && info.distance >= 0 && info.distance < best.distance) {
+                            best = info;
+                            hits++;
+                        }
+                    }
+                }
+                best.hitCount = hits;
+                return best;
+            }
 
-    //         public getReflectionRay(P:Vector, N:Vector, V:Vector) {
-    //             var c1 = -N.dot(V);
-    //             var R1 = Vector.add(
-    //                 Vector.multiplyScalar(N, 2 * c1),
-    //                 V
-    //             );
-    //             return new Ray(P, R1);
-    //         }
+            public getReflectionRay(P:Vector, N:Vector, V:Vector) {
+                var c1 = -N.dot(V);
+                var R1 = Vector.add(
+                    Vector.multiplyScalar(N, 2 * c1),
+                    V
+                );
+                return new Ray(P, R1);
+            }
 
-    //         public rayTrace(info:IntersectionInfo, ray:Ray, scene:Scene, depth:number) {
-    //             // Calc ambient
-    //             var color = Color.multiplyScalar(info.color, scene.background.ambience);
-    //             var oldColor = color;
-    //             var shininess = Math.pow(10, info.shape.material.gloss + 1);
+            public rayTrace(info:IntersectionInfo, ray:Ray, scene:Scene, depth:number) {
+                // Calc ambient
+                var color = Color.multiplyScalar(info.color, scene.background.ambience);
+                var oldColor = color;
+                var shininess = Math.pow(10, info.shape.material.gloss + 1);
 
-    //             for (var i = 0; i < scene.lights.length; i++) {
-    //                 var light = scene.lights[i];
+                for (var i = 0; i < scene.lights.length; i++) {
+                    var light = scene.lights[i];
 
-    //                 // Calc diffuse lighting
-    //                 var v = Vector.subtract(
-    //                     light.position,
-    //                     info.position
-    //                 ).normalize();
+                    // Calc diffuse lighting
+                    var v = Vector.subtract(
+                        light.position,
+                        info.position
+                    ).normalize();
 
-    //                 if (this.options.renderDiffuse) {
-    //                     var L = v.dot(info.normal);
-    //                     if (L > 0) {
-    //                         color = Color.add(
-    //                             color,
-    //                             Color.multiply(
-    //                                 info.color,
-    //                                 Color.multiplyScalar(
-    //                                     light.color,
-    //                                     L
-    //                                 )
-    //                             )
-    //                         );
-    //                     }
-    //                 }
+                    if (this.options.renderDiffuse) {
+                        var L = v.dot(info.normal);
+                        if (L > 0) {
+                            color = Color.add(
+                                color,
+                                Color.multiply(
+                                    info.color,
+                                    Color.multiplyScalar(
+                                        light.color,
+                                        L
+                                    )
+                                )
+                            );
+                        }
+                    }
 
-    //                 // The greater the depth the more accurate the colours, but
-    //                 // this is exponentially (!) expensive
-    //                 if (depth <= this.options.rayDepth) {
-    //                     // calculate reflection ray
-    //                     if (this.options.renderReflections && info.shape.material.reflection > 0) {
-    //                         var reflectionRay = this.getReflectionRay(info.position, info.normal, ray.direction);
-    //                         var refl = this.testIntersection(reflectionRay, scene, info.shape);
+                    // The greater the depth the more accurate the colours, but
+                    // this is exponentially (!) expensive
+                    if (depth <= this.options.rayDepth) {
+                        // calculate reflection ray
+                        if (this.options.renderReflections && info.shape.material.reflection > 0) {
+                            var reflectionRay = this.getReflectionRay(info.position, info.normal, ray.direction);
+                            var refl = this.testIntersection(reflectionRay, scene, info.shape);
 
-    //                         if (refl.isHit && refl.distance > 0) {
-    //                             refl.color = this.rayTrace(refl, reflectionRay, scene, depth + 1);
-    //                         } else {
-    //                             refl.color = scene.background.color;
-    //                         }
+                            if (refl.isHit && refl.distance > 0) {
+                                refl.color = this.rayTrace(refl, reflectionRay, scene, depth + 1);
+                            } else {
+                                refl.color = scene.background.color;
+                            }
 
-    //                         color = Color.blend(
-    //                             color,
-    //                             refl.color,
-    //                             info.shape.material.reflection
-    //                         );
-    //                     }
+                            color = Color.blend(
+                                color,
+                                refl.color,
+                                info.shape.material.reflection
+                            );
+                        }
 
-    //                     // Refraction
-    //                     /* TODO */
-    //                 }
+                        // Refraction
+                        /* TODO */
+                    }
 
-    //                 /* Render shadows and highlights */
+                    /* Render shadows and highlights */
 
-    //                 var shadowInfo = new IntersectionInfo();
+                    var shadowInfo = new IntersectionInfo();
 
-    //                 if (this.options.renderShadows) {
-    //                     var shadowRay = new Ray(info.position, v);
+                    if (this.options.renderShadows) {
+                        var shadowRay = new Ray(info.position, v);
 
-    //                     shadowInfo = this.testIntersection(shadowRay, scene, info.shape);
-    //                     if (shadowInfo.isHit && shadowInfo.shape != info.shape /*&& shadowInfo.shape.type != 'PLANE'*/) {
-    //                         var vA = Color.multiplyScalar(color, 1/2);
-    //                         var dB = (1/2 * Math.pow(shadowInfo.shape.material.transparency, 1/2));
-    //                         color = Color.addScalar(vA, dB);
-    //                     }
-    //                 }
+                        shadowInfo = this.testIntersection(shadowRay, scene, info.shape);
+                        if (shadowInfo.isHit && shadowInfo.shape != info.shape /*&& shadowInfo.shape.type != 'PLANE'*/) {
+                            var vA = Color.multiplyScalar(color, 1/2);
+                            var dB = (1/2 * Math.pow(shadowInfo.shape.material.transparency, 1/2));
+                            color = Color.addScalar(vA, dB);
+                        }
+                    }
 
-    //                 // Phong specular highlights
-    //                 if (this.options.renderHighlights && !shadowInfo.isHit && info.shape.material.gloss > 0) {
-    //                     var Lv = Vector.subtract(
-    //                         info.shape.position,
-    //                         light.position
-    //                     ).normalize();
+                    // Phong specular highlights
+                    if (this.options.renderHighlights && !shadowInfo.isHit && info.shape.material.gloss > 0) {
+                        var Lv = Vector.subtract(
+                            info.shape.position,
+                            light.position
+                        ).normalize();
 
-    //                     var E = Vector.subtract(
-    //                         scene.camera.position,
-    //                         info.shape.position
-    //                     ).normalize();
+                        var E = Vector.subtract(
+                            scene.camera.position,
+                            info.shape.position
+                        ).normalize();
 
-    //                     var H = Vector.subtract(
-    //                         E,
-    //                         Lv
-    //                     ).normalize();
+                        var H = Vector.subtract(
+                            E,
+                            Lv
+                        ).normalize();
 
-    //                     var glossWeight = Math.pow(Math.max(info.normal.dot(H), 0), shininess);
-    //                     color = Color.add(
-    //                         Color.multiplyScalar(light.color, glossWeight),
-    //                         color
-    //                     );
-    //                 }
-    //             }
-    //             color.limit();
-    //             return color;
-    //         }
-    //     }
-    //     // }
+                        var glossWeight = Math.pow(Math.max(info.normal.dot(H), 0), shininess);
+                        color = Color.add(
+                            Color.multiplyScalar(light.color, glossWeight),
+                            color
+                        );
+                    }
+                }
+                color.limit();
+                return color;
+            }
+        }
+        // }
 
     //     export function renderScene() {
     //         var scene = new Scene();
