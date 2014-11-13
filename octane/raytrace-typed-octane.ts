@@ -15,7 +15,20 @@
 // Variable used to hold a number that can be used to verify that
 // the scene was ray traced correctly.
 
+//TODO: move this stuff to prelude?
+/*@ qualif Bot(v:a, s:string): keyIn(v,s) */
+/*@ qualif Bot(v:a, s:string): enumProp(v,s) */
+interface HTMLCanvasElement {
+    getContext(s:string):CanvasRenderingContext2D; //or WebGLRenderingContext or null
+}
+interface CanvasRenderingContext2D {
+    /*@ fillStyle : [Mutable] string */
+    fillStyle:string;
+    fillRect(a:number, b:number, c:number, d:number):void;
+}
+
 //TODO: had to add explicit toString calls in toStrings
+//TODO: many classes allowed some members to be null; where usage made this seem inappropriate I removed that feature
 module VERSION {
     export module RayTracer {
         /*@ checkNumber :: number */
@@ -147,13 +160,12 @@ module VERSION {
         }
 
         export class Light {
-            /*@ position : Vector<Immutable>? */
-            public position;
-            public color;
-            public intensity;
+            public position:Vector;
+            public color:Color;
+            public intensity:number;
 
-            /*@ new(position:Vector<Immutable>?, color:Color<Immutable>?, intensity:number) => {void | true} */
-            constructor(position:Vector= null, color:Color= null, intensity= 10) {
+            /*@ new(position:Vector<Immutable>, color:Color<Immutable>, intensity:number) => {void | true} */
+            constructor(position:Vector, color:Color, intensity= 10) {
                 this.position = position;
                 this.color = color;
                 this.intensity = intensity;
@@ -161,9 +173,7 @@ module VERSION {
 
             /* toString : () : {string | true} */
             public toString() {
-                var position = this.position;
-                if (!position) return 'Light [position==null]';
-                return 'Light [' + position.x + ',' + position.y + ',' + position.z + ']';
+                return 'Light [' + this.position.x + ',' + this.position.y + ',' + this.position.z + ']';
             }
         }
 
@@ -258,10 +268,11 @@ module VERSION {
         }
 
         export class Scene {
-            public camera : Camera = null;
-            public shapes : Shape[] = [];
-            public lights : Light[] = [];
-            public background : Background = null;
+            public camera : Camera;
+            /*@ shapes : Array<Immutable, Shape<Immutable>> */
+            public shapes : Shape[];
+            public lights : Light[];
+            public background : Background;
 
             /*@ new() => {void | true} */
             constructor() {
@@ -281,8 +292,8 @@ module VERSION {
         export class BaseMaterial {
             public gloss:number;
             public transparency:number;
-            public reflection;
-            public refraction;
+            public reflection:number;
+            public refraction:number;
             public hasTexture:boolean;
 
             /*@ new(gloss:number, transparency:number, reflection:number, refraction:number, hasTexture:boolean) => {void | true} */
@@ -491,17 +502,18 @@ module VERSION {
         export class IntersectionInfo {
             /*@ isHit : [Mutable] boolean */
             public isHit;
+            /*@ hitCount : [Mutable] number */
             public hitCount;
             /*@ shape : [Mutable] Shape<Immutable>? */
-            public shape:Shape;
+            public shape;
             /*@ position : [Mutable] Vector<Immutable>? */
-            public position:Vector;
+            public position;
             /*@ normal : [Mutable] Vector<Immutable>? */
-            public normal:Vector;
+            public normal;
             /*@ color : [Mutable] Color<Immutable>? */
-            public color:Color;
+            public color;
             /*@ distance : [Mutable] number? */
-            public distance:number;
+            public distance;
 
             /*@ new(isHit:boolean,
                     hitCount:number,
@@ -540,14 +552,13 @@ module VERSION {
         }
 
         export class Camera {
-            public equator:Vector = null;
-            public screen:Vector = null;
+            public equator:Vector;
+            public screen:Vector;
 
             public position:Vector;
             public lookAt:Vector;
             public up:Vector;
 
-            //TODO: changed here so args can't be null
             /*@ new(position:Vector<Immutable>, lookAt:Vector<Immutable>, up:Vector<Immutable>) => {void | true} */
             constructor(position:Vector,
                         lookAt:Vector,
@@ -586,18 +597,17 @@ module VERSION {
         }
 
         export class Background {
-            /*@ color : Color<Immutable>? */
-            public color;
+            public color:Color;
             public ambience:number;
 
-            /*@ new(color:Color<Immutable>?, ambience:number) => {void | true} */
-            constructor(color:Color= null, ambience= 0) { 
+            /*@ new(color:Color<Immutable>, ambience:number) => {void | true} */
+            constructor(color:Color, ambience= 0) {
                 this.color = color;
                 this.ambience = ambience;
             }
         }
 
-        /*@ extend :: (dest:[Mutable]{[s:string]:top}, src:[Mutable]{[s:string]:top}) => {[Mutable]{[s:string]:top} | true} */
+        /*@ extend :: (dest:[Mutable]{[s:string]:top}, src:[Immutable]{[s:string]:top}) => {[Mutable]{[s:string]:top} | true} */
         function extend(dest, src) {
             for (var p in src) {
                 dest[p] = src[p];
@@ -606,14 +616,27 @@ module VERSION {
         }
 
         export class Engine {
-            /*@ canvas : [Mutable] top */
-            public canvas = null; /* 2d context we can render to */
-            public options = null;
+            /*@ canvas : [Mutable] CanvasRenderingContext2D<Immutable>? */
+            public canvas:CanvasRenderingContext2D = null; /* 2d context we can render to */
+            /*@ options : [Mutable] {
+                    canvasHeight: [Mutable] number;
+                    canvasWidth: [Mutable] number;
+                    pixelWidth: number;
+                    pixelHeight: number;
+                    renderDiffuse: boolean;
+                    renderShadows: boolean;
+                    renderHighlights: boolean;
+                    renderReflections: boolean;
+                    rayDepth: number
+                } */
+            public options;
 
-            /*@ new(options:top) => {void | true} */
+            /*@ new(options:[Mutable]{[s:string]:top}?) => {void | true} */
             constructor(options) {
-				var this_options = extend({
+                var this_options = {
+                    /*@ canvasHeight : [Mutable] number */
                     canvasHeight: 100,
+                    /*@ canvasWidth : [Mutable] number */
                     canvasWidth: 100,
                     pixelWidth: 2,
                     pixelHeight: 2,
@@ -622,7 +645,18 @@ module VERSION {
                     renderHighlights: false,
                     renderReflections: false,
                     rayDepth: 2
-                }, options || {});
+                } //TODO PORTME: revert to the below version
+				// var this_options = extend({
+    //                 canvasHeight: 100,
+    //                 canvasWidth: 100,
+    //                 pixelWidth: 2,
+    //                 pixelHeight: 2,
+    //                 renderDiffuse: false,
+    //                 renderShadows: false,
+    //                 renderHighlights: false,
+    //                 renderReflections: false,
+    //                 rayDepth: 2
+    //             }, options || {});
 
                 this_options.canvasHeight /= this_options.pixelHeight;
                 this_options.canvasWidth /= this_options.pixelWidth;
@@ -632,14 +666,16 @@ module VERSION {
                 /* TODO: dynamically include other scripts */
             }
 
+            /*@ setPixel : (x:number, y:number, color:Color<ReadOnly>) : {void | true} */
             public setPixel(x, y, color:Color) {
                 var pxW, pxH;
                 pxW = this.options.pixelWidth;
                 pxH = this.options.pixelHeight;
 
-                if (this.canvas) {
-                    this.canvas.fillStyle = color.toString();
-                    this.canvas.fillRect(x * pxW, y * pxH, pxW, pxH);
+                var canvas = this.canvas;
+                if (canvas) {
+                    (<CanvasRenderingContext2D>canvas).fillStyle = color.toString();
+                    canvas.fillRect(x * pxW, y * pxH, pxW, pxH);
                 } else {
                     if (x === y) {
                         checkNumber += color.brightness();
@@ -648,7 +684,8 @@ module VERSION {
                 }
             }
 
-            public renderScene(scene:Scene, canvas) {
+            /* renderScene : (scene:Scene<ReadOnly>, canvas:HTMLCanvasElement<ReadOnly>) : {void | true} */
+            public renderScene(scene:Scene, canvas:HTMLCanvasElement) {
                 checkNumber = 0;
                 /* Get canvas */
                 if (canvas) {
@@ -677,35 +714,38 @@ module VERSION {
                 }
             }
 
+            /*@ getPixelColor : (ray:Ray<ReadOnly>, scene:Scene<ReadOnly>) : {Color<Immutable> | true} */
             public getPixelColor(ray:Ray, scene:Scene) {
                 var info = this.testIntersection(ray, scene, null);
                 if (info.isHit) {
-                    var color = this.rayTrace(info, ray, scene, 0);
-                    return color;
+                    // var color = this.rayTrace(info, ray, scene, 0); //TODO PORTME
+                    // return color;
                 }
                 return scene.background.color;
             }
 
-            public testIntersection(ray:Ray, scene:Scene, exclude:Shape) : IntersectionInfo {
+            /*@ testIntersection : (ray:Ray<ReadOnly>, scene:Scene<ReadOnly>, exclude:Shape<ReadOnly>?) : {IntersectionInfo<Immutable> | true} */
+            public testIntersection(ray:Ray, scene:Scene, exclude?:Shape) : IntersectionInfo {
                 var hits = 0;
-                var best = new IntersectionInfo();
+                var best = new IntersectionInfo(false, 0, null, null, null, null, null);
                 best.distance = 2000;
 
                 for (var i = 0; i < scene.shapes.length; i++) {
-                    var shape = scene.shapes[i];
+                    // var shape = scene.shapes[i]; //TODO PORTME
 
-                    if (shape != exclude) {
-                        var info = shape.intersect(ray);
-                        if (info.isHit && info.distance >= 0 && info.distance < best.distance) {
-                            best = info;
-                            hits++;
-                        }
-                    }
+                    // if (shape != exclude) {
+                    //     var info = shape.intersect(ray);
+                    //     if (info.isHit && info.distance >= 0 && info.distance < best.distance) {
+                    //         best = info;
+                    //         hits++;
+                    //     }
+                    // }
                 }
                 best.hitCount = hits;
                 return best;
             }
 
+            /*@ getReflectionRay : (P:Vector<Immutable>, N:Vector<ReadOnly>, V:Vector<ReadOnly>) : {Ray<Immutable> | true} */
             public getReflectionRay(P:Vector, N:Vector, V:Vector) {
                 var c1 = -N.dot(V);
                 var R1 = Vector.add(
@@ -715,200 +755,202 @@ module VERSION {
                 return new Ray(P, R1);
             }
 
-            public rayTrace(info:IntersectionInfo, ray:Ray, scene:Scene, depth:number) {
-                // Calc ambient
-                var color = Color.multiplyScalar(info.color, scene.background.ambience);
-                var oldColor = color;
-                var shininess = Math.pow(10, info.shape.material.gloss + 1);
+            // /*@ rayTrace : (info:IntersectionInfo<ReadOnly>, ray:Ray<ReadOnly>, scene:Scene<ReadOnly>, depth:number) : {Color<Mutable> | true} */
+            // public rayTrace(info:IntersectionInfo, ray:Ray, scene:Scene, depth:number) {
+            //     // Calc ambient
+            //     var color = Color.multiplyScalar(info.color, scene.background.ambience);
+            //     var oldColor = color;
+            //     var shininess = Math.pow(10, info.shape.material.gloss + 1);
 
-                for (var i = 0; i < scene.lights.length; i++) {
-                    var light = scene.lights[i];
+            //     for (var i = 0; i < scene.lights.length; i++) {
+            //         var light = scene.lights[i];
 
-                    // Calc diffuse lighting
-                    var v = Vector.subtract(
-                        light.position,
-                        info.position
-                    ).normalize();
+            //         // Calc diffuse lighting
+            //         var v = Vector.subtract(
+            //             light.position,
+            //             info.position
+            //         ).normalize();
 
-                    if (this.options.renderDiffuse) {
-                        var L = v.dot(info.normal);
-                        if (L > 0) {
-                            color = Color.add(
-                                color,
-                                Color.multiply(
-                                    info.color,
-                                    Color.multiplyScalar(
-                                        light.color,
-                                        L
-                                    )
-                                )
-                            );
-                        }
-                    }
+            //         if (this.options.renderDiffuse) {
+            //             var L = v.dot(info.normal);
+            //             if (L > 0) {
+            //                 color = Color.add(
+            //                     color,
+            //                     Color.multiply(
+            //                         info.color,
+            //                         Color.multiplyScalar(
+            //                             light.color,
+            //                             L
+            //                         )
+            //                     )
+            //                 );
+            //             }
+            //         }
 
-                    // The greater the depth the more accurate the colours, but
-                    // this is exponentially (!) expensive
-                    if (depth <= this.options.rayDepth) {
-                        // calculate reflection ray
-                        if (this.options.renderReflections && info.shape.material.reflection > 0) {
-                            var reflectionRay = this.getReflectionRay(info.position, info.normal, ray.direction);
-                            var refl = this.testIntersection(reflectionRay, scene, info.shape);
+            //         // The greater the depth the more accurate the colours, but
+            //         // this is exponentially (!) expensive
+            //         if (depth <= this.options.rayDepth) {
+            //             // calculate reflection ray
+            //             if (this.options.renderReflections && info.shape.material.reflection > 0) {
+            //                 var reflectionRay = this.getReflectionRay(info.position, info.normal, ray.direction);
+            //                 var refl = this.testIntersection(reflectionRay, scene, info.shape);
 
-                            if (refl.isHit && refl.distance > 0) {
-                                refl.color = this.rayTrace(refl, reflectionRay, scene, depth + 1);
-                            } else {
-                                refl.color = scene.background.color;
-                            }
+            //                 if (refl.isHit && refl.distance > 0) {
+            //                     refl.color = this.rayTrace(refl, reflectionRay, scene, depth + 1);
+            //                 } else {
+            //                     refl.color = scene.background.color;
+            //                 }
 
-                            color = Color.blend(
-                                color,
-                                refl.color,
-                                info.shape.material.reflection
-                            );
-                        }
+            //                 color = Color.blend(
+            //                     color,
+            //                     refl.color,
+            //                     info.shape.material.reflection
+            //                 );
+            //             }
 
-                        // Refraction
-                        /* TODO */
-                    }
+            //             // Refraction
+            //             /* TODO */
+            //         }
 
-                    /* Render shadows and highlights */
+            //         /* Render shadows and highlights */
 
-                    var shadowInfo = new IntersectionInfo();
+            //         var shadowInfo = new IntersectionInfo(false, 0, null, null, null, null, null);
 
-                    if (this.options.renderShadows) {
-                        var shadowRay = new Ray(info.position, v);
+            //         if (this.options.renderShadows) {
+            //             var shadowRay = new Ray(info.position, v);
 
-                        shadowInfo = this.testIntersection(shadowRay, scene, info.shape);
-                        if (shadowInfo.isHit && shadowInfo.shape != info.shape /*&& shadowInfo.shape.type != 'PLANE'*/) {
-                            var vA = Color.multiplyScalar(color, 1/2);
-                            var dB = (1/2 * Math.pow(shadowInfo.shape.material.transparency, 1/2));
-                            color = Color.addScalar(vA, dB);
-                        }
-                    }
+            //             shadowInfo = this.testIntersection(shadowRay, scene, info.shape);
+            //             if (shadowInfo.isHit && shadowInfo.shape != info.shape /*&& shadowInfo.shape.type != 'PLANE'*/) {
+            //                 var vA = Color.multiplyScalar(color, 1/2);
+            //                 var dB = (1/2 * Math.pow(shadowInfo.shape.material.transparency, 1/2));
+            //                 color = Color.addScalar(vA, dB);
+            //             }
+            //         }
 
-                    // Phong specular highlights
-                    if (this.options.renderHighlights && !shadowInfo.isHit && info.shape.material.gloss > 0) {
-                        var Lv = Vector.subtract(
-                            info.shape.position,
-                            light.position
-                        ).normalize();
+            //         // Phong specular highlights
+            //         if (this.options.renderHighlights && !shadowInfo.isHit && info.shape.material.gloss > 0) {
+            //             var Lv = Vector.subtract(
+            //                 info.shape.position,
+            //                 light.position
+            //             ).normalize();
 
-                        var E = Vector.subtract(
-                            scene.camera.position,
-                            info.shape.position
-                        ).normalize();
+            //             var E = Vector.subtract(
+            //                 scene.camera.position,
+            //                 info.shape.position
+            //             ).normalize();
 
-                        var H = Vector.subtract(
-                            E,
-                            Lv
-                        ).normalize();
+            //             var H = Vector.subtract(
+            //                 E,
+            //                 Lv
+            //             ).normalize();
 
-                        var glossWeight = Math.pow(Math.max(info.normal.dot(H), 0), shininess);
-                        color = Color.add(
-                            Color.multiplyScalar(light.color, glossWeight),
-                            color
-                        );
-                    }
-                }
-                color.limit();
-                return color;
-            }
+            //             var glossWeight = Math.pow(Math.max(info.normal.dot(H), 0), shininess);
+            //             color = Color.add(
+            //                 Color.multiplyScalar(light.color, glossWeight),
+            //                 color
+            //             );
+            //         }
+            //     }
+            //     color.limit();
+            //     return color;
+            // }
         }
         // }
 
-    //     export function renderScene() {
-    //         var scene = new Scene();
+        /*@ renderScene :: () => {void | true} */
+        export function renderScene() {
+            var scene = new Scene();
 
-    //         scene.camera = new Camera(
-    //             new Vector(0, 0, -15),
-    //             new Vector(-1/5, 0, 5),
-    //             new Vector(0, 1, 0)
-    //         );
+            scene.camera = new Camera(
+                new Vector(0, 0, -15),
+                new Vector(-1/5, 0, 5),
+                new Vector(0, 1, 0)
+            );
 
-    //         scene.background = new Background(
-    //             new Color(1/2, 1/2, 1/2),
-    //             2/5
-    //         );
+            scene.background = new Background(
+                new Color(1/2, 1/2, 1/2),
+                2/5
+            );
 
-    //         var sphere = new Sphere(
-    //             new Vector(-3/2, 3/2, 2),
-    //             3/2,
-    //             new Solid(
-    //                 new Color(0, 1/2, 1/2),
-    //                 3/10,
-    //                 0,
-    //                 0,
-    //                 2
-    //             )
-    //         );
+            var sphere = new Sphere(
+                new Vector(-3/2, 3/2, 2),
+                3/2,
+                new Solid(
+                    new Color(0, 1/2, 1/2),
+                    3/10,
+                    0,
+                    0,
+                    2
+                )
+            );
 
-    //         var sphere1 = new Sphere(
-    //             new Vector(1, 1/4, 1),
-    //             1/2,
-    //             new Solid(
-    //                 new Color(9/10, 9/10, 9/10),
-    //                 1/10,
-    //                 0,
-    //                 0,
-    //                 3/2
-    //             )
-    //         );
+            var sphere1 = new Sphere(
+                new Vector(1, 1/4, 1),
+                1/2,
+                new Solid(
+                    new Color(9/10, 9/10, 9/10),
+                    1/10,
+                    0,
+                    0,
+                    3/2
+                )
+            );
 
-    //         var plane = new Plane(
-    //             new Vector(1/10, 9/10, -1/2).normalize(),
-    //             6/5,
-    //             new Chessboard(
-    //                 new Color(1, 1, 1),
-    //                 new Color(0, 0, 0),
-    //                 1/5,
-    //                 0,
-    //                 1,
-    //                 7/10
-    //             )
-    //         );
+            var plane = new Plane(
+                new Vector(1/10, 9/10, -1/2).normalize(),
+                6/5,
+                new Chessboard(
+                    new Color(1, 1, 1),
+                    new Color(0, 0, 0),
+                    1/5,
+                    0,
+                    1,
+                    7/10
+                )
+            );
 
-    //         scene.shapes.push(plane);
-    //         scene.shapes.push(sphere);
-    //         scene.shapes.push(sphere1);
+            scene.shapes.push(plane);
+            scene.shapes.push(sphere);
+            scene.shapes.push(sphere1);
 
-    //         var light = new Light(
-    //             new Vector(5, 10, -1),
-    //             new Color(4/5, 4/5, 4/5)
-    //         );
+            var light = new Light(
+                new Vector(5, 10, -1),
+                new Color(4/5, 4/5, 4/5)
+            );
 
-    //         var light1 = new Light(
-    //             new Vector(-3, 5, -15),
-    //             new Color(4/5, 4/5, 4/5),
-    //             100
-    //         );
+            var light1 = new Light(
+                new Vector(-3, 5, -15),
+                new Color(4/5, 4/5, 4/5),
+                100
+            );
 
-    //         scene.lights.push(light);
-    //         scene.lights.push(light1);
+            scene.lights.push(light);
+            scene.lights.push(light1);
 
-    //         var imageWidth = 100; // $F('imageWidth');
-    //         var imageHeight = 100; // $F('imageHeight');
-    //         var pixelSize = [5,5];//"5,5".split(','); //  $F('pixelSize').split(',');
-    //         var renderDiffuse = true; // $F('renderDiffuse');
-    //         var renderShadows = true; // $F('renderShadows');
-    //         var renderHighlights = true; // $F('renderHighlights');
-    //         var renderReflections = true; // $F('renderReflections');
-    //         var rayDepth = 2;//$F('rayDepth');
+            var imageWidth = 100; // $F('imageWidth');
+            var imageHeight = 100; // $F('imageHeight');
+            var pixelSize = [5,5];//"5,5".split(','); //  $F('pixelSize').split(',');
+            var renderDiffuse = true; // $F('renderDiffuse');
+            var renderShadows = true; // $F('renderShadows');
+            var renderHighlights = true; // $F('renderHighlights');
+            var renderReflections = true; // $F('renderReflections');
+            var rayDepth = 2;//$F('rayDepth');
 
-    //         var raytracer = new Engine(
-    //             {
-    //                 canvasWidth: imageWidth,
-    //                 canvasHeight: imageHeight,
-    //                 pixelWidth: pixelSize[0],
-    //                 pixelHeight: pixelSize[1],
-    //                 renderDiffuse: renderDiffuse,
-    //                 renderHighlights: renderHighlights,
-    //                 renderShadows: renderShadows,
-    //                 renderReflections: renderReflections,
-    //                 rayDepth: rayDepth
-    //             }
-    //         );
-    //         raytracer.renderScene(scene, null);
-    //     }
+            var raytracer = new Engine(
+                {
+                    canvasWidth: imageWidth,
+                    canvasHeight: imageHeight,
+                    pixelWidth: pixelSize[0],
+                    pixelHeight: pixelSize[1],
+                    renderDiffuse: renderDiffuse,
+                    renderHighlights: renderHighlights,
+                    renderShadows: renderShadows,
+                    renderReflections: renderReflections,
+                    rayDepth: rayDepth
+                }
+            );
+            raytracer.renderScene(scene, null);
+        }
 
     }
 }
