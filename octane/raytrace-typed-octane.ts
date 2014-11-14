@@ -15,14 +15,40 @@
 // Variable used to hold a number that can be used to verify that
 // the scene was ray traced correctly.
 
+//TODO: move this stuff to prelude?
+/*@ qualif Bot(v:a, s:string): keyIn(v,s) */
+/*@ qualif Bot(v:a, s:string): enumProp(v,s) */
+interface HTMLCanvasElement {
+    getContext(s:string):CanvasRenderingContext2D; //or WebGLRenderingContext or null
+}
+interface CanvasRenderingContext2D {
+    /*@ fillStyle : [Mutable] string */
+    fillStyle:string;
+    fillRect(a:number, b:number, c:number, d:number):void;
+}
+
+//TODO: had to add explicit toString calls in toStrings
+//TODO: many classes allowed some members to be null; where usage made this seem inappropriate I removed that feature
 module VERSION {
     export module RayTracer {
+        /*@ checkNumber :: number */
         var checkNumber:number=0;
         export class Color {
+            /*@ red : [Mutable] number */
+            public red=0;
+            /*@ green : [Mutable] number */
+            public green=0;
+            /*@ blue : [Mutable] number */
+            public blue=0;
 
-            constructor(public red = 0.0, public green = 0.0, public blue= 0.0) {
+            /*@ new(red:number, green:number, blue:number) => {void | true} */
+            constructor(red?, green?, blue?) {
+                this.red = red;
+                this.green = green;
+                this.blue = blue;
             }
 
+            /*@ add : (c1:Color<ReadOnly>, c2:Color<ReadOnly>) : {Color<Immutable> | true} */
             public static add(c1:Color, c2:Color) {
                 var result = new Color(0, 0, 0);
 
@@ -33,6 +59,7 @@ module VERSION {
                 return result;
             }
 
+            /*@ addScalar : (c1:Color<ReadOnly>, s:number) : {Color<Immutable> | true} */
             public static addScalar(c1:Color, s:number) {
                 var result = new Color(0, 0, 0);
 
@@ -46,6 +73,7 @@ module VERSION {
             }
 
 
+            /*@ subtract : (c1:Color<ReadOnly>, c2:Color<ReadOnly>) : {Color<Immutable> | true} */
             public static subtract(c1:Color, c2:Color) {
                 var result = new Color(0, 0, 0);
 
@@ -56,6 +84,7 @@ module VERSION {
                 return result;
             }
 
+            /*@ multiply : (c1:Color<ReadOnly>, c2:Color<ReadOnly>) : {Color<Immutable> | true} */
             public static multiply(c1:Color, c2:Color) {
                 var result = new Color(0, 0, 0);
 
@@ -66,6 +95,7 @@ module VERSION {
                 return result;
             }
 
+            /*@ multiplyScalar : (c1:Color<ReadOnly>, f:number) : {Color<Immutable> | true} */
             public static multiplyScalar(c1:Color, f:number) {
                 var result = new Color(0, 0, 0);
 
@@ -77,6 +107,7 @@ module VERSION {
             }
 
 
+            /*@ divideFactor : (c1:Color<ReadOnly>, f:{number | v != 0}) : {Color<Immutable> | true} */
             public static divideFactor(c1:Color, f:number) {
                 var result = new Color(0, 0, 0);
 
@@ -87,17 +118,20 @@ module VERSION {
                 return result;
             }
 
+            /*@ limit : () : {void | true} */
             public limit() {
-                this.red = (this.red > 0.0) ? ((this.red > 1.0) ? 1.0 : this.red) : 0.0;
-                this.green = (this.green > 0.0) ? ((this.green > 1.0) ? 1.0 : this.green) : 0.0;
-                this.blue = (this.blue > 0.0) ? ((this.blue > 1.0) ? 1.0 : this.blue) : 0.0;
+                this.red = (this.red > 0) ? ((this.red > 1) ? 1 : this.red) : 0;
+                this.green = (this.green > 0) ? ((this.green > 1) ? 1 : this.green) : 0;
+                this.blue = (this.blue > 0) ? ((this.blue > 1) ? 1 : this.blue) : 0;
             }
 
+            /*@ distance : (color:Color<ReadOnly>) : {number | true} */
             public distance(color:Color) {
                 var d = Math.abs(this.red - color.red) + Math.abs(this.green - color.green) + Math.abs(this.blue - color.blue);
                 return d;
             }
 
+            /*@ blend : (c1:Color<ReadOnly>, c2:Color<ReadOnly>, w:number) : {Color<Immutable> | true} */
             public static blend(c1:Color, c2:Color, w:number) {
                 var result = new Color(0, 0, 0);
                 result = Color.add(
@@ -107,6 +141,7 @@ module VERSION {
                 return result;
             }
 
+            /*@ brightness : () : {number | true} */
             public brightness() {
                 var r = Math.floor(this.red * 255);
                 var g = Math.floor(this.green * 255);
@@ -114,6 +149,7 @@ module VERSION {
                 return (r * 77 + g * 150 + b * 29) >> 8;
             }
 
+            /* toString : () : {string | true} */
             public toString() {
                 var r = Math.floor(this.red * 255);
                 var g = Math.floor(this.green * 255);
@@ -124,33 +160,58 @@ module VERSION {
         }
 
         export class Light {
-            constructor(public position:Vector= null, public color:Color= null, public intensity= 10.0) {
+            public position:Vector;
+            public color:Color;
+            public intensity:number=10;
+
+            /*@ new(position:Vector<Immutable>, color:Color<Immutable>, intensity:number) => {void | true} */
+            constructor(position:Vector, color:Color, intensity?) {
+                this.position = position;
+                this.color = color;
+                this.intensity = intensity;
             }
 
+            /* toString : () : {string | true} */
             public toString() {
                 return 'Light [' + this.position.x + ',' + this.position.y + ',' + this.position.z + ']';
             }
         }
 
         export class Vector {
-            constructor(public x= 0.0, public y= 0.0, public z= 0.0) {
+            /*@ x : [Mutable] number */
+            public x = 0;
+            /*@ y : [Mutable] number */
+            public y = 0;
+            /*@ z : [Mutable] number */
+            public z = 0;
+
+            /*@ new(x:number, y:number, z:number) => {void | true} */
+            constructor(x?, y?, z?) {
+                this.x = x;
+                this.y = y;
+                this.z = z;
             }
 
+            /*@ copy : (vector:Vector<ReadOnly>) : {void | true} */
             public copy(vector:Vector) {
                 this.x = vector.x;
                 this.y = vector.y;
                 this.z = vector.z;
             }
 
+            /*@ normalize : () : {Vector<Immutable> | true} */
             public normalize() {
                 var m = this.magnitude();
+                if (m === 0) throw new Error("Cannot normalize the 0-vector!");
                 return new Vector(this.x / m, this.y / m, this.z / m);
             }
 
+            /*@ magnitude : () : {number | true} */
             public magnitude() {
                 return Math.sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z));
             }
 
+            /*@ cross : (w:Vector<ReadOnly>) : {Vector<Immutable> | true} */
             public cross(w:Vector) {
                 return new Vector(
                         -this.z * w.y + this.y * w.z,
@@ -158,47 +219,63 @@ module VERSION {
                         -this.y * w.x + this.x * w.y);
             }
 
+            /*@ dot : (w:Vector<ReadOnly>) : {number | true} */
             public dot(w:Vector) {
                 return this.x * w.x + this.y * w.y + this.z * w.z;
             }
 
+            /*@ add : (v:Vector<ReadOnly>, w:Vector<ReadOnly>) : {Vector<Immutable> | true} */
             public static add(v:Vector, w:Vector) {
                 return new Vector(w.x + v.x, w.y + v.y, w.z + v.z);
             }
 
+            /*@ subtract : (v:Vector<ReadOnly>, w:Vector<ReadOnly>) : {Vector<Immutable> | true} */
             public static subtract(v:Vector, w:Vector) {
                 if (!w || !v) throw 'Vectors must be defined [' + v + ',' + w + ']';
                 return new Vector(v.x - w.x, v.y - w.y, v.z - w.z);
             }
 
+            /*@ multiplyVector : (v:Vector<ReadOnly>, w:Vector<ReadOnly>) : {Vector<Immutable> | true} */
             public static multiplyVector(v:Vector, w:Vector) {
                 return new Vector(v.x * w.x, v.y * w.y, v.z * w.z);
             }
 
+            /*@ multiplyScalar : (v:Vector<ReadOnly>, w:number) : {Vector<Immutable> | true} */
             public static multiplyScalar(v:Vector, w:number) {
                 return new Vector(v.x * w, v.y * w, v.z * w);
             }
 
+            /* toString : () : {string | true} */
             public toString() {
                 return 'Vector [' + this.x + ',' + this.y + ',' + this.z + ']';
             }
         }
 
         export class Ray {
-            constructor(public position:Vector, public direction:Vector) {
+            public position:Vector;
+            public direction:Vector;
+
+            /*@ new(position:Vector<Immutable>, direction:Vector<Immutable>) => {void | true} */
+            constructor(position:Vector, direction:Vector) {
+                this.position = position;
+                this.direction = direction;
             }
 
+            /* toString : () : {string | true} */
             public toString() {
-                return 'Ray [' + this.position + ',' + this.direction + ']';
+                return 'Ray [' + this.position.toString() + ',' + this.direction.toString() + ']';
             }
         }
 
         export class Scene {
-            public camera : Camera = null;
-            public shapes : Shape[] = [];
-            public lights : Light[] = [];
-            public background : Background = null;
+            public camera : Camera;
+            /*@ shapes : Array<Immutable, Shape<Immutable>> */
+            public shapes : Shape[];
+            /*@ lights : Array<Immutable, Light<Immutable>> */
+            public lights : Light[];
+            public background : Background;
 
+            /*@ new() => {void | true} */
             constructor() {
                 this.camera = new Camera(
                     new Vector(0, 0, -5),
@@ -207,90 +284,133 @@ module VERSION {
                 );
                 this.shapes = new Array<Shape>(0);
                 this.lights = new Array<Light>(0);
-                this.background = new Background(new Color(0, 0, 0.5), 0.2);
+                this.background = new Background(new Color(0, 0, 1/2), 1/5);
             }
         }
 
         // module Material {
 
         export class BaseMaterial {
-            constructor(public gloss = 2.0,             // [0...infinity] 0 = matt
-                        public transparency = 0.0,      // 0=opaque
-                        public reflection = 0.0,       // [0...infinity] 0 = no reflection
-                        public refraction = 0.50,
-                        public hasTexture = false) {
+            public gloss:number = 2;
+            public transparency:number = 0;
+            public reflection:number = 0;
+            public refraction:number = 1/2;
+            public hasTexture:boolean = false;
+
+            /*@ new(gloss:number, transparency:number, reflection:number, refraction:number, hasTexture:boolean) => {void | true} */
+            constructor(gloss?,             // [0...infinity] 0 = matt
+                        transparency?,      // 0=opaque
+                        reflection?,       // [0...infinity] 0 = no reflection
+                        refraction?,
+                        hasTexture?) {
+                this.gloss = gloss;
+                this.transparency = transparency;
+                this.reflection = reflection;
+                this.refraction = refraction;
+                this.hasTexture = hasTexture;
             }
 
+            /*@ getColor : (u:number, v:number) : {Color<Immutable> | true} */
             public getColor(u:number, v:number) : Color {
                 throw "Abstract method";
             }
 
+            /*@ wrapUp : (t:number) : {number | true} */
             public wrapUp(t:number) {
-                t = t % 2.0;
-                if (t < -1) t += 2.0;
-                if (t >= 1) t -= 2.0;
+                t = t % 2;
+                if (t < -1) t += 2;
+                if (t >= 1) t -= 2;
                 return t;
             }
 
+            /* toString : () : {string | true} */
             public toString() {
                 return 'Material [gloss=' + this.gloss + ', transparency=' + this.transparency + ', hasTexture=' + this.hasTexture + ']';
             }
         }
 
         export class Solid extends BaseMaterial {
-            constructor(public color:Color, reflection:number, refraction:number, transparency:number, gloss:number) {
-                super(gloss, transparency, reflection, refraction);
+            public color:Color;
+
+            /*@ new(color:Color<Immutable>, reflection:number, refraction:number, transparency:number, gloss:number) => {void | true} */
+            constructor(color:Color, reflection:number, refraction:number, transparency:number, gloss:number) {
+                super(gloss, transparency, reflection, refraction, false);
+                this.color = color;
             }
 
+            /*@ getColor : (u:number, v:number) : {Color<Immutable> | true} */
             public getColor(u:number, v:number) : Color {
                 return this.color;
             }
 
+            /* toString : () : {string | true} */
             public toString() {
                 return 'SolidMaterial [gloss=' + this.gloss + ', transparency=' + this.transparency + ', hasTexture=' + this.hasTexture + ']';
             }
         }
 
         export class Chessboard extends BaseMaterial {
-            constructor(public colorEven:Color, public colorOdd:Color, 
+            public colorEven:Color;
+            public colorOdd:Color;
+            public density:number = 1/2;
+
+            /*@ new(colorEven:Color<Immutable>, colorOdd:Color<Immutable>, reflection:number, transparency:number, gloss:number, density:number) => {void | true} */
+            constructor(colorEven:Color, colorOdd:Color, 
                         reflection:number, 
                         transparency:number, 
                         gloss:number, 
-                        public density= 0.5) {
-                super(gloss, transparency, reflection, 0.50, true);
+                        density?) {
+                super(gloss, transparency, reflection, 1/2, true);
+                this.colorEven = colorEven;
+                this.colorOdd = colorOdd;
+                this.density = density;
             }
 
+            /*@ getColor : (u:number, v:number) : {Color<Immutable> | true} */
             public getColor(u:number, v:number) : Color {
                 var t = this.wrapUp(u * this.density) * this.wrapUp(v * this.density);
 
-                if (t < 0.0)
+                if (t < 0)
                     return this.colorEven;
                 else
                     return this.colorOdd;
             }
 
+            /* toString : () : {string | true} */
             public toString() {
                 return 'ChessMaterial [gloss=' + this.gloss + ', transparency=' + this.transparency + ', hasTexture=' + this.hasTexture + ']';
             }
         }
 
         export class Shape {
-            constructor(public position:Vector, public material:BaseMaterial) {
+            public position:Vector;
+            public material:BaseMaterial;
+
+            /*@ new(position:Vector<Immutable>, material:BaseMaterial<Immutable>) => {void | true} */
+            constructor(position:Vector, material:BaseMaterial) {
+                this.position = position;
+                this.material = material;
             }
 
+            /*@ intersect : (ray:Ray<ReadOnly>) : {IntersectionInfo<Immutable> | true} */
             public intersect(ray:Ray) : IntersectionInfo {
                 throw "Abstract method";
             }
         }
 
         export class Sphere extends Shape {
-            constructor(position:Vector, public radius:number, material:BaseMaterial) {
+            public radius:number;
+
+            /*@ new(position:Vector<Immutable>, radius:number, material:BaseMaterial<Immutable>) => {void | true} */
+            constructor(position:Vector, radius:number, material:BaseMaterial) {
                 super(position, material);
+                this.radius = radius;
             }
 
+            /*@ intersect : (ray:Ray<ReadOnly>) : {IntersectionInfo<Immutable> | true} */
             public intersect(ray:Ray) : IntersectionInfo {
-                var info = new IntersectionInfo();
-                info.shape = this;
+                var info = new IntersectionInfo(false, 0, null, null, null, null, null);
+                info.shape = <Shape>this;
 
                 var dst = Vector.subtract(ray.position, this.position);
 
@@ -300,16 +420,18 @@ module VERSION {
 
                 if (D > 0) { // intersection!
                     info.isHit = true;
-                    info.distance = (-B) - Math.sqrt(D);
-                    info.position = Vector.add(
+                    var infoDist = (-B) - Math.sqrt(D);
+                    info.distance = infoDist;
+                    var infoPos = Vector.add(
                         ray.position,
                         Vector.multiplyScalar(
                             ray.direction,
-                            info.distance
+                            infoDist
                         )
                     );
+                    info.position = infoPos;
                     info.normal = Vector.subtract(
-                        info.position,
+                        infoPos,
                         this.position
                     ).normalize();
 
@@ -320,42 +442,49 @@ module VERSION {
                 return info;
             }
 
+            /* toString : () : {string | true} */
             public toString() {
-                return 'Sphere [position=' + this.position + ', radius=' + this.radius + ']';
+                return 'Sphere [position=' + this.position.toString() + ', radius=' + this.radius + ']';
             }
         }
 
         export class Plane extends Shape {
-            constructor(position:Vector, public d:number, material:BaseMaterial) {
+            public d:number;
+
+            /*@ new(position:Vector<Immutable>, d:number, material:BaseMaterial<Immutable>) => {void | true} */
+            constructor(position:Vector, d:number, material:BaseMaterial) {
                 super(position, material);
+                this.d = d;
             }
 
+            /*@ intersect : (ray:Ray<ReadOnly>) : {IntersectionInfo<Immutable> | true} */
             public intersect(ray:Ray) : IntersectionInfo {
-                var info = new IntersectionInfo();
+                var info = new IntersectionInfo(false, 0, null, null, null, null, null);
 
                 var Vd = this.position.dot(ray.direction);
-                if (Vd == 0) return info; // no intersection
+                if (Vd === 0) return info; // no intersection
 
                 var t = -(this.position.dot(ray.position) + this.d) / Vd;
                 if (t <= 0) return info;
 
-                info.shape = this;
+                info.shape = <Shape>this;
                 info.isHit = true;
-                info.position = Vector.add(
+                var infoPos = Vector.add(
                     ray.position,
                     Vector.multiplyScalar(
                         ray.direction,
                         t
                     )
                 );
+                info.position = infoPos;
                 info.normal = this.position;
                 info.distance = t;
 
                 if (this.material.hasTexture) {
                     var vU = new Vector(this.position.y, this.position.z, -this.position.x);
                     var vV = vU.cross(this.position);
-                    var u = info.position.dot(vU);
-                    var v = info.position.dot(vV);
+                    var u = infoPos.dot(vU);
+                    var v = infoPos.dot(vV);
                     info.color = this.material.getColor(u, v);
                 } else {
                     info.color = this.material.getColor(0, 0);
@@ -364,42 +493,85 @@ module VERSION {
                 return info;
             }
 
+            /* toString : () : {string | true} */
             public toString() {
-                return 'Plane [' + this.position + ', d=' + this.d + ']';
+                return 'Plane [' + this.position.toString() + ', d=' + this.d + ']';
             }
         }
         // }
 
         export class IntersectionInfo {
+            /*@ isHit : [Mutable] boolean */
+            public isHit = false;
+            /*@ hitCount : [Mutable] number */
+            public hitCount = 0;
+            /*@ shape : [Mutable] Shape<Immutable>? */
+            public shape = null;
+            /*@ position : [Mutable] Vector<Immutable>? */
+            public position = null;
+            /*@ normal : [Mutable] Vector<Immutable>? */
+            public normal = null;
+            /*@ color : [Mutable] Color<Immutable>? */
+            public color = null;
+            /*@ distance : [Mutable] number? */
+            public distance = null;
 
-            constructor(public isHit= false,
-                        public hitCount= 0,
-                        public shape:Shape= null,
-                        public position:Vector= null,
-                        public normal:Vector= null,
-                        public color:Color= null,
-                        public distance:number= null) { }
+            /*@ new(isHit:boolean,
+                    hitCount:number,
+                    shape:Shape<Immutable>?,
+                    position:Vector<Immutable>?,
+                    normal:Vector<Immutable>?,
+                    color:Color<Immutable>?,
+                    distance:number?) => {void | true} */
+            constructor(isHit?,
+                        hitCount?,
+                        shape?:Shape,
+                        position?:Vector,
+                        normal?:Vector,
+                        color?:Color,
+                        distance?:number) { 
+                this.isHit = isHit;
+                this.hitCount = hitCount;
+                this.shape = shape;
+                this.position = position;
+                this.normal = normal;
+                this.color = color;
+                this.distance = distance;
+            }
 
+            /*@ initialize : () : {void | true} */
             public initialize() {
                 this.color = new Color(0, 0, 0);
             }
 
+            /*@ toString : () : {string | true} */
             public toString() {
-                return 'Intersection [' + this.position + ']';
+                var position = this.position;
+                if (!position) return 'Intersection [position==null]';
+                return 'Intersection [' + position.toString() + ']';
             }
         }
 
         export class Camera {
-            public equator:Vector = null;
-            public screen:Vector = null;
+            public equator:Vector;
+            public screen:Vector;
 
-            constructor(public position:Vector = null,
-                        public lookAt:Vector = null,
-                        public up:Vector = null) {
+            public position:Vector;
+            public lookAt:Vector;
+            public up:Vector;
+
+            /*@ new(position:Vector<Immutable>, lookAt:Vector<Immutable>, up:Vector<Immutable>) => {void | true} */
+            constructor(position:Vector,
+                        lookAt:Vector,
+                        up:Vector) {
                 this.equator = lookAt.normalize().cross(up);
                 this.screen = Vector.add(position, lookAt);
+                this.position = position;
+                this.lookAt = lookAt;
+                this.up = up;
             }
 
+            /*@ getRay : (vx:number, vy:number) : {Ray<Immutable> | true} */
             public getRay(vx:number, vy:number) {
                 var pos = Vector.subtract(
                     this.screen,
@@ -419,15 +591,24 @@ module VERSION {
                 return ray;
             }
             
+            /*@ toString : () : {string | true} */
             public toString() {
                 return 'Ray []';
             }
         }
 
         export class Background {
-            constructor(public color:Color= null, public ambience= 0.0) { }
+            public color:Color;
+            public ambience:number = 0;
+
+            /*@ new(color:Color<Immutable>, ambience:number) => {void | true} */
+            constructor(color:Color, ambience?) {
+                this.color = color;
+                this.ambience = ambience;
+            }
         }
 
+        /*@ extend :: (dest:[Mutable]{[s:string]:top}, src:[Immutable]{[s:string]:top}) => {[Mutable]{[s:string]:top} | true} */
         function extend(dest, src) {
             for (var p in src) {
                 dest[p] = src[p];
@@ -436,12 +617,27 @@ module VERSION {
         }
 
         export class Engine {
-            public canvas = null; /* 2d context we can render to */
-            public options = null;
+            /*@ canvas : [Mutable] CanvasRenderingContext2D<Immutable>? */
+            public canvas:CanvasRenderingContext2D = null; /* 2d context we can render to */
+            /*@ options : [Mutable] {
+                    canvasHeight: [Mutable] number;
+                    canvasWidth: [Mutable] number;
+                    pixelWidth: number;
+                    pixelHeight: number;
+                    renderDiffuse: boolean;
+                    renderShadows: boolean;
+                    renderHighlights: boolean;
+                    renderReflections: boolean;
+                    rayDepth: number
+                } */
+            public options;
 
+            /*@ new(options:[Mutable]{[s:string]:top}?) => {void | true} */
             constructor(options) {
-				var this_options = extend({
+                var this_options = {
+                    /*@ canvasHeight : [Mutable] number */
                     canvasHeight: 100,
+                    /*@ canvasWidth : [Mutable] number */
                     canvasWidth: 100,
                     pixelWidth: 2,
                     pixelHeight: 2,
@@ -450,7 +646,18 @@ module VERSION {
                     renderHighlights: false,
                     renderReflections: false,
                     rayDepth: 2
-                }, options || {});
+                } //TODO PORTME: revert to the below version
+				// var this_options = extend({
+    //                 canvasHeight: 100,
+    //                 canvasWidth: 100,
+    //                 pixelWidth: 2,
+    //                 pixelHeight: 2,
+    //                 renderDiffuse: false,
+    //                 renderShadows: false,
+    //                 renderHighlights: false,
+    //                 renderReflections: false,
+    //                 rayDepth: 2
+    //             }, options || {});
 
                 this_options.canvasHeight /= this_options.pixelHeight;
                 this_options.canvasWidth /= this_options.pixelWidth;
@@ -460,14 +667,16 @@ module VERSION {
                 /* TODO: dynamically include other scripts */
             }
 
+            /*@ setPixel : (x:number, y:number, color:Color<ReadOnly>) : {void | true} */
             public setPixel(x, y, color:Color) {
                 var pxW, pxH;
                 pxW = this.options.pixelWidth;
                 pxH = this.options.pixelHeight;
 
-                if (this.canvas) {
-                    this.canvas.fillStyle = color.toString();
-                    this.canvas.fillRect(x * pxW, y * pxH, pxW, pxH);
+                var canvas = this.canvas;
+                if (canvas) {
+                    (<CanvasRenderingContext2D>canvas).fillStyle = color.toString();
+                    canvas.fillRect(x * pxW, y * pxH, pxW, pxH);
                 } else {
                     if (x === y) {
                         checkNumber += color.brightness();
@@ -476,7 +685,8 @@ module VERSION {
                 }
             }
 
-            public renderScene(scene:Scene, canvas) {
+            /* renderScene : (scene:Scene<ReadOnly>, canvas:HTMLCanvasElement<ReadOnly>) : {void | true} */
+            public renderScene(scene:Scene, canvas:HTMLCanvasElement) {
                 checkNumber = 0;
                 /* Get canvas */
                 if (canvas) {
@@ -490,8 +700,8 @@ module VERSION {
 
                 for (var y = 0; y < canvasHeight; y++) {
                     for (var x = 0; x < canvasWidth; x++) {
-                        var yp = y * 1.0 / canvasHeight * 2 - 1;
-                        var xp = x * 1.0 / canvasWidth * 2 - 1;
+                        var yp = y * 1 / canvasHeight * 2 - 1;
+                        var xp = x * 1 / canvasWidth * 2 - 1;
 
                         var ray = scene.camera.getRay(xp, yp);
 
@@ -505,6 +715,7 @@ module VERSION {
                 }
             }
 
+            /*@ getPixelColor : (ray:Ray<ReadOnly>, scene:Scene<ReadOnly>) : {Color<Immutable> | true} */
             public getPixelColor(ray:Ray, scene:Scene) {
                 var info = this.testIntersection(ray, scene, null);
                 if (info.isHit) {
@@ -514,13 +725,15 @@ module VERSION {
                 return scene.background.color;
             }
 
-            public testIntersection(ray:Ray, scene:Scene, exclude:Shape) : IntersectionInfo {
+            /*@ testIntersection : (ray:Ray<ReadOnly>, scene:Scene<ReadOnly>, exclude:Shape<ReadOnly>?) : {IntersectionInfo<Immutable> | true} */
+            public testIntersection(ray:Ray, scene:Scene, exclude?:Shape) : IntersectionInfo {
                 var hits = 0;
-                var best = new IntersectionInfo();
+                var best = new IntersectionInfo(false, 0, null, null, null, null, null);
                 best.distance = 2000;
 
-                for (var i = 0; i < scene.shapes.length; i++) {
-                    var shape = scene.shapes[i];
+                var sceneShapes = scene.shapes;
+                for (var i = 0; i < sceneShapes.length; i++) {
+                    var shape = sceneShapes[i];
 
                     if (shape != exclude) {
                         var info = shape.intersect(ray);
@@ -534,6 +747,7 @@ module VERSION {
                 return best;
             }
 
+            /*@ getReflectionRay : (P:Vector<Immutable>, N:Vector<ReadOnly>, V:Vector<ReadOnly>) : {Ray<Immutable> | true} */
             public getReflectionRay(P:Vector, N:Vector, V:Vector) {
                 var c1 = -N.dot(V);
                 var R1 = Vector.add(
@@ -543,28 +757,39 @@ module VERSION {
                 return new Ray(P, R1);
             }
 
+            /*@ rayTrace : (info:IntersectionInfo<ReadOnly>, ray:Ray<ReadOnly>, scene:Scene<ReadOnly>, depth:number) : {Color<Immutable> | true} */
             public rayTrace(info:IntersectionInfo, ray:Ray, scene:Scene, depth:number) {
-                // Calc ambient
-                var color = Color.multiplyScalar(info.color, scene.background.ambience);
-                var oldColor = color;
-                var shininess = Math.pow(10, info.shape.material.gloss + 1);
+                var infoColor = info.color;
+                var infoShape = info.shape;
+                var infoNormal = info.normal;
+                var infoPosition = info.position;
+                if (!infoColor || 
+                    !infoShape || 
+                    !infoNormal || 
+                    !infoPosition) throw new Error('incomplete IntersectionInfo'); //TODO is there a way to get rid of this check?
 
-                for (var i = 0; i < scene.lights.length; i++) {
-                    var light = scene.lights[i];
+                // Calc ambient
+                var color = Color.multiplyScalar(infoColor, scene.background.ambience);
+                var oldColor = color;
+                var shininess = Math.pow(10, infoShape.material.gloss + 1);
+
+                var sceneLights = scene.lights;
+                for (var i = 0; i < sceneLights.length; i++) {
+                    var light = sceneLights[i];
 
                     // Calc diffuse lighting
                     var v = Vector.subtract(
                         light.position,
-                        info.position
+                        infoPosition
                     ).normalize();
 
                     if (this.options.renderDiffuse) {
-                        var L = v.dot(info.normal);
-                        if (L > 0.0) {
+                        var L = v.dot(infoNormal);
+                        if (L > 0) {
                             color = Color.add(
                                 color,
                                 Color.multiply(
-                                    info.color,
+                                    infoColor,
                                     Color.multiplyScalar(
                                         light.color,
                                         L
@@ -578,20 +803,21 @@ module VERSION {
                     // this is exponentially (!) expensive
                     if (depth <= this.options.rayDepth) {
                         // calculate reflection ray
-                        if (this.options.renderReflections && info.shape.material.reflection > 0) {
-                            var reflectionRay = this.getReflectionRay(info.position, info.normal, ray.direction);
-                            var refl = this.testIntersection(reflectionRay, scene, info.shape);
+                        if (this.options.renderReflections && infoShape.material.reflection > 0) {
+                            var reflectionRay = this.getReflectionRay(infoPosition, infoNormal, ray.direction);
+                            var refl = this.testIntersection(reflectionRay, scene, infoShape);
 
+                            var reflColor;
                             if (refl.isHit && refl.distance > 0) {
-                                refl.color = this.rayTrace(refl, reflectionRay, scene, depth + 1);
+                                reflColor = this.rayTrace(refl, reflectionRay, scene, depth + 1);
                             } else {
-                                refl.color = scene.background.color;
+                                reflColor = scene.background.color;
                             }
 
                             color = Color.blend(
                                 color,
-                                refl.color,
-                                info.shape.material.reflection
+                                reflColor,
+                                infoShape.material.reflection
                             );
                         }
 
@@ -601,29 +827,29 @@ module VERSION {
 
                     /* Render shadows and highlights */
 
-                    var shadowInfo = new IntersectionInfo();
+                    var shadowInfo = new IntersectionInfo(false, 0, null, null, null, null, null);
 
                     if (this.options.renderShadows) {
-                        var shadowRay = new Ray(info.position, v);
+                        var shadowRay = new Ray(infoPosition, v);
 
-                        shadowInfo = this.testIntersection(shadowRay, scene, info.shape);
-                        if (shadowInfo.isHit && shadowInfo.shape != info.shape /*&& shadowInfo.shape.type != 'PLANE'*/) {
-                            var vA = Color.multiplyScalar(color, 0.5);
-                            var dB = (0.5 * Math.pow(shadowInfo.shape.material.transparency, 0.5));
+                        shadowInfo = this.testIntersection(shadowRay, scene, infoShape);
+                        if (shadowInfo.isHit && shadowInfo.shape != infoShape /*&& shadowInfo.shape.type != 'PLANE'*/) {
+                            var vA = Color.multiplyScalar(color, 1/2);
+                            var dB = (1/2 * Math.pow(shadowInfo.shape.material.transparency, 1/2));
                             color = Color.addScalar(vA, dB);
                         }
                     }
 
                     // Phong specular highlights
-                    if (this.options.renderHighlights && !shadowInfo.isHit && info.shape.material.gloss > 0) {
+                    if (this.options.renderHighlights && !shadowInfo.isHit && infoShape.material.gloss > 0) {
                         var Lv = Vector.subtract(
-                            info.shape.position,
+                            infoShape.position,
                             light.position
                         ).normalize();
 
                         var E = Vector.subtract(
                             scene.camera.position,
-                            info.shape.position
+                            infoShape.position
                         ).normalize();
 
                         var H = Vector.subtract(
@@ -631,7 +857,7 @@ module VERSION {
                             Lv
                         ).normalize();
 
-                        var glossWeight = Math.pow(Math.max(info.normal.dot(H), 0), shininess);
+                        var glossWeight = Math.pow(Math.max(infoNormal.dot(H), 0), shininess);
                         color = Color.add(
                             Color.multiplyScalar(light.color, glossWeight),
                             color
@@ -644,54 +870,55 @@ module VERSION {
         }
         // }
 
+        /*@ renderScene :: () => {void | true} */
         export function renderScene() {
             var scene = new Scene();
 
             scene.camera = new Camera(
                 new Vector(0, 0, -15),
-                new Vector(-0.2, 0, 5),
+                new Vector(-1/5, 0, 5),
                 new Vector(0, 1, 0)
             );
 
             scene.background = new Background(
-                new Color(0.5, 0.5, 0.5),
-                0.4
+                new Color(1/2, 1/2, 1/2),
+                2/5
             );
 
             var sphere = new Sphere(
-                new Vector(-1.5, 1.5, 2),
-                1.5,
+                new Vector(-3/2, 3/2, 2),
+                3/2,
                 new Solid(
-                    new Color(0, 0.5, 0.5),
-                    0.3,
-                    0.0,
-                    0.0,
-                    2.0
+                    new Color(0, 1/2, 1/2),
+                    3/10,
+                    0,
+                    0,
+                    2
                 )
             );
 
             var sphere1 = new Sphere(
-                new Vector(1, 0.25, 1),
-                0.5,
+                new Vector(1, 1/4, 1),
+                1/2,
                 new Solid(
-                    new Color(0.9, 0.9, 0.9),
-                    0.1,
-                    0.0,
-                    0.0,
-                    1.5
+                    new Color(9/10, 9/10, 9/10),
+                    1/10,
+                    0,
+                    0,
+                    3/2
                 )
             );
 
             var plane = new Plane(
-                new Vector(0.1, 0.9, -0.5).normalize(),
-                1.2,
+                new Vector(1/10, 9/10, -1/2).normalize(),
+                6/5,
                 new Chessboard(
                     new Color(1, 1, 1),
                     new Color(0, 0, 0),
-                    0.2,
-                    0.0,
-                    1.0,
-                    0.7
+                    1/5,
+                    0,
+                    1,
+                    7/10
                 )
             );
 
@@ -701,12 +928,12 @@ module VERSION {
 
             var light = new Light(
                 new Vector(5, 10, -1),
-                new Color(0.8, 0.8, 0.8)
+                new Color(4/5, 4/5, 4/5)
             );
 
             var light1 = new Light(
                 new Vector(-3, 5, -15),
-                new Color(0.8, 0.8, 0.8),
+                new Color(4/5, 4/5, 4/5),
                 100
             );
 

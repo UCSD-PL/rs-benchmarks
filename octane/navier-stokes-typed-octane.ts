@@ -25,7 +25,9 @@
  */
 
 module NavierStokes {
+    /*@ solver :: FluidField<Immutable> + null */
     var solver:FluidField = null;
+    /*@ nsFrameCounter :: number */
     var nsFrameCounter = 0;
 
     export function runNavierStokes()
@@ -76,7 +78,9 @@ module NavierStokes {
         }
     }
 
+    /*@ framesTillAddingPoints :: number */
     var framesTillAddingPoints = 0;
+    /*@ framesBetweenAddingPoints :: number */
     var framesBetweenAddingPoints = 5;
 
     function prepareFrame(field:Field)
@@ -104,8 +108,8 @@ module NavierStokes {
         /*@ new (canvas:top) => void */
         constructor(canvas) {
             var iterations:number = 10;
-            var visc:number = 0.5;
-            var dt:number = 0.1;
+            var visc:number = 1/2;//.
+            var dt:number = 1/10;//.
             var dens:number[] = null;
             var dens_prev:number []=null;
             var u:number[]=null;
@@ -158,10 +162,10 @@ module NavierStokes {
                     }
                 }
                 var maxEdge = (height + 1) * rowSize;
-                x[0]                 = 0.5 * (x[1] + x[rowSize]);
-                x[maxEdge]           = 0.5 * (x[1 + maxEdge] + x[height * rowSize]);
-                x[(width+1)]         = 0.5 * (x[width] + x[(width + 1) + rowSize]);
-                x[(width+1)+maxEdge] = 0.5 * (x[width + maxEdge] + x[(width + 1) + height * rowSize]);
+                x[0]                 = 1/2 * (x[1] + x[rowSize]);//.
+                x[maxEdge]           = 1/2 * (x[1 + maxEdge] + x[height * rowSize]);//.
+                x[(width+1)]         = 1/2 * (x[width] + x[(width + 1) + rowSize]);//.
+                x[(width+1)+maxEdge] = 1/2 * (x[width + maxEdge] + x[(width + 1) + height * rowSize]);//.
             }
 
             function lin_solve(b:number, x:number[], x0:number[], a:number, c:number)
@@ -244,21 +248,21 @@ module NavierStokes {
             {
                 var Wdt0 = dt * width;
                 var Hdt0 = dt * height;
-                var Wp5 = width + 0.5;
-                var Hp5 = height + 0.5;
+                var Wp5 = width + 1/2;//.
+                var Hp5 = height + 1/2;//.
                 for (var j = 1; j<= height; j++) {
                     var pos = j * rowSize;
                     for (var i = 1; i <= width; i++) {
                         var x:any = i - Wdt0 * u[++pos];
                         var y:any = j - Hdt0 * v[pos];
-                        if (x < 0.5)
-                            x = 0.5;
+                        if (x < 1/2)//.
+                            x = 1/2;//.
                         else if (x > Wp5)
                             x = Wp5;
                         var i0 = x | 0;
                         var i1 = i0 + 1;
-                        if (y < 0.5)
-                            y = 0.5;
+                        if (y < 1/2)//.
+                            y = 1/2;//.
                         else if (y > Hp5)
                             y = Hp5;
                         var j0 = y | 0;
@@ -277,7 +281,7 @@ module NavierStokes {
 
             function project(u:number[], v:number[], p:number[], div:number[])
             {
-                var h = -0.5 / Math.sqrt(width * height);
+                var h = -(1/2) / Math.sqrt(width * height);//.
                 for (var j = 1 ; j <= height; j++ ) {
                     var row = j * rowSize;
                     var previousRow = (j - 1) * rowSize;
@@ -294,8 +298,8 @@ module NavierStokes {
                 set_bnd(0, p);
 
                 lin_solve(0, p, div, 1, 4 );
-                var wScale = 0.5 * width;
-                var hScale = 0.5 * height;
+                var wScale = 1/2 * width;//.
+                var hScale = 1/2 * height;//.
                 for (var k = 1; k<= height; k++ ) {
                     var prevPos = k * rowSize - 1;
                     var currentPos = k * rowSize;
@@ -342,7 +346,7 @@ module NavierStokes {
             function queryUI(d:number[], u:number[], v:number[])
             {
                 for (var i = 0; i < size; i++)
-                    u[i] = v[i] = d[i] = 0.0;
+                    u[i] = v[i] = d[i] = 0;//.
                 uiCallback(new Field(rowSize, width, height, d, u, v));
             } 
 

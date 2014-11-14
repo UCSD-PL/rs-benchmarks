@@ -146,17 +146,17 @@ module RichardsTYPEDVERSION {
      */
     class Scheduler {
         /*@ queueCount : [Mutable] number */
-        public queueCount;
+        public queueCount = 0;
         /*@ holdCount : [Mutable] number */
-        public holdCount;
+        public holdCount = 0;
         /*@ blocks : {Array<Immutable, TaskControlBlock<Immutable> + null> | (len v) = NUMBER_OF_IDS} */
-        public blocks;
+        public blocks = new Array(NUMBER_OF_IDS);
         /*@ list : [Mutable] TaskControlBlock<Immutable> + null */
-        public list;
+        public list = null;
         /*@ currentTcb : [Mutable] TaskControlBlock<Immutable> + null */
-        public currentTcb;
+        public currentTcb = null;
         /*@ currentId : [Mutable] {number | -1<=v && v<NUMBER_OF_IDS} */
-        public currentId;
+        public currentId = -1;
 
         /*@ new(queueCount:number, 
                 holdCount:number, 
@@ -164,12 +164,7 @@ module RichardsTYPEDVERSION {
                 list:TaskControlBlock<Immutable> + null, 
                 currentTcb:TaskControlBlock<Immutable> + null, 
                 currentId:{number | -1<=v && v<NUMBER_OF_IDS}) => {void | true} */
-        constructor(queueCount = 0, //TODO: default argument assignments
-                    holdCount = 0,
-                    blocks = new Array(NUMBER_OF_IDS),
-                    list = null,
-                    currentTcb = null,
-                    currentId = -1) {
+        constructor(queueCount?, holdCount?, blocks?, list?, currentTcb?, currentId?) {
             this.queueCount = queueCount;
             this.holdCount = holdCount;
             this.blocks = blocks;
@@ -664,7 +659,7 @@ module RichardsTYPEDVERSION {
         public id;
         public kind:number;
         /*@ a1 : [Mutable] {number | 0<=v} */
-        public a1;
+        public a1 = 0;
         /**
          * A simple package of data that is manipulated by the tasks.  The exact layout
          * of the payload data carried by a packet is not importaint, and neither is the
@@ -681,7 +676,7 @@ module RichardsTYPEDVERSION {
                 id:{number | 0<=v && v<NUMBER_OF_IDS}, 
                 kind:number, 
                 a1:{number | 0<=v}) => {void | true} */
-        constructor(link, id, kind, a1 = 0) {
+        constructor(link, id, kind, a1?) {
             this.a2 = new Array(DATA_SIZE);
             this.link = link;
             this.id = id;
