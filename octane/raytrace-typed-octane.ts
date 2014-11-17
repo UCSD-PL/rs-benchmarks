@@ -27,6 +27,19 @@ interface CanvasRenderingContext2D {
     fillRect(a:number, b:number, c:number, d:number):void;
 }
 
+/*@ alias EngineOptions = [Mutable] {
+    canvasHeight: [Mutable] number;
+    canvasWidth: [Mutable] number;
+    pixelWidth: {number | v > 0};
+    pixelHeight: {number | v > 0};
+    renderDiffuse: boolean;
+    renderShadows: boolean;
+    renderHighlights: boolean;
+    renderReflections: boolean;
+    rayDepth: number
+} */
+
+//TODO: field initializers not actually doing anything, since constructors require all arguments
 //TODO: had to add explicit toString calls in toStrings
 //TODO: many classes allowed some members to be null; where usage made this seem inappropriate I removed that feature
 module VERSION {
@@ -523,13 +536,7 @@ module VERSION {
                     normal:Vector<Immutable>?,
                     color:Color<Immutable>?,
                     distance:number?) => {void | true} */
-            constructor(isHit?,
-                        hitCount?,
-                        shape?:Shape,
-                        position?:Vector,
-                        normal?:Vector,
-                        color?:Color,
-                        distance?:number) { 
+            constructor(isHit?, hitCount?, shape?, position?, normal?, color?, distance?) {
                 this.isHit = isHit;
                 this.hitCount = hitCount;
                 this.shape = shape;
@@ -619,35 +626,14 @@ module VERSION {
         export class Engine {
             /*@ canvas : [Mutable] CanvasRenderingContext2D<Immutable>? */
             public canvas:CanvasRenderingContext2D = null; /* 2d context we can render to */
-            /*@ options : [Mutable] {
-                    canvasHeight: [Mutable] number;
-                    canvasWidth: [Mutable] number;
-                    pixelWidth: number;
-                    pixelHeight: number;
-                    renderDiffuse: boolean;
-                    renderShadows: boolean;
-                    renderHighlights: boolean;
-                    renderReflections: boolean;
-                    rayDepth: number
-                } */
+            /*@ options : EngineOptions */
             public options;
 
-            /*@ new(options:[Mutable]{[s:string]:top}?) => {void | true} */
+            /*@ new(options:EngineOptions) => {void | true} */
             constructor(options) {
-                var this_options = {
-                    /*@ canvasHeight : [Mutable] number */
-                    canvasHeight: 100,
-                    /*@ canvasWidth : [Mutable] number */
-                    canvasWidth: 100,
-                    pixelWidth: 2,
-                    pixelHeight: 2,
-                    renderDiffuse: false,
-                    renderShadows: false,
-                    renderHighlights: false,
-                    renderReflections: false,
-                    rayDepth: 2
-                } //TODO PORTME: revert to the below version
-				// var this_options = extend({
+                var this_options = options
+                //TODO PORTME: revert to the below version
+	//			   var this_options = extend({
     //                 canvasHeight: 100,
     //                 canvasWidth: 100,
     //                 pixelWidth: 2,
