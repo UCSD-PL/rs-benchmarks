@@ -25,7 +25,9 @@ declare var goog:Goog;
 
 interface Transformer<IN, INTER, OUT> {
     init:()=>INTER;
+    /*@ result : (result:QQ<Mutable, INTER>) => {OUT | true} */
     result:(result:QQ<INTER>)=>OUT;
+    /*@ step : (result:INTER, input:IN) => {QQ<Mutable, INTER> | true} */
     step:(result:INTER, input:IN)=>QQ<INTER>;
 }
 
@@ -118,9 +120,9 @@ function complement<T>(f:Function) {
 }
 
 class Wrap<IN, OUT> implements Transformer<IN, OUT, OUT> {
-    /*@ stepFn : (x:OUT, y:IN)=>QQ<Immutable, OUT> */
+    /*@ stepFn : (x:OUT, y:IN)=>QQ<Mutable, OUT> */
     public stepFn: (result:OUT, input:IN)=>QQ<OUT>;
-    /*@ new(stepFn:(result:OUT, input:IN)=>QQ<Immutable, OUT>) => {void | true} */
+    /*@ new(stepFn:(result:OUT, input:IN)=>QQ<Mutable, OUT>) => {void | true} */
     constructor(stepFn:(result:OUT, input:IN)=>QQ<OUT>) {
         this.stepFn = stepFn;
     }
@@ -129,11 +131,11 @@ class Wrap<IN, OUT> implements Transformer<IN, OUT, OUT> {
     init():OUT {
         throw new Error("init not implemented");
     }
-    /*@ result : (result:QQ<Immutable, OUT>) : {OUT | true} */
+    /*@ result : (result:QQ<Mutable, OUT>) : {OUT | true} */
     result(result:QQ<OUT>):OUT {
         return result.value; //TODO: to maintain the original generality this should actually just be 'result' and the return value is then QQ<OUT>
     }
-    /*@ step : (result:OUT, input:IN) : {QQ<Immutable, OUT> | true} */
+    /*@ step : (result:OUT, input:IN) : {QQ<Mutable, OUT> | true} */
     step(result:OUT, input:IN):QQ<OUT> {
         return this.stepFn(result, input);
     }
@@ -160,11 +162,12 @@ function wrap<IN, OUT>(stepFn:any):any {
     }
 }
 
+/*@ addQQ0 :: forall M T U . (stepFn:(t:T, u:U)=>T) => {(t:T, u:U)=>QQ<M,T> | true} */
 function addQQ0<T, U>(stepFn:(t:T, u:U)=>T):(t:T, u:U)=>QQ<T> {
     return function(t:T, u:U) {return new QQ(stepFn(t,u), 0)};
 }
 
-/*@ generalWrap :: /\ forall IN OUT . (stepFn: (result:OUT, input:IN)=>QQ<Immutable, OUT>) => {Wrap<Immutable, IN, OUT> | true}
+/*@ generalWrap :: /\ forall IN OUT . (stepFn: (result:OUT, input:IN)=>QQ<Mutable, OUT>) => {Wrap<Immutable, IN, OUT> | true}
                    /\ forall IN T OUT . (stepFn: Transformer<Immutable, IN, T, OUT>) => {Transformer<Immutable, IN, T, OUT> | true} */
 function generalWrap(stepFn:any):any {
     if(typeof stepFn === "function") {
@@ -178,7 +181,7 @@ function generalWrap(stepFn:any):any {
 // Main
 
 class QQ<T> {
-    /*@ __transducers_reduced__ : [Mutable] number */
+    /*@ __transducers_reduced__ : number */
     public __transducers_reduced__:number;
     public value:T;
 
@@ -213,7 +216,7 @@ class QQ<T> {
  *     t.isReduced(1); // false
  *     t.isReduced(t.reduced(1)); // true
  */
-/*@ isReduced :: forall T . (x:QQ<Immutable, T>) => {boolean | true} */
+/*@ isReduced :: forall T . (x:QQ<ReadOnly, T>) => {boolean | true} */
 function isReduced<T>(x:QQ<T>) {
     return (x.__transducers_reduced__ > 0); //TODO:(x instanceof Reduced || (x && x.__transducers_reduced__);
 }
@@ -281,11 +284,11 @@ class Map<IN, INTER, OUT, T> implements Transformer<IN, INTER, OUT> {
     init():INTER {
         return this.xf.init();
     }
-    /*@ result : (result:QQ<Immutable, INTER>) : {OUT | true} */
+    /*@ result : (result:QQ<Mutable, INTER>) : {OUT | true} */
     result(result:QQ<INTER>):OUT {
         return this.xf.result(result);
     }
-    /*@ step : (result:INTER, input:IN) : {QQ<Immutable, INTER> | true} */
+    /*@ step : (result:INTER, input:IN) : {QQ<Mutable, INTER> | true} */
     step(result:INTER, input:IN):QQ<INTER> {
         return this.xf.step(result, this.f(input));
     }
@@ -326,11 +329,11 @@ class Filter<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
     init():INTER {
         return this.xf.init();
     }
-    /*@ result : (result:QQ<Immutable, INTER>) : {OUT | true} */
+    /*@ result : (result:QQ<Mutable, INTER>) : {OUT | true} */
     result(result:QQ<INTER>):OUT {
         return this.xf.result(result);
     }
-    /*@ step : (result:INTER, input:IN) : {QQ<Immutable, INTER> | true} */
+    /*@ step : (result:INTER, input:IN) : {QQ<Mutable, INTER> | true} */
     step(result:INTER, input:IN):QQ<INTER> {
         if(this.pred(input)) {
             return this.xf.step(result, input);
@@ -384,7 +387,7 @@ function remove<IN, INTER, OUT>(pred: (z:IN)=>boolean): (xf: Transformer<IN, INT
 }
 
 class Take<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
-    /*@ n : [Mutable] number */
+    /*@ n : number */
     public n: number;
     public xf: Transformer<IN, INTER, OUT>;
     /*@ new(n:number, xf:Transformer<Immutable, IN, INTER, OUT>) => {void | true} */
@@ -397,11 +400,11 @@ class Take<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
     init():INTER {
         return this.xf.init();
     }
-    /*@ result : (result:QQ<Immutable, INTER>) : {OUT | true} */
+    /*@ result : (result:QQ<Mutable, INTER>) : {OUT | true} */
     result(result:QQ<INTER>):OUT {
         return this.xf.result(result);
     }
-    /*@ step : (result:INTER, input:IN) : {QQ<Immutable, INTER> | true} */
+    /*@ step : (this:Take<Mutable,IN,INTER,OUT>, result:INTER, input:IN) : {QQ<Mutable, INTER> | true} */
     step(result:INTER, input:IN):QQ<INTER> {
         if(this.n > 0) {
             var retval1 = this.xf.step(result, input);
@@ -449,11 +452,11 @@ class TakeWhile<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
     init():INTER {
         return this.xf.init();
     }
-    /*@ result : (result:QQ<Immutable, INTER>) : {OUT | true} */
+    /*@ result : (result:QQ<Mutable, INTER>) : {OUT | true} */
     result(result:QQ<INTER>):OUT {
         return this.xf.result(result);
     }
-    /*@ step : (result:INTER, input:IN) : {QQ<Immutable, INTER> | true} */
+    /*@ step : (result:INTER, input:IN) : {QQ<Mutable, INTER> | true} */
     step(result:INTER, input:IN):QQ<INTER> {
         if(this.pred(input)) {
             return this.xf.step(result, input);
@@ -486,7 +489,7 @@ function takeWhile<IN, INTER, OUT>(pred: (z:IN)=>boolean): (xf: Transformer<IN, 
 }
 
 class TakeNth<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
-    /*@ i : [Mutable] number */
+    /*@ i : number */
     public i: number;
     public n: number;
     public xf: Transformer<IN, INTER, OUT>;
@@ -501,11 +504,11 @@ class TakeNth<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
     init():INTER {
         return this.xf.init();
     }
-    /*@ result : (result:QQ<Immutable, INTER>) : {OUT | true} */
+    /*@ result : (result:QQ<Mutable, INTER>) : {OUT | true} */
     result(result:QQ<INTER>):OUT {
         return this.xf.result(result);
     }
-    /*@ step : (result:INTER, input:IN) : {QQ<Immutable, INTER> | true} */
+    /*@ step : (this:TakeNth<Mutable,IN,INTER,OUT>, result:INTER, input:IN) : {QQ<Mutable, INTER> | true} */
     step(result:INTER, input:IN):QQ<INTER> {
         this.i++;
         if((this.i % this.n) === 0) {
@@ -541,7 +544,7 @@ function takeNth<IN, INTER, OUT>(n:number): (xf: Transformer<IN, INTER, OUT>) =>
 // Map available? - David
 
 class Drop<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
-    /*@ n : [Mutable] number */
+    /*@ n : number */
     public n: number;
     public xf: Transformer<IN, INTER, OUT>;
     /*@ new(n:number, xf:Transformer<Immutable, IN, INTER, OUT>) => {void | true} */        
@@ -554,11 +557,11 @@ class Drop<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
     init():INTER {
         return this.xf.init();
     }
-    /*@ result : (result:QQ<Immutable, INTER>) : {OUT | true} */
+    /*@ result : (result:QQ<Mutable, INTER>) : {OUT | true} */
     result(result:QQ<INTER>):OUT {
         return this.xf.result(result);
     }
-    /*@ step : (result:INTER, input:IN) : {QQ<Immutable, INTER> | true} */
+    /*@ step : (this:Drop<Mutable,IN,INTER,OUT>, result:INTER, input:IN) : {QQ<Mutable, INTER> | true} */
     step(result:INTER, input:IN):QQ<INTER> {
         if(this.n > 0) {
             this.n--;
@@ -591,7 +594,7 @@ function drop<IN, INTER, OUT>(n:number): (xf: Transformer<IN, INTER, OUT>) => Dr
 }
 
 class DropWhile<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
-    /*@ drop : [Mutable] boolean */
+    /*@ drop : boolean */
     public drop: boolean;
     public pred: (z:IN) => boolean;
     public xf: Transformer<IN, INTER, OUT>;
@@ -606,11 +609,11 @@ class DropWhile<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
     init():INTER {
         return this.xf.init();
     }
-    /*@ result : (result:QQ<Immutable, INTER>) : {OUT | true} */
+    /*@ result : (result:QQ<Mutable, INTER>) : {OUT | true} */
     result(result:QQ<INTER>):OUT {
         return this.xf.result(result);
     }
-    /*@ step : (result:INTER, input:IN) : {QQ<Immutable, INTER> | true} */
+    /*@ step : (this:DropWhile<Mutable,IN,INTER,OUT>, result:INTER, input:IN) : {QQ<Mutable, INTER> | true} */
     step(result:INTER, input:IN):QQ<INTER> {
         if(this.drop && this.pred(input)) {
             return new QQ(result, 0);
@@ -648,9 +651,9 @@ var NONE = {};
 class PartitionBy<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
     public f: (z:IN) => any;
     public xf: Transformer<Array<IN>, INTER, OUT>;
-    /*@ a : [Mutable] Array<Mutable, IN> */
+    /*@ a : Array<Mutable, IN> */
     public a: Array<IN>;
-    /*@ pval : [Mutable] top */
+    /*@ pval : top */
     public pval: any;
     /*@ new(f:(z:IN) => top, xf:Transformer<Immutable, Array<Mutable,IN>, INTER, OUT>) => {void | true} */
     constructor(f: (z:IN) => any, xf: Transformer<Array<IN>, INTER, OUT>) {
@@ -664,7 +667,7 @@ class PartitionBy<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
     init():INTER {
         return this.xf.init();
     }
-    /*@ result : (result:QQ<Immutable, INTER>) : {OUT | true} */
+    /*@ result : (this:PartitionBy<Mutable,IN,INTER,OUT>, result:QQ<Mutable, INTER>) : {OUT | true} */
     result(result:QQ<INTER>):OUT {
         if(this.a.length > 0) {
             result = this.xf.step(result.value, this.a);
@@ -673,7 +676,7 @@ class PartitionBy<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
         }
         return this.xf.result(result);
     }
-    /*@ step : (result:INTER, input:IN) : {QQ<Immutable, INTER> | true} */
+    /*@ step : (this:PartitionBy<Mutable,IN,INTER,OUT>, result:INTER, input:IN) : {QQ<Mutable, INTER> | true} */
     step(result:INTER, input:IN):QQ<INTER> {
         var pval = this.pval,
             val  = this.f(input);
@@ -725,7 +728,7 @@ function partitionBy<IN, INTER, OUT>(f: (z:IN)=>any): (xf: Transformer<Array<IN>
 class PartitionAll<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
     public n: number;
     public xf: Transformer<Array<IN>, INTER, OUT>;
-    /*@ a : [Mutable] Array<Mutable, IN> */
+    /*@ a : Array<Mutable, IN> */
     public a: Array<IN>;
     /*@ new(n:number, xf:Transformer<Immutable, Array<Mutable,IN>, INTER, OUT>) => {void | true} */        
     constructor(n:number, xf:Transformer<Array<IN>, INTER, OUT>) {
@@ -738,7 +741,7 @@ class PartitionAll<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
     init():INTER {
         return this.xf.init();
     }
-    /*@ result : (result:QQ<Immutable, INTER>) : {OUT | true} */
+    /*@ result : (this:PartitionAll<Mutable,IN,INTER,OUT>, result:QQ<Mutable, INTER>) : {OUT | true} */
     result(result:QQ<INTER>):OUT {
         if(this.a.length > 0) {
             result = this.xf.step(result.value, this.a);
@@ -747,7 +750,7 @@ class PartitionAll<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
         }
         return this.xf.result(result);
     }
-    /*@ step : (result:INTER, input:IN) : {QQ<Immutable, INTER> | true} */
+    /*@ step : (this:PartitionAll<Mutable,IN,INTER,OUT>, result:INTER, input:IN) : {QQ<Mutable, INTER> | true} */
     step(result:INTER, input:IN):QQ<INTER> {
         this.a.push(input);
         if(this.n === this.a.length) {
@@ -795,11 +798,11 @@ class Keep<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
     init():INTER {
         return this.xf.init();
     }
-    /*@ result : (result:QQ<Immutable, INTER>) : {OUT | true} */
+    /*@ result : (result:QQ<Mutable, INTER>) : {OUT | true} */
     result(result:QQ<INTER>):OUT {
         return this.xf.result(result);
     }
-    /*@ step : (result:INTER, input:IN) : {QQ<Immutable, INTER> | true} */
+    /*@ step : (result:INTER, input:IN) : {QQ<Mutable, INTER> | true} */
     step(result:INTER, input:IN):QQ<INTER> {
         var v = this.f(input);
         if(v === null) {
@@ -833,7 +836,7 @@ function keep<IN, INTER, OUT>(f: (z:IN)=>any): (xf: Transformer<IN, INTER, OUT>)
 }
 
 class KeepIndexed<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
-    /*@ i : [Mutable] number */
+    /*@ i : number */
     public i: number;
     public f: (idx:number, z:IN) => any;
     public xf: Transformer<IN, INTER, OUT>;
@@ -848,11 +851,11 @@ class KeepIndexed<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
     init():INTER {
         return this.xf.init();
     }
-    /*@ result : (result:QQ<Immutable, INTER>) : {OUT | true} */
+    /*@ result : (result:QQ<Mutable, INTER>) : {OUT | true} */
     result(result:QQ<INTER>):OUT {
         return this.xf.result(result);
     }
-    /*@ step : (result:INTER, input:IN) : {QQ<Immutable, INTER> | true} */
+    /*@ step : (this:KeepIndexed<Mutable,IN,INTER,OUT>, result:INTER, input:IN) : {QQ<Mutable, INTER> | true} */
     step(result:INTER, input:IN):QQ<INTER> {
         this.i++;
         var v:any = this.f(this.i, input);
@@ -896,13 +899,21 @@ function keepIndexed<IN, INTER, OUT>(f: (idx:number, z:IN)=>any): (xf: Transform
  * @param {transformer} xf a transformer
  * @return {transformer} a transformer which preserves reduced
  */
-/*@ preservingReduced :: forall IN INTER OUT . (xf: Transformer<Immutable, IN, INTER, OUT>) => {Transformer<Immutable, IN, INTER, QQ<Immutable, INTER>> | true} */
+/*@ preservingReduced :: forall IN INTER OUT . (xf: Transformer<Immutable, IN, INTER, OUT>) => {Transformer<Immutable, IN, INTER, QQ<Mutable, INTER>> | true} */
 function preservingReduced<IN, INTER, OUT>(xf: Transformer<IN, INTER, OUT>) {
     return {
-        init: xf.init,
-        result: identity,
+        init: function()
+        /*@ <anonymous> () => {INTER | true} */
+        {
+            return xf.init();
+        },
+        result: function(result:QQ<INTER>)
+        /*@ <anonymous> (result:QQ<Mutable, INTER>) => {QQ<Mutable, INTER> | true} */
+        {
+            return result;
+        },
         step: function(result:INTER, input:IN)
-        /*@ <anonymous> (result:INTER, input:IN) => {QQ<Immutable, INTER> | true} */
+        /*@ <anonymous> (result:INTER, input:IN) => {QQ<Mutable, INTER> | true} */
         {
             var ret = xf.step(result, input);
             if(isReduced(ret)) ret.__transducers_reduced__++;
@@ -924,7 +935,7 @@ function cat<IN, INTER, OUT>(xf: Transformer<IN, INTER, OUT>) {
         init: xf.init,
         result: xf.result,
         step: function(result:INTER, input:IN[])
-        /*@ <anonymous> (result:INTER, input:Array<Immutable, IN>) => {QQ<Immutable, INTER> | true} */
+        /*@ <anonymous> (result:INTER, input:Array<Immutable, IN>) => {QQ<Mutable, INTER> | true} */
         {
             return reduce(rxf, result, input);
         }
@@ -1120,9 +1131,10 @@ function arrayPush<T>(arr:T[], x:T) {
         // };
 
 class Completing<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
+    /*@ cf:(z:QQ<Mutable,INTER>) => OUT */
     public cf: (z:QQ<INTER>) => OUT;
     public xf: Transformer<IN, INTER, any>;
-    /*@ new(cf:(z:QQ<Immutable,INTER>) => OUT, xf:Transformer<Immutable, IN, INTER, top>) => {void | true} */
+    /*@ new(cf:(z:QQ<Mutable,INTER>) => OUT, xf:Transformer<Immutable, IN, INTER, top>) => {void | true} */
     constructor(cf: (z:QQ<INTER>) => OUT, xf: Transformer<IN, INTER, any>) {
         this.cf = cf;
         this.xf = xf;
@@ -1132,11 +1144,11 @@ class Completing<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
     init():INTER {
         return this.xf.init();
     }
-    /*@ result : (result:QQ<Immutable, INTER>) : {OUT | true} */
+    /*@ result : (result:QQ<Mutable, INTER>) : {OUT | true} */
     result(result:QQ<INTER>):OUT {
         return this.cf(result);
     }
-    /*@ step : (result:INTER, input:IN) : {QQ<Immutable, INTER> | true} */
+    /*@ step : (result:INTER, input:IN) : {QQ<Mutable, INTER> | true} */
     step(result:INTER, step:IN):QQ<INTER> {
         return this.xf.step(result, step);
     }
@@ -1195,7 +1207,7 @@ class Completing<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
  * @return {Transducer} a transducer transformer
  */
 var first:Wrap<any, any> = generalWrap(function(result:any, input:any) 
-    /*@ <anonymous> (result:top, input:top) => {QQ<Immutable, top> | true} */ 
+    /*@ <anonymous> (result:top, input:top) => {QQ<Mutable, top> | true} */
     { return new QQ(input, 1); }
 );
 
