@@ -180,7 +180,7 @@ module RichardsTYPEDVERSION {
          * @param {Packet} queue the queue of work to be processed by the task
          * @param {int} count the number of times to schedule the task
          */
-        /*@ addIdleTask : (id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Immutable> + null, count:number) : {void | true} */
+        /*@ addIdleTask : (this: Scheduler<Immutable>, id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Immutable> + null, count:number) : {void | true} */
         public addIdleTask(id, priority, queue, count) {
             this.addRunningTask(id, priority, queue, new IdleTask(this, 1, count));
         }
@@ -191,7 +191,7 @@ module RichardsTYPEDVERSION {
          * @param {int} priority the task's priority
          * @param {Packet} queue the queue of work to be processed by the task
          */
-        /*@ addWorkerTask : (id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Immutable> + null) : {void | true} */
+        /*@ addWorkerTask : (this: Scheduler<Immutable>, id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Immutable> + null) : {void | true} */
         public addWorkerTask(id, priority, queue) {
             this.addTask(id, priority, queue, new WorkerTask(this, ID_HANDLER_A, 0));
         }
@@ -202,7 +202,7 @@ module RichardsTYPEDVERSION {
          * @param {int} priority the task's priority
          * @param {Packet} queue the queue of work to be processed by the task
          */
-        /*@ addHandlerTask : (id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Immutable> + null) : {void | true} */
+        /*@ addHandlerTask : (this: Scheduler<Immutable>, id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Immutable> + null) : {void | true} */
         public addHandlerTask(id, priority, queue) {
             this.addTask(id, priority, queue, new HandlerTask(this, null, null));
         }
@@ -213,7 +213,7 @@ module RichardsTYPEDVERSION {
          * @param {int} priority the task's priority
          * @param {Packet} queue the queue of work to be processed by the task
          */
-        /*@ addDeviceTask : (id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Immutable> + null) : {void | true} */
+        /*@ addDeviceTask : (this: Scheduler<Immutable>, id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Immutable> + null) : {void | true} */
         public addDeviceTask(id, priority, queue) {
             this.addTask(id, priority, queue, new DeviceTask(this, null))
         }
@@ -431,7 +431,7 @@ module RichardsTYPEDVERSION {
          * necessary, and returns the next runnable object to run (the one
          * with the highest priority).
          */
-        /*@ checkPriorityAdd : (task:TaskControlBlock<Immutable>, packet:Packet<Immutable>) : {TaskControlBlock<Immutable> | true} */
+        /*@ checkPriorityAdd : (this: TaskControlBlock<Immutable>, task:TaskControlBlock<Immutable>, packet:Packet<Immutable>) : {TaskControlBlock<Immutable> | true} */
         public checkPriorityAdd (task, packet) {
             if (!this.queue) {
                 this.queue = packet;
@@ -688,7 +688,7 @@ module RichardsTYPEDVERSION {
          * Add this packet to the end of a worklist, and return the worklist.
          * @param {Packet} queue the worklist to add this packet to
          */
-        /*@ addTo : (queue: Packet<Immutable> + null) : {Packet<Immutable> | true} */
+        /*@ addTo : (this: Packet<Immutable>, queue: Packet<Immutable> + null) : {Packet<Immutable> | true} */
         public addTo(queue) {
             this.link = null;
             if (!queue) return this;

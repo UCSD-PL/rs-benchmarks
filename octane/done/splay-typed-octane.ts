@@ -440,7 +440,7 @@ module SplayVERSION {
          * @param {function(SplayTree.Node)} f Visitor function.
          * @private
          */
-        /*@ traverse_ : [Mutable] (f: (arg:SplayTreeNode<Mutable>) => top) : {void | true} */
+        /*@ traverse_ : (this: SplayTreeNode<Mutable>, f: (arg:SplayTreeNode<Mutable>) => top) : {void | true} */
         public traverse_(f) {
             var left = this.left;
             if (left) left.traverse_(f);
