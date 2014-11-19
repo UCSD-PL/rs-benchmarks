@@ -92,6 +92,7 @@ function isObject(x:any) {
         //     return x["@@iterator"] || x["next"];
         // }
 
+        // NOTICE: this seems inherently not typesafe and thus impossible to support
         // transducers.slice = function(arrayLike, start, n) {
         //     if(n == null) {
         //         return Array.prototype.slice.call(arrayLike, start);
@@ -1154,24 +1155,27 @@ class Completing<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
     }
 }
 
-        // PORTME
-        // /**
-        //  * A completing transducer constructor. Useful to provide cleanup
-        //  * logic at the end of a reduction/transduction.
-        //  * @method transducers.completing
-        //  * @param {Transducer} xf a transducer
-        //  * @param {Function} cf a function to apply at the end of the reduction/transduction
-        //  * @return {Transducer} a transducer
-        //  */
-        // function completing<IN, INTER, OUT>(xf: any, cf: (z:INTER) => OUT): Completing<IN, INTER, OUT> {
-        //     var wxf:Transformer<IN, INTER, OUT> = typeof xf === "function" ? wrap(xf) : xf;
-        //     cf = cf || identity;
-        //     if(TRANSDUCERS_DEV && (wxf != null) && !isObject(wxf)) {
-        //         throw new Error("completing must be given a transducer as first argument");
-        //     } else {
-        //         return new Completing(cf, wxf);
-        //     }
-        // }
+/**
+ * A completing transducer constructor. Useful to provide cleanup
+ * logic at the end of a reduction/transduction.
+ * @method transducers.completing
+ * @param {Transducer} xf a transducer
+ * @param {Function} cf a function to apply at the end of the reduction/transduction
+ * @return {Transducer} a transducer
+ */
+/*@ completing :: /\ forall IN INTER OUT M . (xf: Transformer<Immutable, IN, INTER, top>, cf: (z:QQ<Mutable,INTER>) => OUT) => {Completing<M, IN, INTER, OUT> | true}
+                  /\ forall IN INTER OUT M . (xf: (result:OUT, input:IN)=>OUT,            cf: (z:QQ<Mutable,INTER>) => OUT) => {Completing<M, IN, INTER, OUT> | true} */
+                 /* /\ forall IN INTER OUT M . (xf: Transformer<Immutable, IN, INTER, top>, cf: null                        ) => {Completing<M, IN, INTER, OUT> | true}
+                  /\ forall IN INTER OUT M . (xf: (result:OUT, input:IN)=>OUT,            cf: null                        ) => {Completing<M, IN, INTER, OUT> | true} */
+function completing<IN, INTER, OUT>(xf: any, cf: (z:QQ<INTER>) => OUT): Completing<IN, INTER, OUT> {
+    var wxf:Transformer<IN, INTER, OUT> = typeof xf === "function" ? wrap(xf) : xf;
+    //cf = cf || identity;
+    if(TRANSDUCERS_DEV && (wxf != null) && !isObject(wxf)) {
+        throw new Error("completing must be given a transducer as first argument");
+    } else {
+        return new Completing(cf, wxf);
+    }
+}
 
         /**
          * Convert a transducer transformer object into a function so
