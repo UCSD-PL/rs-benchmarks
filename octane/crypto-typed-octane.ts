@@ -31,40 +31,54 @@
 
 module CryptoVERSION {
     // Bits per digit
-    var dbits=0; 
+    /*@ dbits :: number */
+    var dbits=0;
+    /*@ BI_DB :: number */
     var BI_DB=0;
+    /*@ BI_DM :: number */
     var BI_DM=0;
+    /*@ BI_DV :: number */
     var BI_DV=0;
 
+    /*@ BI_FP :: number */
     var BI_FP=0;
+    /*@ BI_FV :: number */
     var BI_FV=0;
+    /*@ BI_F1 :: number */
     var BI_F1=0;
+    /*@ BI_F2 :: number */
     var BI_F2=0;
 
     // JavaScript engine analysis
     var canary = 0xdeadbeefcafe;
-    var j_lm = ((canary&0xffffff)==0xefcafe);
+    var j_lm = ((canary&0xffffff)===0xefcafe);
 
     // (public) this & a
+    /*@ op_and :: (x:number, y:number) => {number | true} */
     function op_and(x:number,y:number) { return x&y; }
     // (public) this | a
+    /*@ op_or :: (x:number, y:number) => {number | true} */
     function op_or(x:number,y:number) { return x|y; }
     // (public) this ^ a
+    /*@ op_xor :: (x:number, y:number) => {number | true} */
     function op_xor(x:number,y:number) { return x^y; }
     // (public) this & ~a
+    /*@ op_andnot :: (x:number, y:number) => {number | true} */
     function op_andnot(x:number,y:number) { return x&~y; }
     // return index of lowest 1-bit in x, x < 2^31
+    /*@ lbit :: (x:number) => {number | true} */
     function lbit(x:number) {
-        if(x == 0) return -1;
+        if(x === 0) return -1;
         var r = 0;
-        if((x&0xffff) == 0) { x >>= 16; r += 16; }
-        if((x&0xff) == 0) { x >>= 8; r += 8; }
-        if((x&0xf) == 0) { x >>= 4; r += 4; }
-        if((x&3) == 0) { x >>= 2; r += 2; }
-        if((x&1) == 0) ++r;
+        if((x&0xffff) === 0) { x >>= 16; r += 16; }
+        if((x&0xff) === 0) { x >>= 8; r += 8; }
+        if((x&0xf) === 0) { x >>= 4; r += 4; }
+        if((x&3) === 0) { x >>= 2; r += 2; }
+        if((x&1) === 0) ++r;
         return r;
     }
     // return number of 1 bits in x
+    /*@ cbit :: (x:number) => {number | true} */
     function cbit(x:number) {
         var r = 0;
         while(x != 0) { x &= x-1; ++r; }
@@ -78,15 +92,18 @@ module CryptoVERSION {
     function pkcs1unpad2(d:BigInteger,n:number) {
         var b = d.toByteArray();
         var i = 0;
-        while(i < b.length && b[i] == 0) ++i;
+        while(i < b.length && b[i] === 0) ++i;
         if(b.length-i != n-1 || b[i] != 2)
             return null;
         ++i;
         while(b[i] != 0)
             if(++i >= b.length) return null;
         var ret = "";
-        while(++i < b.length)
+        i++;
+        while(i < b.length) {
             ret += String.fromCharCode(b[i]);
+            i++;
+        }
         return ret;
     }
 
@@ -101,6 +118,7 @@ module CryptoVERSION {
         public static ONE : BigInteger = null;//nbv(1);
 
         // (public) Constructor
+        /*@ new(a: top + null, b: top + null, c: top + null) => void */
         constructor(a?:any,b?:any,c?:any) {
             this.array = new Array<number>(0);
             if(a != null) {
@@ -122,10 +140,12 @@ module CryptoVERSION {
         private am1(i:number,x:number,w:BigInteger,j:number,c:number,n:number) {
             var this_array = this.array;
             var w_array    = w.array;
-            while(--n >= 0) {
+            n--;
+            while(n >= 0) {
                 var v = x*this_array[i++]+w_array[j]+c;
                 c = Math.floor(v/0x4000000);
                 w_array[j++] = v&0x3ffffff;
+                n--;
             }
             return c;
         }
@@ -137,13 +157,15 @@ module CryptoVERSION {
             var this_array = this.array;
             var w_array    = w.array;
             var xl = x&0x7fff, xh = x>>15;
-            while(--n >= 0) {
+            n--;
+            while(n >= 0) {
                 var l = this_array[i]&0x7fff;
                 var h = this_array[i++]>>15;
                 var m = xh*l+h*xl;
                 l = xl*l+((m&0x7fff)<<15)+w_array[j]+(c&0x3fffffff);
                 c = (l>>>30)+(m>>>15)+xh*h+(c>>>30);
                 w_array[j++] = l&0x3fffffff;
+                n--;
             }
             return c;
         }
@@ -155,13 +177,15 @@ module CryptoVERSION {
             var w_array    = w.array;
 
             var xl = x&0x3fff, xh = x>>14;
-            while(--n >= 0) {
+            n--;
+            while(n >= 0) {
                 var l = this_array[i]&0x3fff;
                 var h = this_array[i++]>>14;
                 var m = xh*l+h*xl;
                 l = xl*l+((m&0x3fff)<<14)+w_array[j]+c;
                 c = (l>>28)+(m>>14)+xh*h;
                 w_array[j++] = l&0xfffffff;
+                n--;
             }
             return c;
         }
@@ -173,13 +197,15 @@ module CryptoVERSION {
             var w_array    = w.array;
 
             var xl = x&0x1fff, xh = x>>13;
-            while(--n >= 0) {
+            n--;
+            while(n >= 0) {
                 var l = this_array[i]&0x1fff;
                 var h = this_array[i++]>>13;
                 var m = xh*l+h*xl;
                 l = xl*l+((m&0x1fff)<<13)+w_array[j]+c;
                 c = (l>>26)+(m>>13)+xh*h;
                 w_array[j++] = l&0x3ffffff;
+                n--;
             }
             return c;
         }
@@ -218,24 +244,25 @@ module CryptoVERSION {
         public fromString(s:any/*string or number[]*/,b:number) {
             var this_array = this.array;
             var k = 0;
-            if(b == 16) k = 4;
-            else if(b == 8) k = 3;
-            else if(b == 256) k = 8; // byte array
-            else if(b == 2) k = 1;
-            else if(b == 32) k = 5;
-            else if(b == 4) k = 2;
+            if(b === 16) k = 4;
+            else if(b === 8) k = 3;
+            else if(b === 256) k = 8; // byte array
+            else if(b === 2) k = 1;
+            else if(b === 32) k = 5;
+            else if(b === 4) k = 2;
             else { this.fromRadix(s,b); return; }
             this.t = 0;
             this.s = 0;
             var i = s.length, mi = false;
             var sh = 0;
-            while(--i >= 0) {
-                var x = (k==8)?s[i]&0xff:intAt(s,i);
+            i--;
+            while(i >= 0) {
+                var x = (k===8)?s[i]&0xff:intAt(s,i);
                 if(x < 0) {
-                    if(s.charAt(i) == "-") mi = true;
+                    if(s.charAt(i) === "-") mi = true;
                 } else {
                     mi = false;
-                    if(sh == 0)
+                    if(sh === 0)
                         this_array[this.t++] = x;
                     else if(sh+k > BI_DB) {
                         this_array[this.t-1] |= (x&((1<<(BI_DB-sh))-1))<<sh;
@@ -246,8 +273,9 @@ module CryptoVERSION {
                     sh += k;
                     if(sh >= BI_DB) sh -= BI_DB;
                 }
+                i--;
             }
-            if(k == 8 && (s[0]&0x80) != 0) {
+            if(k === 8 && (s[0]&0x80) != 0) {
                 this.s = -1;
                 if(sh > 0) this_array[this.t-1] |= ((1<<(BI_DB-sh))-1)<<sh;
             }
@@ -259,7 +287,7 @@ module CryptoVERSION {
         public clamp() {
             var this_array = this.array;
             var c = this.s&BI_DM;
-            while(this.t > 0 && this_array[this.t-1] == c) --this.t;
+            while(this.t > 0 && this_array[this.t-1] === c) --this.t;
         }
 
         // (public) return string representation in given radix
@@ -267,15 +295,16 @@ module CryptoVERSION {
             var this_array = this.array;
             if(this.s < 0) return "-"+this.negate().toString(b);
             var k:number = 0;
-            if(b == 16) k = 4;
-            else if(b == 8) k = 3;
-            else if(b == 2) k = 1;
-            else if(b == 32) k = 5;
-            else if(b == 4) k = 2;
+            if(b === 16) k = 4;
+            else if(b === 8) k = 3;
+            else if(b === 2) k = 1;
+            else if(b === 32) k = 5;
+            else if(b === 4) k = 2;
             else return this.toRadix(b);
             var km = (1<<k)-1, d=0, m = false, r = "", i = this.t;
             var p = BI_DB-(i*BI_DB)%k;
-            if(i-- > 0) {
+            if(i > 0) {
+                i--;
                 if(p < BI_DB && (d = this_array[i]>>p) > 0) { m = true; r = int2char(d); }
                 while(i >= 0) {
                     if(p < k) {
@@ -309,7 +338,11 @@ module CryptoVERSION {
             var i = this.t;
             r = i-a.t;
             if(r != 0) return r;
-            while(--i >= 0) if((r=this_array[i]-a_array[i]) != 0) return r;
+            i--;
+            while(i >= 0) {
+                if((r=this_array[i]-a_array[i]) != 0) return r;
+                i--;
+            }
             return 0;
         }
 
@@ -425,7 +458,11 @@ module CryptoVERSION {
 
             var i = x.t;
             r.t = i+y.t;
-            while(--i >= 0) r_array[i] = 0;
+            i--;
+            while(i >= 0) {
+                r_array[i] = 0;
+                i--;
+            }
             for(i = 0; i < y.t; ++i) r_array[i+x.t] = x.am(0,y_array[i],r,i,0,x.t);
             r.s = 0;
             r.clamp();
@@ -438,8 +475,13 @@ module CryptoVERSION {
             var x_array = x.array;
             var r_array = r.array;
 
-            var i = r.t = 2*x.t;
-            while(--i >= 0) r_array[i] = 0;
+            r.t = 2*x.t;
+            var i = r.t;
+            i--;
+            while(i >= 0) {
+                r_array[i] = 0;
+                i--;
+            }
             for(i = 0; i < x.t-1; ++i) {
                 var c = x.am(i,x_array[i],r,2*i,0,1);
                 if((r_array[i+x.t]+=x.am(i+1,2*x_array[i],r,2*i+1,c,x.t-i-1)) >= BI_DV) {
@@ -463,7 +505,7 @@ module CryptoVERSION {
                 if(r != null) this.copyTo(r);
                 return;
             }
-            if(r == null) r = nbi();
+            if(r === null) r = nbi();
             var y = nbi(), ts = this.s, ms = m.s;
             var pm_array = pm.array;
             var nsh = BI_DB-nbits(pm_array[pm.t-1]);	// normalize modulus
@@ -473,28 +515,38 @@ module CryptoVERSION {
 
             var y_array = y.array;
             var y0 = y_array[ys-1];
-            if(y0 == 0) return;
+            if(y0 === 0) return;
             var yt = y0*(1<<BI_F1)+((ys>1)?y_array[ys-2]>>BI_F2:0);
             var d1 = BI_FV/yt, d2 = (1<<BI_F1)/yt, e = 1<<BI_F2;
-            var i = r.t, j = i-ys, t = (q==null)?nbi():q;
+            var i = r.t, j = i-ys, t = (q===null)?nbi():q;
             y.dlShiftTo(j,t);
 
             var r_array = r.array;
             if(r.compareTo(t) >= 0) {
-                r_array[r.t++] = 1;
+                r_array[r.t] = 1;
+                r.t++
                 r.subTo(t,r);
             }
             BigInteger.ONE.dlShiftTo(ys,t);
             t.subTo(y,y);	// "negative" y so we can replace sub with am later
-            while(y.t < ys) y_array[y.t++] = 0;
-            while(--j >= 0) {
+            while(y.t < ys) {
+                y_array[y.t] = 0;
+                y.t++;
+            }
+            j--;
+            while(j >= 0) {
                 // Estimate quotient digit
-                var qd = (r_array[--i]==y0)?BI_DM:Math.floor(r_array[i]*d1+(r_array[i-1]+e)*d2);
+                var qd = (r_array[--i]===y0)?BI_DM:Math.floor(r_array[i]*d1+(r_array[i-1]+e)*d2);
                 if((r_array[i]+=y.am(0,qd,r,j,0,ys)) < qd) {	// Try it out
                     y.dlShiftTo(j,t);
                     r.subTo(t,r);
-                    while(r_array[i] < --qd) r.subTo(t,r);
+                    qd--;
+                    while(r_array[i] < qd) {
+                        r.subTo(t,r);
+                        qd--;
+                    }
                 }
+                j--;
             }
             if(q != null) {
                 r.drShiftTo(ys,q);
@@ -528,7 +580,7 @@ module CryptoVERSION {
             var this_array = this.array;
             if(this.t < 1) return 0;
             var x = this_array[0];
-            if((x&1) == 0) return 0;
+            if((x&1) === 0) return 0;
             var y = x&3;		// y == 1/x mod 2^2
             y = (y*(2-(x&0xf)*y))&0xf;	// y == 1/x mod 2^4
             y = (y*(2-(x&0xff)*y))&0xff;	// y == 1/x mod 2^8
@@ -543,7 +595,7 @@ module CryptoVERSION {
         // (protected) true iff this is even
         private isEven() {
             var this_array = this.array;
-            return ((this.t>0)?(this_array[0]&1):this.s) == 0;
+            return ((this.t>0)?(this_array[0]&1):this.s) === 0;
         }
 
         // (protected) this^e, e < 2^32, doing sqr and mul with "r" (HAC 14.79)
@@ -551,10 +603,12 @@ module CryptoVERSION {
             if(e > 0xffffffff || e < 1) return BigInteger.ONE;
             var r = nbi(), r2 = nbi(), g = z.convert(this), i = nbits(e)-1;
             g.copyTo(r);
-            while(--i >= 0) {
+            i--;
+            while(i >= 0) {
                 z.sqrTo(r,r2);
                 if((e&(1<<i)) > 0) z.mulTo(r2,g,r);
                 else { var t = r; r = r2; r2 = t; }
+                i--;
             }
             return z.revert(r);
         }
@@ -579,11 +633,11 @@ module CryptoVERSION {
         public intValue() {
             var this_array = this.array;
             if(this.s < 0) {
-                if(this.t == 1) return this_array[0]-BI_DV;
-                else if(this.t == 0) return -1;
+                if(this.t === 1) return this_array[0]-BI_DV;
+                else if(this.t === 0) return -1;
             }
-            else if(this.t == 1) return this_array[0];
-            else if(this.t == 0) return 0;
+            else if(this.t === 1) return this_array[0];
+            else if(this.t === 0) return 0;
             // assumes 16 < DB < 32
             return ((this_array[1]&((1<<(32-BI_DB))-1))<<BI_DB)|this_array[0];
         }
@@ -591,13 +645,13 @@ module CryptoVERSION {
         // (public) return value as byte
         public byteValue() {
             var this_array = this.array;
-            return (this.t==0)?this.s:(this_array[0]<<24)>>24;
+            return (this.t===0)?this.s:(this_array[0]<<24)>>24;
         }
 
         // (public) return value as short (assumes DB>=16)
         public shortValue() {
             var this_array = this.array;
-            return (this.t==0)?this.s:(this_array[0]<<16)>>16;
+            return (this.t===0)?this.s:(this_array[0]<<16)>>16;
         }
 
         // (protected) return x s.t. r^x < DV
@@ -607,13 +661,15 @@ module CryptoVERSION {
         public signum() {
             var this_array = this.array;
             if(this.s < 0) return -1;
-            else if(this.t <= 0 || (this.t == 1 && this_array[0] <= 0)) return 0;
+            else if(this.t <= 0 || (this.t === 1 && this_array[0] <= 0)) return 0;
             else return 1;
         }
 
         // (protected) convert to radix string
-        private toRadix(b:number=10) {
-            if(this.signum() == 0 || b < 2 || b > 36) return "0";
+        /*@ toRadix : (b:number?) : {string | true} */
+        private toRadix(b:number) {
+            if (b === null) b = 10;
+            if(this.signum() === 0 || b < 2 || b > 36) return "0";
             var cs = this.chunkSize(b);
             var a = Math.pow(b,cs);
             var d = nbv(a), y = nbi(), z = nbi(), r = "";
@@ -626,14 +682,16 @@ module CryptoVERSION {
         }
 
         // (protected) convert from radix string
-        private fromRadix(s:string,b:number=10) {
+        /*@ fromRadix : (s:string, b:number?) : {void | true} */
+        private fromRadix(s:string,b?:number) {
+            if (b === null) b = 10;
             this.fromInt(0);
             var cs = this.chunkSize(b);
             var d = Math.pow(b,cs), mi = false, j = 0, w = 0;
             for(var i = 0; i < s.length; ++i) {
                 var x = intAt(s,i);
                 if(x < 0) {
-                    if(s.charAt(i) == "-" && this.signum() == 0) mi = true;
+                    if(s.charAt(i) === "-" && this.signum() === 0) mi = true;
                 } else {
                     w = b*w+x;
                     if(++j >= cs) {
@@ -652,8 +710,9 @@ module CryptoVERSION {
         }
 
         // (protected) alternate constructor
+        /*@ fromNumber : (a:number, b:number + top, c:top?) : {void | true} */
         private fromNumber(a:number,b:any,c?:any) {
-            if("number" == typeof b) {
+            if("number" === typeof b) {
                 // new BigInteger(int,int,RNG)
                 if(a < 2) this.fromInt(1);
                 else {
@@ -681,7 +740,7 @@ module CryptoVERSION {
         // (public) convert to bigendian byte array
         public toByteArray() {
             var this_array = this.array;
-            var i = this.t, r: number[] = new Array<number>();
+            var i = this.t, r: number[] = new Array<number>(0);
             r[0] = this.s;
             var p = BI_DB-(i*BI_DB)%8, d=0,  k = 0;
             if(i-- > 0) {
@@ -697,14 +756,14 @@ module CryptoVERSION {
                         if(p <= 0) { p += BI_DB; --i; }
                     }
                     if((d&0x80) != 0) d |= -256;
-                    if(k == 0 && (this.s&0x80) != (d&0x80)) ++k;
+                    if(k === 0 && (this.s&0x80) != (d&0x80)) ++k;
                     if(k > 0 || d != this.s) r[k++] = d;
                 }
             }
             return r;
         }
 
-        public equals(a:BigInteger) { return(this.compareTo(a)==0); }
+        public equals(a:BigInteger) { return(this.compareTo(a)===0); }
         public min(a: BigInteger) { return(this.compareTo(a)<0)?this:a; }
         public max(a: BigInteger) { return(this.compareTo(a)>0)?this:a; }
 
@@ -871,11 +930,17 @@ module CryptoVERSION {
         // (protected) this += n << w words, this >= 0
         public dAddOffset(n:number,w:number) {
             var this_array = this.array;
-            while(this.t <= w) this_array[this.t++] = 0;
+            while(this.t <= w) {
+                this_array[this.t] = 0;
+                this.t++;
+            }
             this_array[w] += n;
             while(this_array[w] >= BI_DV) {
                 this_array[w] -= BI_DV;
-                if(++w >= this.t) this_array[this.t++] = 0;
+                if(++w >= this.t) {
+                    this_array[this.t] = 0;
+                    this.t++;
+                }
                 ++this_array[w];
             }
         }
@@ -904,9 +969,14 @@ module CryptoVERSION {
             var r_array = r.array;
             var a_array = a.array;
             --n;
-            var i = r.t = this.t+a.t-n;
+            r.t = this.t+a.t-n;
+            var i = r.t;
             r.s = 0; // assumes a,this >= 0
-            while(--i >= 0) r_array[i] = 0;
+            i--;
+            while(i >= 0) {
+                r_array[i] = 0;
+                i--;
+            }
             for(i = Math.max(n-this.t,0); i < a.t; ++i)
                 r_array[this.t+i-n] = this.am(n-i,a_array[i],r,0,0,this.t+i-n);
             r.clamp();
@@ -931,7 +1001,7 @@ module CryptoVERSION {
                 z = new Montgomery(m);
 
             // precomputation 
-            var g : BigInteger[] = new Array<BigInteger>(), n = 3, k1 = k-1, km = (1<<k)-1;
+            var g : BigInteger[] = new Array<BigInteger>(0), n = 3, k1 = k-1, km = (1<<k)-1;
             g[1] = z.convert(this);
             if(k > 1) {
                 var g2 = nbi();
@@ -953,7 +1023,7 @@ module CryptoVERSION {
                 }
 
                 n = k;
-                while((w&1) == 0) { w >>= 1; --n; }
+                while((w&1) === 0) { w >>= 1; --n; }
                 if((i -= n) < 0) { i += BI_DB; --j; }
                 if(is1) {	// ret == 1, don't bother squaring or multiplying it
                     g[w].copyTo(r);
@@ -965,7 +1035,7 @@ module CryptoVERSION {
                     z.mulTo(r2,g[w],r);
                 }
 
-                while(j >= 0 && (e_array[j]&(1<<i)) == 0) {
+                while(j >= 0 && (e_array[j]&(1<<i)) === 0) {
                     z.sqrTo(r,r2); t = r; r = r2; r2 = t;
                     if(--i < 0) { i = BI_DB-1; --j; }
                 }
@@ -1007,7 +1077,7 @@ module CryptoVERSION {
             if(n <= 0) return 0;
             var d = BI_DV%n, r = (this.s<0)?n-1:0;
             if(this.t > 0)
-                if(d == 0) r = this_array[0]%n;
+                if(d === 0) r = this_array[0]%n;
             else for(var i = this.t-1; i >= 0; --i) r = (d*r+this_array[i])%n;
             return r;
         }
@@ -1015,7 +1085,7 @@ module CryptoVERSION {
         // (public) 1/this % m (HAC 14.61)
         public modInverse(m: BigInteger) {
             var ac = m.isEven();
-            if((this.isEven() && ac) || m.signum() == 0) return BigInteger.ZERO;
+            if((this.isEven() && ac) || m.signum() === 0) return BigInteger.ZERO;
             var u = m.clone(), v = this.clone();
             var a = nbv(1), b = nbv(0), c = nbv(0), d = nbv(1);
             while(u.signum() != 0) {
@@ -1058,9 +1128,9 @@ module CryptoVERSION {
         public isProbablePrime(t:number) {
             var i, x = this.abs();
             var x_array = x.array;
-            if(x.t == 1 && x_array[0] <= lowprimes[lowprimes.length-1]) {
+            if(x.t === 1 && x_array[0] <= lowprimes[lowprimes.length-1]) {
                 for(i = 0; i < lowprimes.length; ++i)
-                    if(x_array[0] == lowprimes[i]) return true;
+                    if(x_array[0] === lowprimes[i]) return true;
                 return false;
             }
             if(x.isEven()) return false;
@@ -1069,7 +1139,7 @@ module CryptoVERSION {
                 var m = lowprimes[i], j = i+1;
                 while(j < lowprimes.length && m < lplim) m *= lowprimes[j++];
                 m = x.modInt(m);
-                while(i < j) if(m%lowprimes[i++] == 0) return false;
+                while(i < j) if(m%lowprimes[i++] === 0) return false;
             }
             return x.millerRabin(t);
         }
@@ -1088,9 +1158,10 @@ module CryptoVERSION {
                 var y = a.modPow(r,this);
                 if(y.compareTo(BigInteger.ONE) != 0 && y.compareTo(n1) != 0) {
                     var j = 1;
-                    while(j++ < k && y.compareTo(n1) != 0) {
+                    while(j < k && y.compareTo(n1) != 0) {
+                        j++;
                         y = y.modPowInt(2,this);
-                        if(y.compareTo(BigInteger.ONE) == 0) return false;
+                        if(y.compareTo(BigInteger.ONE) === 0) return false;
                     }
                     if(y.compareTo(n1) != 0) return false;
                 }
@@ -1127,7 +1198,7 @@ module CryptoVERSION {
 
     // Digit conversions
     var BI_RM = "0123456789abcdefghijklmnopqrstuvwxyz";
-    var BI_RC : number[] = new Array<number>();
+    var BI_RC : number[] = new Array<number>(0);
     var rr:number=0,vv:number=0;
     rr = "0".charCodeAt(0);
     for(vv = 0; vv <= 9; ++vv) BI_RC[rr++] = vv;
@@ -1139,7 +1210,7 @@ module CryptoVERSION {
     function int2char(n:number) { return BI_RM.charAt(n); }
     function intAt(s:string,i:number) {
         var c = BI_RC[s.charCodeAt(i)];
-        return (c==null)?-1:c;
+        return (c===null)?-1:c;
     }
 
     // return bigint initialized to value
@@ -1158,6 +1229,7 @@ module CryptoVERSION {
     }
 
     class ModularReducer {
+        /*@ new() => {void | true} */
         constructor () {}
         public convert(x: BigInteger) : BigInteger {
             throw new Error("Abstract method");
@@ -1178,6 +1250,7 @@ module CryptoVERSION {
 
     // A "null" reducer
     class NullExp extends ModularReducer {
+        /*@ new() => {void | true} */
         constructor() {
             super(); 
         }
@@ -1197,6 +1270,7 @@ module CryptoVERSION {
 
     class Classic extends ModularReducer {
         // Modular reduction using "classic" algorithm
+        /*@ new(m:BigInteger<Immutable>) => {void | true} */
         constructor(public m:BigInteger) {
             super();
         }
@@ -1220,6 +1294,7 @@ module CryptoVERSION {
         public um:number=0;
         public mt2:number=0;
 
+        /*@ new(m:BigInteger<Immutable>) => {void | true} */
         constructor(public m:BigInteger) {
             super();
             // this.mp = this.m.invDigit();
@@ -1282,6 +1357,7 @@ module CryptoVERSION {
         public q3:BigInteger=null;
         public mu:BigInteger=null;
         
+        /*@ new(m:BigInteger<Immutable>) => {void | true} */
         constructor(public m: BigInteger) {
             super();
             // setup Barrett
@@ -1332,6 +1408,7 @@ module CryptoVERSION {
         public i = 0;
         public j = 0;
         public S : number [] = new Array<number>();
+        /*@ new() => {void | true} */
         constructor() {}
 
         // Initialize arcfour context from key, an array of ints, each from [0..255]
@@ -1430,6 +1507,7 @@ module CryptoVERSION {
     }
 
     class SecureRandom {
+        /*@ new() => {void | true} */
         constructor() {}
         public nextBytes(ba:number[]) { 
             return rng_get_bytes(ba); 
@@ -1493,6 +1571,7 @@ module CryptoVERSION {
         public dmp1: BigInteger = null;
         public dmq1: BigInteger = null;
         public coeff: BigInteger = null;
+        /*@ new() => {void | true} */
         constructor() { }
 
 
