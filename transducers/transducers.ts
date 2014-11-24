@@ -905,6 +905,7 @@ function preservingReduced<IN, INTER, OUT>(xf: Transformer<IN, INTER, OUT>) {
     return new PreservingReduced(xf);
 }
 
+/*@ class PreservingReduced<M, IN, INTER, TODOREMOVEME> implements Transformer<M, IN, INTER, QQ<Mutable, INTER>> */
 class PreservingReduced<IN, INTER, TODOREMOVEME> implements Transformer<IN, INTER, QQ<INTER>> {
     public xf: Transformer<IN, INTER, TODOREMOVEME>;
     /*@ new(xf:Transformer<Immutable, IN, INTER, TODOREMOVEME>) => {void | true} */
@@ -940,6 +941,7 @@ function cat<IN, INTER, OUT>(xf: Transformer<IN, INTER, OUT>) {
     return new Cat(xf);
 }
 
+/*@ class Cat<M, IN, INTER, OUT> implements Transformer<M, Array<Immutable, IN>, INTER, OUT> */
 class Cat<IN, INTER, OUT> implements Transformer<Array<IN>, INTER, OUT> {
     public xf: Transformer<IN, INTER, OUT>;
     /*@ rxf : Transformer<Immutable, IN, INTER, QQ<Mutable, INTER>> */
@@ -1152,12 +1154,13 @@ function arrayPush<T>(arr:T[], x:T) {
         //     }
         // };
 
-class Completing<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
-    /*@ cf:(z:QQ<Mutable,INTER>) => OUT */
+class Completing<IN, INTER, OUT, TODOREMOVEME> implements Transformer<IN, INTER, OUT> {
+    /*@ cf : (z:QQ<Mutable,INTER>) => OUT */
     public cf: (z:QQ<INTER>) => OUT;
-    public xf: Transformer<IN, INTER, any>;
-    /*@ new forall T . (cf:(z:QQ<Mutable,INTER>) => OUT, xf:Transformer<Immutable, IN, INTER, T>) => {void | true} */
-    constructor(cf: (z:QQ<INTER>) => OUT, xf: Transformer<IN, INTER, any>) {
+    /*@ xf : Transformer<Immutable, IN, INTER, TODOREMOVEME> */
+    public xf: Transformer<IN, INTER, TODOREMOVEME>;
+    /*@ new(cf:(z:QQ<Mutable,INTER>) => OUT, xf:Transformer<Immutable, IN, INTER, TODOREMOVEME>) => {void | true} */
+    constructor(cf: (z:QQ<INTER>) => OUT, xf: Transformer<IN, INTER, TODOREMOVEME>) {
         this.cf = cf;
         this.xf = xf;
     }
@@ -1184,11 +1187,11 @@ class Completing<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
  * @param {Function} cf a function to apply at the end of the reduction/transduction
  * @return {Transducer} a transducer
  */
-/*@ completing :: /\ forall IN INTER OUT T M . (xf: Transformer<Immutable, IN, INTER, T>, cf: (z:QQ<Mutable,INTER>) => OUT) => {Completing<M, IN, INTER, OUT> | true}
-                  /\ forall IN INTER OUT   M . (xf: (result:INTER, input:IN)=>INTER,            cf: (z:QQ<Mutable,INTER>) => OUT) => {Completing<M, IN, INTER, OUT> | true} */
-                 /* /\ forall IN INTER OUT T M . (xf: Transformer<Immutable, IN, INTER, top>, cf: null                        ) => {Completing<M, IN, INTER, OUT> | true}
-                  /\ forall IN INTER OUT   M . (xf: (result:OUT, input:IN)=>OUT,            cf: null                        ) => {Completing<M, IN, INTER, OUT> | true} */
-function completing<IN, INTER, OUT>(xf: any, cf: (z:QQ<INTER>) => OUT): Completing<IN, INTER, OUT> {
+/*@ completing :: /\ forall IN INTER OUT T M . (xf: Transformer<Immutable, IN, INTER, T>, cf: (z:QQ<Mutable,INTER>) => OUT) => {Completing<M, IN, INTER, OUT, T> | true}
+                  /\ forall IN INTER OUT T M . (xf: (result:INTER, input:IN)=>INTER,            cf: (z:QQ<Mutable,INTER>) => OUT) => {Completing<M, IN, INTER, OUT, INTER> | true} */
+                 /* /\ forall IN INTER OUT T M . (xf: Transformer<Immutable, IN, INTER, top>, cf: null                        ) => {Completing<M, IN, INTER, OUT, T> | true}
+                  /\ forall IN INTER OUT T M . (xf: (result:OUT, input:IN)=>OUT,            cf: null                        ) => {Completing<M, IN, INTER, OUT, INTER> | true} */
+function completing<IN, INTER, OUT, T>(xf: any, cf: (z:QQ<INTER>) => OUT): Completing<IN, INTER, OUT, T> {
     var wxf:Transformer<IN, INTER, any> = typeof xf === "function" ? wrap(xf) : xf;
     //cf = cf || identity;
     if(TRANSDUCERS_DEV && (wxf != null) && !isObject(wxf)) {
