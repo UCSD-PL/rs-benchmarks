@@ -492,7 +492,7 @@ class TakeNth<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
     public i: number;
     public n: number;
     public xf: Transformer<IN, INTER, OUT>;
-    /*@ new(n:number, xf:ITransformer<IN, INTER, OUT>) => {void | true} */        
+    /*@ new(n:number, xf:ITransformer<IN, INTER, OUT>) => {void | true} */
     constructor(n:number, xf:Transformer<IN, INTER, OUT>) {
         this.i = -1;
         this.n = n;
@@ -546,7 +546,7 @@ class Drop<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
     /*@ n : number */
     public n: number;
     public xf: Transformer<IN, INTER, OUT>;
-    /*@ new(n:number, xf:ITransformer<IN, INTER, OUT>) => {void | true} */        
+    /*@ new(n:number, xf:ITransformer<IN, INTER, OUT>) => {void | true} */
     constructor(n:number, xf:Transformer<IN, INTER, OUT>) {
         this.n = n;
         this.xf = xf;
@@ -729,7 +729,7 @@ class PartitionAll<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
     public xf: Transformer<Array<IN>, INTER, OUT>;
     /*@ a : Array<Mutable, IN> */
     public a: Array<IN>;
-    /*@ new(n:number, xf:ITransformer<Array<Mutable,IN>, INTER, OUT>) => {void | true} */        
+    /*@ new(n:number, xf:ITransformer<Array<Mutable,IN>, INTER, OUT>) => {void | true} */
     constructor(n:number, xf:Transformer<Array<IN>, INTER, OUT>) {
         this.n = n;
         this.xf = xf;
@@ -1063,7 +1063,7 @@ function arrayReduce<IN, INTER, OUT>(xf:Transformer<IN, INTER, OUT>, init:INTER,
  * @return {Object} a iterable JavaScript value: string, array
  *   iterable, or object.
  */
-// PORTME // TODO: removed the if(coll) check but it wasn't sound anyway - e.g. it would reject coll==""
+// TODO: removed the if(coll) check but it wasn't sound anyway - e.g. it would reject coll==""
 /*@ reduce :: /\ forall IN INTER OUT . (xf: ITransformer<IN, INTER, OUT>,        init:INTER, coll:IArray<IN>) => {OUT | true}
               /\ forall    INTER OUT . (xf: ITransformer<string, INTER, OUT>,    init:INTER, coll:string)     => {OUT | true}
               /\ forall IN       OUT . (stepFn: (result:OUT, input:IN)=>OUT,     init:OUT,   coll:IArray<IN>) => {OUT | true}
@@ -1074,6 +1074,7 @@ function reduce(xf:any, init:any, coll:any):any {
         return stringReduce(xf, init, coll);
     } else if(isArray(coll)) {
         return arrayReduce(xf, init, coll);
+// PORTME
 //     } else if(isIterable(coll)) {
 //         return iterableReduce(xf, init, coll);
 //     } else if(isObject(coll)) {
@@ -1128,31 +1129,36 @@ function arrayPush<T>(arr:T[], x:T) {
         //     return obj;
         // };
 
-        // /**
-        //  * Reduce a value into the given empty value using a transducer.
-        //  * @method transducers.into
-        //  * @param {String|Array|Object} empty a JavaScript collection
-        //  * @param {Transducer} xf a transducer
-        //  * @param {Iterable} coll any iterable JavaScript value: array, string,
-        //  *   object, or iterable.
-        //  * @return {Object} a JavaScript value.
-        //  * @example
-        //  *     var t = transducers;
-        //  *     var inc = function(n) { return n+1; };
-        //  *     var isEven = function(n) { return n % 2 == 0; };
-        //  *     var apush = function(arr,x) { arr.push(x); return arr; };
-        //  *     var xf = t.comp(t.map(inc),t.filter(isEven));
-        //  *     t.into([], xf, [1,2,3,4]); // [2,4]
-        //  */
-        // transducers.into = function(empty, xf, coll) {
-        //     if(transducers.isString(empty)) {
-        //         return transducers.transduce(xf, transducers.stringAppend, empty, coll);
-        //     } else if(transducers.isArray(empty)) {
-        //         return transducers.transduce(xf, transducers.arrayPush, empty, coll);
-        //     } else if(transducers.isObject(empty)) {
-        //         return transducers.transduce(xf, transducers.addEntry, empty, coll);
-        //     }
-        // };
+/**
+ * Reduce a value into the given empty value using a transducer.
+ * @method transducers.into
+ * @param {String|Array|Object} empty a JavaScript collection
+ * @param {Transducer} xf a transducer
+ * @param {Iterable} coll any iterable JavaScript value: array, string,
+ *   object, or iterable.
+ * @return {Object} a JavaScript value.
+ * @example
+ *     var t = transducers;
+ *     var inc = function(n) { return n+1; };
+ *     var isEven = function(n) { return n % 2 == 0; };
+ *     var apush = function(arr,x) { arr.push(x); return arr; };
+ *     var xf = t.comp(t.map(inc),t.filter(isEven));
+ *     t.into([], xf, [1,2,3,4]); // [2,4]
+ */
+/*@ into :: /\ forall       OUT1 . (empty: string,            xf: (y:ITransformer<string + number + boolean, string, string>)=>ITransformer<string, string,            OUT1>, coll: string)      => {OUT1 | true}
+            /\ forall   IN1 OUT1 . (empty: string,            xf: (y:ITransformer<string + number + boolean, string, string>)=>ITransformer<IN1,    string,            OUT1>, coll: IArray<IN1>) => {OUT1 | true}
+            /\ forall T     OUT1 . (empty: Array<Mutable, T>, xf: (y:ITransformer<T, Array<Mutable, T>, Array<Mutable, T>>)  =>ITransformer<string, Array<Mutable, T>, OUT1>, coll: string)      => {OUT1 | true}
+            /\ forall T IN1 OUT1 . (empty: Array<Mutable, T>, xf: (y:ITransformer<T, Array<Mutable, T>, Array<Mutable, T>>)  =>ITransformer<IN1,    Array<Mutable, T>, OUT1>, coll: IArray<IN1>) => {OUT1 | true} */
+function into(empty, xf, coll) {
+    if(isString(empty)) {
+        return transduce(xf, stringAppend, empty, coll);
+    } else {//TODOif(isArray(empty)) {
+        return transduce(xf, arrayPush, empty, coll);
+    } //PORTME
+    // else if(transducers.isObject(empty)) {
+    //     return transducers.transduce(xf, transducers.addEntry, empty, coll);
+    // }
+}
 
 class Completing<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
     /*@ cf : (z:QQ<Mutable,INTER>) => OUT */
