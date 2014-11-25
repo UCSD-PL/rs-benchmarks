@@ -1067,26 +1067,24 @@ function arrayReduce<IN, INTER, OUT>(xf:Transformer<IN, INTER, OUT>, init:INTER,
  * @return {Object} a iterable JavaScript value: string, array
  *   iterable, or object.
  */
-// PORTME
+// PORTME // TODO: removed the if(coll) check but it wasn't sound anyway - e.g. it would reject coll==""
 /*@ reduce :: /\ forall IN INTER OUT . (xf: Transformer<Immutable, IN, INTER, OUT>,     init:INTER, coll:Array<Immutable, IN>) => {OUT | true}
               /\ forall    INTER OUT . (xf: Transformer<Immutable, string, INTER, OUT>, init:INTER, coll:string)               => {OUT | true}
-              /\ forall IN       OUT . (stepFn: (result:OUT, input:IN)=>OUT, init:OUT, coll:Array<Immutable, IN>) => {OUT | true} */
+              /\ forall IN       OUT . (stepFn: (result:OUT, input:IN)=>OUT,            init:OUT,   coll:Array<Immutable, IN>) => {OUT | true}
+              /\ forall          OUT . (stepFn: (result:OUT, input:string)=>OUT,        init:OUT,   coll:string)               => {OUT | true} */
 function reduce(xf:any, init:any, coll:any):any {
-    // if(coll) {
-        xf = typeof xf === "function" ? wrap(xf) : xf;
-        if(isString(coll)) {
-            return stringReduce(xf, init, coll);
-        } else if(isArray(coll)) {
-            return arrayReduce(xf, init, coll);
-    //     } else if(isIterable(coll)) {
-    //         return iterableReduce(xf, init, coll);
-    //     } else if(isObject(coll)) {
-    //         return objectReduce(xf, init, coll);
-        } else {
-            throw new Error("Cannot reduce instance of ");// + coll.constructor.name); //TODO
-        }
-    // }
-    // return undefined
+    xf = typeof xf === "function" ? wrap(xf) : xf;
+    if(isString(coll)) {
+        return stringReduce(xf, init, coll);
+    } else if(isArray(coll)) {
+        return arrayReduce(xf, init, coll);
+//     } else if(isIterable(coll)) {
+//         return iterableReduce(xf, init, coll);
+//     } else if(isObject(coll)) {
+//         return objectReduce(xf, init, coll);
+    } else {
+        throw new Error("Cannot reduce instance of ");// + coll.constructor.name); //TODO
+    }
 }
 
         // PORTME
@@ -1114,9 +1112,10 @@ function reduce(xf:any, init:any, coll:any):any {
         //     return reduce(xf, init, coll);
         // }
 
-        // transducers.stringAppend = function(string, x) {
-        //     return string + x;
-        // };
+/*@ stringAppend :: (s:string, x:string + number + boolean) => {string | true} */
+function stringAppend(s, x) {
+    return s + x;
+}
 
 /*@ arrayPush :: forall T . (arr:Array<Mutable, T>, x:T) => {Array<Mutable, T> | true} */
 function arrayPush<T>(arr:T[], x:T) {
