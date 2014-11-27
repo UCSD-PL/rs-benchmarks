@@ -149,7 +149,7 @@ module RichardsTYPEDVERSION {
         public queueCount = 0;
         /*@ holdCount : number */
         public holdCount = 0;
-        /*@ blocks : {Array<Mutable, TaskControlBlock<Mutable> + null> | (len v) = NUMBER_OF_IDS} */
+        /*@ blocks : {IArray<TaskControlBlock<Mutable> + null> | (len v) = NUMBER_OF_IDS} */
         public blocks = new Array(NUMBER_OF_IDS);
         /*@ list : TaskControlBlock<Mutable> + null */
         public list = null;
@@ -160,7 +160,7 @@ module RichardsTYPEDVERSION {
 
         /*@ new(queueCount:number, 
                 holdCount:number, 
-                blocks:{Array<Mutable, TaskControlBlock<Mutable> + null> | (len v) = NUMBER_OF_IDS}, 
+                blocks:{IArray<TaskControlBlock<Mutable> + null> | (len v) = NUMBER_OF_IDS}, 
                 list:TaskControlBlock<Mutable> + null, 
                 currentTcb:TaskControlBlock<Mutable> + null, 
                 currentId:{number | -1<=v && v<NUMBER_OF_IDS}) => {void | true} */
@@ -347,7 +347,8 @@ module RichardsTYPEDVERSION {
         public priority;
         /*@ queue : Packet<Mutable> + null */
         public queue;
-        public task:Task;
+        /*@ task : Task<Mutable> */
+        public task;
 
         /**
          * A task control block manages a task and the queue of work packages associated
@@ -377,17 +378,17 @@ module RichardsTYPEDVERSION {
             }
         }
 
-        /*@ setRunning : () : {void | true} */
+        /*@ setRunning : (this:Self<Mutable>) : {void | true} */
         public setRunning () {
             this.state = STATE_RUNNING;
         }
 
-        /*@ markAsNotHeld : () : {void | true} */
+        /*@ markAsNotHeld : (this:Self<Mutable>) : {void | true} */
         public markAsNotHeld () {
             this.state = this.state & STATE_NOT_HELD;
         }
 
-        /*@ markAsHeld : () : {void | true} */
+        /*@ markAsHeld : (this:Self<Mutable>) : {void | true} */
         public markAsHeld () {
             this.state = this.state | STATE_HELD;
         }
@@ -397,12 +398,12 @@ module RichardsTYPEDVERSION {
             return (this.state & STATE_HELD) != 0 || (this.state === STATE_SUSPENDED);
         }
 
-        /*@ markAsSuspended : () : {void | true} */
+        /*@ markAsSuspended : (this:Self<Mutable>) : {void | true} */
         public markAsSuspended () {
             this.state = this.state | STATE_SUSPENDED;
         }
 
-        /*@ markAsRunnable : () : {void | true} */
+        /*@ markAsRunnable : (this:Self<Mutable>) : {void | true} */
         public markAsRunnable () {
             this.state = this.state | STATE_RUNNABLE;
         }
@@ -410,7 +411,7 @@ module RichardsTYPEDVERSION {
         /**
          * Runs this task, if it is ready to be run, and returns the next task to run.
          */
-        /*@ run : () : {TaskControlBlock<Mutable> + null | true} */
+        /*@ run : (this:Self<Mutable>) : {TaskControlBlock<Mutable> + null | true} */
         public run () {
             if (!(this.state === STATE_SUSPENDED_RUNNABLE)) {
                 return this.task.run(null);
@@ -454,14 +455,15 @@ module RichardsTYPEDVERSION {
     class Task {
         /*@ new () => {void | true} */
         constructor() {}
-        /*@ run : (packet: Packet<Mutable> + null) : { TaskControlBlock<Mutable> + null | true } */
+        /*@ run : (this:Self<Mutable>, packet: Packet<Mutable> + null) : { TaskControlBlock<Mutable> + null | true } */
         public run(packet?) {
             throw "Abstract method";
         }
     }
 
     class IdleTask extends Task {
-        public scheduler: Scheduler;
+        /*@ scheduler : Scheduler<Mutable> */
+        public scheduler;
         /*@ v1 : number */
         public v1;
         /*@ count : number */
@@ -482,7 +484,7 @@ module RichardsTYPEDVERSION {
             this.count = count;
         }
 
-        /*@ run : (packet: Packet<ReadOnly> + null) : {TaskControlBlock<Mutable> + null | true} */
+        /*@ run : (this: Self<Mutable>, packet: Packet<ReadOnly> + null) : {TaskControlBlock<Mutable> + null | true} */
         public run(packet?) {
             this.count--;
             if (this.count === 0) return this.scheduler.holdCurrent();
@@ -502,7 +504,8 @@ module RichardsTYPEDVERSION {
     }
 
     class DeviceTask extends Task {
-        public scheduler: Scheduler;
+        /*@ scheduler : Scheduler<Mutable> */
+        public scheduler;
         /*@ v1 : Packet<Mutable> + null */
         public v1;
 
@@ -519,7 +522,7 @@ module RichardsTYPEDVERSION {
             this.v1 = v1;
         }
 
-        /*@ run : (packet: Packet<Mutable> + null) : {TaskControlBlock<Mutable> + null | true} */
+        /*@ run : (this: Self<Mutable>, packet: Packet<Mutable> + null) : {TaskControlBlock<Mutable> + null | true} */
         public run(packet?) {
             if (!packet) {
                 var v1 = this.v1;
@@ -540,7 +543,8 @@ module RichardsTYPEDVERSION {
     }
 
     class WorkerTask extends Task {
-        public scheduler:Scheduler;
+        /*@ scheduler : Scheduler<Mutable> */
+        public scheduler;
         /*@ v1 : {number | 0<=v && v<NUMBER_OF_IDS} */
         public v1;
         /*@ v2 : {number | 0<=v} */
@@ -562,7 +566,7 @@ module RichardsTYPEDVERSION {
             this.v2 = v2;
         }
 
-        /*@ run : (this:WorkerTask<Mutable>, packet: Packet<Mutable> + null) : {TaskControlBlock<Mutable> + null | true} */
+        /*@ run : (this:Self<Mutable>, packet: Packet<Mutable> + null) : {TaskControlBlock<Mutable> + null | true} */
         public run(packet?) {
             if (!packet) {
                 return this.scheduler.suspendCurrent();
@@ -590,7 +594,8 @@ module RichardsTYPEDVERSION {
     }
 
     class HandlerTask extends Task {
-        public scheduler:Scheduler;
+        /*@ scheduler : Scheduler<Mutable> */
+        public scheduler;
         /*@ v1 : Packet<Mutable> + null */
         public v1;
         /*@ v2 : Packet<Mutable> + null */
@@ -609,7 +614,7 @@ module RichardsTYPEDVERSION {
             this.v2 = v2;
         }
 
-        /*@ run : (this:HandlerTask<Mutable>, packet: Packet<Mutable> + null) : {TaskControlBlock<Mutable> + null | true} */
+        /*@ run : (this:Self<Mutable>, packet: Packet<Mutable> + null) : {TaskControlBlock<Mutable> + null | true} */
         public run(packet?) {
             if (packet) {
                 if (packet.kind === KIND_WORK) {
@@ -650,7 +655,7 @@ module RichardsTYPEDVERSION {
      * --- */
 
     class Packet {
-        /*@ a2 : {Array<Mutable, {number | 0<=v}> | (len v) = DATA_SIZE} */
+        /*@ a2 : {IArray<{number | 0<=v}> | (len v) = DATA_SIZE} */
         public a2;
 
         /*@ link : Packet<Mutable> + null */
@@ -673,7 +678,7 @@ module RichardsTYPEDVERSION {
          * @constructor
          */
         /*@ new(link:Packet<Mutable> + null, 
-                id:{number | 0<=v && v<NUMBER_OF_IDS}, 
+                id:{number | 0<=v && v<NUMBER_OF_IDS},
                 kind:number, 
                 a1:{number | 0<=v}) => {void | true} */
         constructor(link, id, kind, a1?) {
@@ -702,7 +707,7 @@ module RichardsTYPEDVERSION {
             return queue;
         }
 
-        /*@ toString : () : { string | true } */
+        /*@ toString : () : {string | true} */
         public toString() {
             return "Packet";
         }
