@@ -405,7 +405,7 @@ module VERSION {
                 this.material = material;
             }
 
-            /*@ intersect : (ray:Ray<ReadOnly>) : {IntersectionInfo<Immutable> | true} */
+            /*@ intersect : (this: Self<ReadOnly>, ray:Ray<ReadOnly>) : {IntersectionInfo<Immutable> | true} */
             public intersect(ray:Ray) : IntersectionInfo {
                 throw "Abstract method";
             }
@@ -420,7 +420,7 @@ module VERSION {
                 this.radius = radius;
             }
 
-            /*@ intersect : (ray:Ray<ReadOnly>) : {IntersectionInfo<Immutable> | true} */
+            /*@ intersect : (this: Self<ReadOnly>, ray:Ray<ReadOnly>) : {IntersectionInfo<Immutable> | true} */
             public intersect(ray:Ray) : IntersectionInfo {
                 var info = new IntersectionInfo(false, 0, null, null, null, null, null);
                 info.shape = <Shape>this;
@@ -470,7 +470,7 @@ module VERSION {
                 this.d = d;
             }
 
-            /*@ intersect : (ray:Ray<ReadOnly>) : {IntersectionInfo<Immutable> | true} */
+            /*@ intersect : (this: Self<ReadOnly>, ray:Ray<ReadOnly>) : {IntersectionInfo<Immutable> | true} */
             public intersect(ray:Ray) : IntersectionInfo {
                 var info = new IntersectionInfo(false, 0, null, null, null, null, null);
 
