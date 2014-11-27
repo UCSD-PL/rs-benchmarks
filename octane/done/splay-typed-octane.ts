@@ -145,7 +145,7 @@ module SplayVERSION {
          * @type {SplayTree.Node}
          * @private
          */
-        /*@ root_ : [Mutable] SplayTreeNode<Mutable> + null */
+        /*@ root_ : SplayTreeNode<Mutable> + null */
         private root_ : SplayTreeNode = null;
 
 
@@ -166,7 +166,7 @@ module SplayVERSION {
          * @param {number} key Key to insert into the tree.
          * @param {*} value Value to insert into the tree.
          */
-        /*@ insert : (key:number, value:top) : {void | true} */
+        /*@ insert : (this:SplayTree<Mutable>, key:number, value:top) : {void | true} */
         public insert(key, value) {
             var root = this.root_;
             if (!root) {
@@ -203,7 +203,7 @@ module SplayVERSION {
          * @param {number} key Key to find and remove from the tree.
          * @return {SplayTree.Node} The removed node.
          */
-        /*@ remove : (key:number) : {SplayTreeNode<Mutable> | true} */
+        /*@ remove : (this:SplayTree<Mutable>, key:number) : {SplayTreeNode<Mutable> | true} */
         public remove(key) {
             var root = this.root_;
             if (!root) {
@@ -240,7 +240,7 @@ module SplayVERSION {
          * @param {number} key Key to find in the tree.
          * @return {SplayTree.Node} Node having the specified key.
          */
-        /*@ find : (key:number) : {SplayTreeNode<Mutable> + null | true} */
+        /*@ find : (this:SplayTree<Mutable>, key:number) : {SplayTreeNode<Mutable> + null | true} */
         public find(key) {
             var root = this.root_;
             if (!root) {
@@ -262,11 +262,10 @@ module SplayVERSION {
             if (!root) {
                 return null;
             }
-            /*@ current :: SplayTreeNode<Mutable> */
             var current = opt_startNode || root;
             var right = current.right;
             while (right) {
-                current = <SplayTreeNode>right;
+                current = right;
                 right = current.right;
             }
             return current;
@@ -277,7 +276,7 @@ module SplayVERSION {
          * @return {SplayTree.Node} Node having the maximum key value that
          *     is less than the specified key value.
          */
-        /*@ findGreatestLessThan : (key: number) : {SplayTreeNode<Mutable> + null | true} */
+        /*@ findGreatestLessThan : (this:SplayTree<Mutable>, key: number) : {SplayTreeNode<Mutable> + null | true} */
         public findGreatestLessThan(key) {
             var root = this.root_;
             if (!root) {
@@ -328,7 +327,7 @@ module SplayVERSION {
          * @param {number} key Key to splay the tree on.
          * @private
          */
-        /*@ splay_ : (key:number) : {void | true} */
+        /*@ splay_ : (this:SplayTree<Mutable>, key:number) : {void | true} */
         public splay_(key) {
             var root = this.root_;
             if (!root) {
@@ -422,14 +421,14 @@ module SplayVERSION {
         /**
          * @type {SplayTree.Node}
          */
-        /*@ left : [Mutable] SplayTreeNode<Mutable> + null */
+        /*@ left : SplayTreeNode<Mutable> + null */
         public left = null;
 
 
         /**
          * @type {SplayTree.Node}
          */
-        /*@ right : [Mutable] SplayTreeNode<Mutable> + null */
+        /*@ right : SplayTreeNode<Mutable> + null */
         public right = null;
 
 
