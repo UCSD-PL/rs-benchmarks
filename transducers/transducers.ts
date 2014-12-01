@@ -24,13 +24,13 @@ interface Goog {
 declare var goog:Goog;
 
 interface TruncatedTransformer<IN, INTER> {
-    init():INTER;
-    /*@ step : (result:INTER, input:IN) : {QQ<Mutable, INTER> | true} */
-    step(result:INTER, input:IN):QQ<INTER>;
+    init:()=>INTER;
+    /*@ step : (result:INTER, input:IN) => {QQ<Mutable, INTER> | true} */
+    step:(result:INTER, input:IN)=>QQ<INTER>;
 }
 interface Transformer<IN, INTER, OUT> extends TruncatedTransformer<IN, INTER> {
-    /*@ result : (result:QQ<Mutable, INTER>) : {OUT | true} */
-    result(result:QQ<INTER>):OUT;
+    /*@ result : (result:QQ<Mutable, INTER>) => {OUT | true} */
+    result:(result:QQ<INTER>)=>OUT;
 }
 /*@ alias ITransformer<T, U, V> = Transformer<Immutable, T, U, V> */
 
