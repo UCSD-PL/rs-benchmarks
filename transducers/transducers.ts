@@ -1208,30 +1208,32 @@ function completing<IN, INTER, OUT>(xf: any, cf: (z:QQ<INTER>) => OUT):any {
     }
 }
 
-        /**
-         * Convert a transducer transformer object into a function so
-         * that it can be used with existing reduce implementation i.e. native,
-         * Underscore, lodash
-         * @method transducers.toFn
-         * @param {Transducer} xf a transducer
-         * @param {Function} builder a function which take the accumulator and the
-         *   the next input and return a new accumulator value.
-         * @return {Function} a two-arity function compatible with existing reduce
-         *   implementations
-         * @example
-         *     var t = transducers;
-         *     var arr = [0,1,2,3,4,5],
-         *     var apush = function(arr, x) { arr.push(x); return arr; },
-         *     var xf = t.comp(t.map(inc),t.filter(isEven));
-         *     arr.reduce(t.toFn(xf, apush), []); // [2,4,6]
-         */
-        // function toFn<IN, INTER, OUT>(xf: Transducer<IN, INTER, OUT>, builder:any) {
-        //     if(typeof builder === "function") {
-        //         builder = wrap(builder);
-        //     }
-        //     var rxf = xf(builder);
-        //     return rxf.step.bind(rxf);
-        // }
+/**
+ * Convert a transducer transformer object into a function so
+ * that it can be used with existing reduce implementation i.e. native,
+ * Underscore, lodash
+ * @method transducers.toFn
+ * @param {Transducer} xf a transducer
+ * @param {Function} builder a function which take the accumulator and the
+ *   the next input and return a new accumulator value.
+ * @return {Function} a two-arity function compatible with existing reduce
+ *   implementations
+ * @example
+ *     var t = transducers;
+ *     var arr = [0,1,2,3,4,5],
+ *     var apush = function(arr, x) { arr.push(x); return arr; },
+ *     var xf = t.comp(t.map(inc),t.filter(isEven));
+ *     arr.reduce(t.toFn(xf, apush), []); // [2,4,6]
+ */
+/*@ toFn :: /\ forall IN0 INTER0 OUT0 IN1 INTER1 OUT1 . (xf: (y:ITransformer<IN0, INTER0, OUT0>)=>ITransformer<IN1, INTER1, OUT1>, builder: ITransformer<IN0, INTER0, OUT0>) => {(result:INTER1, input:IN1) => QQ<Mutable, INTER1> | true}
+            /\ forall IN0        OUT0 IN1 INTER1 OUT1 . (xf: (y:ITransformer<IN0, OUT0,   OUT0>)=>ITransformer<IN1, INTER1, OUT1>, builder: (result:OUT0, input:IN0)=>OUT0)  => {(result:INTER1, input:IN1) => QQ<Mutable, INTER1> | true} */
+function toFn<IN, INTER, OUT>(xf, builder) {
+    if(typeof builder === "function") {
+        return xf(wrap(builder)).step;//PORTME: see below
+    }
+    var rxf = xf(builder);
+    return rxf.step//PORTME: .bind(rxf);
+}
 
 // =============================================================================
 // Utilities
