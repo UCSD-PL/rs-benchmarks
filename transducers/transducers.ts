@@ -68,6 +68,7 @@ function isString(x:any) {
     return typeof x === "string";
 }
 
+        //PORTME
         // if(typeof Array.isArray != "undefined") {
         //     transducers.isArray = function(x) {
         //         return Array.isArray(x);
@@ -84,11 +85,11 @@ function isObject(x:any) {
     return goog.typeOf(x) === "object";
 }
 
-        // PORTME
-        // /*@ isIterable :: (x:{[s:string]:top}) => {top | true} */
-        // function isIterable(x:{[s:string]:any}) {
-        //     return x["@@iterator"] || x["next"];
-        // }
+/*@ isIterable :: (x:top) => {top | true} */
+function isIterable(x:any) {
+    throw new Error("PORTME");
+    //return x["@@iterator"] || x["next"];
+}
 
         // NOTICE: this seems inherently not typesafe and thus impossible to support
         // transducers.slice = function(arrayLike, start, n) {
@@ -1074,11 +1075,12 @@ function reduce(xf:any, init:any, coll:any):any {
         return stringReduce(xf, init, coll);
     } else if(isArray(coll)) {
         return arrayReduce(xf, init, coll);
-// PORTME
-//     } else if(isIterable(coll)) {
-//         return iterableReduce(xf, init, coll);
-//     } else if(isObject(coll)) {
-//         return objectReduce(xf, init, coll);
+    } else if(isIterable(coll)) {
+        throw new Error("PORTME");
+        // return iterableReduce(xf, init, coll);
+    } else if(isObject(coll)) {
+        throw new Error("PORTME");
+        // return objectReduce(xf, init, coll);
     } else {
         throw new Error("Cannot reduce instance of ");// + coll.constructor.name); //TODO
     }
@@ -1123,11 +1125,12 @@ function arrayPush<T>(arr:T[], x:T) {
     return arr;
 }
 
-        // PORTME
-        // transducers.addEntry = function(obj, entry) {
-        //     obj[entry[0]] = entry[1];
-        //     return obj;
-        // };
+/*@ addEntry :: forall T . (ob: [Mutable] { [x:string]: T }, entry: { 0: string; 1: T })
+             => { [Mutable] {[x: string]: T} | true } */
+function addEntry(ob, entry) {
+    ob[entry[0]] = entry[1];
+    return ob;
+}
 
 /**
  * Reduce a value into the given empty value using a transducer.
