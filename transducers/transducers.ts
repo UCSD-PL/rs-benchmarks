@@ -1019,20 +1019,24 @@ function arrayReduce<IN, INTER, OUT>(xf:Transformer<IN, INTER, OUT>, init:INTER,
     return xf.result(wrappedAcc);
 }
 
-        // PORTME
-        // /*@ objectReduce :: forall INTER OUT . (xf:ITransformer<IArray<top>, INTER, OUT>, init:INTER, ob:{[key:string]:top}) => {OUT | true} */
-        // function objectReduce<INTER, OUT>(xf:Transformer<any[], INTER, OUT>, init:INTER, ob:{[key:string]:any}) {
-        //     var acc = init;
-        //     var shouldBreak = false;
-        //     for(var p in ob) {
-        //         if(ob.hasOwnProperty(p)) {
-        //             var wrappedAcc = xf.step(acc, [p, ob[p]]);
-        //             shouldBreak = isReduced(wrappedAcc);
-        //             acc = deref(wrappedAcc);
-        //         }
-        //     }
-        //     return xf.result(acc);
-        // }
+/*@ objectReduce :: forall INTER OUT . (xf:ITransformer<{0:string; 1:top}, INTER, OUT>, init:INTER, ob:{ }) => {OUT | true} */
+function objectReduce<INTER, OUT>(xf:Transformer<{}, INTER, OUT>, init:INTER, ob:{[key:string]:any}) {
+    var acc = init;
+    var wrappedAcc = new QQ(acc, 0);
+    var shouldBreak = false;
+    for(var p in ob) {
+        if(!shouldBreak && ob.hasOwnProperty(p)) {
+            wrappedAcc = xf.step(acc, {0:p, 1:ob[p]});
+            if (isReduced(wrappedAcc)) {
+                wrappedAcc.__transducers_reduced__--;
+                shouldBreak = true;
+            } else {
+                acc = wrappedAcc.value;
+            }
+        }
+    }
+    return xf.result(wrappedAcc);
+}
 
         // transducers.iterableReduce = function(xf, init, iter) {
         //     if(iter["@@iterator"]) {
