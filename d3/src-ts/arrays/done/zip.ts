@@ -12,15 +12,12 @@
 // };
 
 
-/*@ d3_zipLength :: (d:#iArray[number], i:number) => #nat */
+/*@ d3_zipLength :: (d:IArray<number>, i:number) => #nat */
 function d3_zipLength(d:number[], i:number):number {
   return d.length;
 }
 
-// TODO: this should be d3.zip -- after fixing POLYMORPHISM https://github.com/UCSD-PL/RefScript/issues/32
-
-/*@ dzip :: (args:#iArray[#iArray[number]]) => {v:#iArray[#iArray[number]] | true} */
-function dzip(args:number[][]):number[][] {
+d3.zip = function(args:number[][]):number[][] {
   var n:number = args.length;
 
   if (!n) return [];

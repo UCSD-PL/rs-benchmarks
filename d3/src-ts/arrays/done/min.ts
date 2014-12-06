@@ -1,8 +1,8 @@
 /// <reference path="../../../d3.d.ts" />
 /// <reference path="../../../d3.rsc.ts" />
 
-/* d3_min_1 :: forall T . (arr: #Array[#Immutable, T]) => { T + undefined | true } */
-/*@ d3_min_1 :: forall T . (arr: #Array[#Immutable, T]) => { T | true } */
+/* d3_min_1 :: forall T . (arr: IArray<T>) => { T + undefined | true } */
+/*@ d3_min_1 :: forall T . (arr: IArray<T>) => { T | true } */
 function d3_min_1<T>(array: T[]) : any {
   var i = 0,
       n = array.length;
@@ -34,7 +34,7 @@ function d3_min_1<T>(array: T[]) : any {
 }
 
 
-/*@ d3_min_2 :: forall T U . (arr: #Array[#Immutable, T], f: (x:T, i:number) => U) => { U | true } */
+/*@ d3_min_2 :: forall T U . (arr: IArray<T>, f: (x:T, i:number) => U) => { U | true } */
 function d3_min_2 <T, U>(array:T[], f:(x:T, i:number) => U) : any {
     
   var i = -1,
@@ -67,8 +67,8 @@ function d3_min_2 <T, U>(array:T[], f:(x:T, i:number) => U) : any {
   return check_undefined(aa);
 }
 
-/* d3_min :: /\ forall T U . (arr: #Array[#Immutable, T], f: (x:T, i:number) => U) => { U | true }
-             /\ forall T   . (arr: #Array[#Immutable, T]) => { T | true } 
+/* d3_min :: /\ forall T U . (arr: IArray<T>, f: (x:T, i:number) => U) => { U | true }
+             /\ forall T   . (arr: IArray<T>) => { T | true } 
  */
 d3.min = function(array:any, f?:any) {
   if (arguments.length === 1) {

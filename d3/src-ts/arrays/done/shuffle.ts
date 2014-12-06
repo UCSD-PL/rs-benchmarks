@@ -4,7 +4,7 @@
 // d3.shuffle = function<T>(array: T[]):T[] {
 
 
-/*@ d3_shuffle :: forall T . (arr: #Array[#Immutable, T]) => {v: #Array[#Immutable, T] | true} */
+/*@ d3_shuffle :: forall T . (arr: IArray<T>) => {v: IArray<T> | true} */
 function d3_shuffle<T>(array: T[]):T[] {
   var m = array.length;
   while (m) {

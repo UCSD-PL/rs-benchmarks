@@ -3,11 +3,11 @@
 
 // FIXME d3.median = d3_median;
 
-/*@ d3_median :: /\ forall T. (array : IArray[T], f: (T) => number) => {number + undefined | true} 
-                 /\ (array : IArray[number]) => {number + undefined | true} */ 
+/*@ d3_median :: /\ forall T. (array : IArray<T>, f: (T) => number) => {number + undefined | true} 
+                 /\ (array : IArray<number>) => {number + undefined | true} */ 
 function d3_median(array0 : any, f?: any): any {
 
-  /*@ array :: #iArray[number] */
+  /*@ array :: IArray[number] */
   var array : number[];
 
   if (arguments.length > 1) array = array0.map(f);

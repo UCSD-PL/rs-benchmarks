@@ -2,7 +2,7 @@
 /// <reference path="../../../d3.rsc.ts" />
 
 
-/*@ d3_max_1 :: forall T . (arr: #Array[#Immutable, T]) => { T | true } */
+/*@ d3_max_1 :: forall T . (arr: IArray<T>) => { T | true } */
 function d3_max_1<T>(array: T[]) : any {
 
   //d3.max = function(array, f?) {
@@ -70,8 +70,8 @@ function d3_max_2 <T, U>(array:T[], f:(x:T, i:number) => U) : any {
   return check_undefined(a);
 }
 
-/*@ d3_max :: /\ forall T U . (arr: #Array[#Immutable, T], f: (x:T, i:number) => U) => { U | true }
-              /\ forall T   . (arr: #Array[#Immutable, T]) => { T | true } 
+/*@ d3_max :: /\ forall T U . (arr: IArray<T>, f: (x:T, i:number) => U) => { U | true }
+              /\ forall T   . (arr: IArray<T>) => { T | true } 
  */
 function d3_max(array:any, f?:any) {
   if (arguments.length === 1) {

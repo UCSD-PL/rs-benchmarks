@@ -4,7 +4,7 @@
 // Why is this not scraped from the output type?
 /*@ qualif RemoveMe(v:a): len(v) = 2 */
 
-/*@ d3_pairs :: forall T. ({v:#iArray[T] | len(v) > 0}) => #iArray[{#iArray[T] | len(v) = 2}] */
+/*@ d3_pairs :: forall T. ({v:IArray<T> | len(v) > 0}) => IArray<{IArray[T] | len(v) = 2}> */
 function d3_pairs <T> (array: T[]) {
   
   var i     = 0; 
