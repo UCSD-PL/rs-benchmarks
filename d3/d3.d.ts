@@ -150,7 +150,7 @@ declare module D3 {
         * @param map Accsessor function
         */
 
-	/*@ extent : forall T U . ({IArray<T> | 0 < len v}, f: (x:T, i:number) => U) => #pair[U] */
+        /*@ extent : forall T U . ({IArray<T> | 0 < len v}, f: (x:T, i:number) => U) => #pair[U] */
         extent<T, U>(arr: T[], map: (v: T) => U): U[];
         /**
         * Find the minimum and maximum value in an array
@@ -158,7 +158,7 @@ declare module D3 {
         * @param arr Array to search
         */
 
-	/*@ extent : forall T . ({IArray<T> | 0 < len v}) => #pair[T] */
+        /*@ extent : forall T . ({IArray<T> | 0 < len v}) => #pair[T] */
         extent<T>(arr: T[]): T[];
         /**
         * Compute the sum of an array of numbers
@@ -172,7 +172,7 @@ declare module D3 {
         *
         * @param arr Array to search
         */
-	
+
         /*@ sum : /\ (array : IArray<number>) => {number | true} 
                   /\ forall T. (array : IArray<T>, f: (T, {#nat | v < len(array)}) => number) => {number | true} */ 
         sum(arr: any, f?:any) : number;
@@ -202,7 +202,7 @@ declare module D3 {
         * @param map Accsessor function
         */
 
-        /*@ median : /\ forall T. (array : IArray<T>, f: (T) => number) => {number + undefined | true} */
+        /*@ median : forall T. (array : IArray<T>, f: (T) => number) => {number + undefined | true} */
         median<T>(arr: T[], map: (v: T) => number): number;
         /**
         * Compute the median of an array of numbers (the 0.5-quantile).

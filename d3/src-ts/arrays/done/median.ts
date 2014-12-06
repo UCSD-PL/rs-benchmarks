@@ -1,13 +1,9 @@
 /// <reference path="../../../d3.d.ts" />
 /// <reference path="../../math/number.ts" />
 
-// FIXME d3.median = d3_median;
+d3.median = function(array0 : any, f?: any): any {
 
-/*@ d3_median :: /\ forall T. (array : IArray<T>, f: (T) => number) => {number + undefined | true} 
-                 /\ (array : IArray<number>) => {number + undefined | true} */ 
-function d3_median(array0 : any, f?: any): any {
-
-  /*@ array :: IArray[number] */
+  /*@ array :: IArray<number> */
   var array : number[];
 
   if (arguments.length > 1) array = array0.map(f);
