@@ -5,9 +5,9 @@
 
 // Aliases
 
-/*@ alias idx[a]    = {v: number | (0 <= v && v < (len a)) }  */
+/*@ alias idx[a]    = {number | (0 <= v && v < (len a)) }  */
 /*@ alias nat       = {number | 0 <= v}    */
-/*@ alias pair[T]   = {v: IArray<T> | len(v) = 2} */
+/*@ alias pair[T]   = {IArray<T> | len(v) = 2} */
 
 
 // Qualifiers
@@ -218,7 +218,7 @@ declare module D3 {
         * @param arr Array to search
         * @param p The quantile to return
         */
-        /*@ quantile : (arr: {v: IArray<number> | 0 < len v}, p: number) => number */
+        /*@ quantile : (arr: {IArray<number> | 0 < len v}, p: {number | 0 <= v && v < 1}) => number */
         quantile: (arr: number[], p: number) => number;
 //        /**
 //        * Locate the insertion point for x in array to maintain sorted order
@@ -258,7 +258,7 @@ declare module D3 {
 //        *
 //        * @param arr Array to randomize
 //        */
-        /*@ shuffle : forall T . (arr: IArray<T>) => {v: IArray<T> | true} */
+        /*@ shuffle : forall T . (arr: IArray<T>) => {IArray<T> | true} */
         shuffle<T>(arr: T[]): T[];
         /**
         * Reorder an array of elements according to an array of indexes
@@ -275,7 +275,7 @@ declare module D3 {
         *
         * @param arrs Arrays to transpose
         */
-        /*@ zip : (args:IArray<IArray<number>>) => {v:IArray<IArray<number>> | true} */
+        /*@ zip : (args:IArray<IArray<number>>) => {IArray<IArray<number>> | true} */
         zip(...arrs: any[]): any[];
 //        /**
 //        * Parse the given 2D affine transform string, as defined by SVG's transform attribute.
@@ -294,7 +294,7 @@ declare module D3 {
         *
         * @param map Array of objects to get the key values from
         */
-        /*@ keys : (map: [#Immutable]{ }) => #Array[#Mutable, {string | keyIn(v, map) && enumProp(v, map)}] */
+        /*@ keys : (map: [Immutable]{ }) => Array<Mutable, {string | keyIn(v, map) && enumProp(v, map)}> */
         keys(map:{ }): string[];
         /**
         * List the values of an associative array.
@@ -302,7 +302,7 @@ declare module D3 {
         * @param map Array of objects to get the values from
         */
 
-        /*@ values : forall T . (map: [#Immutable]{[k:string]:T}) => {v: #Array[#Mutable,T] | true} */
+        /*@ values : forall T . (map: [Immutable]{[k:string]:T}) => {Array<Mutable,T> | true} */
         values<T>(map:{[k:string]:T}): T[];
 //        /**
 //        * List the key-value entries of an associative array.
@@ -315,7 +315,7 @@ declare module D3 {
         *
         * @param map Arrays to merge
         */
-        /*@ merge : forall T . (map: IArray<IArray<T>>) => {v: IArray<T> | true}*/
+        /*@ merge : forall T . (map: IArray<IArray<T>>) => {IArray<T> | true}*/
         merge<T>(map: T[][]): T[];
 //        /**
 //        * Generate a range of numeric values.
@@ -3366,6 +3366,6 @@ declare module D3 {
 //    }
 }
 
-/*@ d3 :: #D3.Base[#Mutable] */
+/*@ d3 :: D3.Base<Mutable> */
 declare var d3:   D3.Base;
 
