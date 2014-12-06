@@ -4,7 +4,7 @@
 // //     (c) 2009-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 // //     Underscore may be freely distributed under the MIT license.
 
-                    // ///<reference path='.\underscore.d.ts' />
+                    // ///<reference path='.\underscore-rs.d.ts' />
 
                     // //TODO: restore 'guard' internal params to several functions
                     // //TODO: Functions are currently duplicated instead of overloaded. Ones that are identical up to renaming are marked with //=
@@ -23,8 +23,8 @@
                     //                     //   // Save the previous value of the `_` variable.
                     //                     //   var previousUnderscore = root._;
 
-                    //   // Establish the object that gets returned to break out of a loop iteration.
-                    //   var breaker = {};
+  // Establish the object that gets returned to break out of a loop iteration.
+  var breaker = {};
 
                     //   // Save bytes in the minified (but not gzipped) version:
                     //   var ArrayProto = Array.prototype, ObjProto = Object.prototype, FuncProto = Function.prototype;
@@ -64,7 +64,7 @@
                     //                     //     root._ = _;
                     //                     //   }
 
-  class _ {// implements UnderscoreStatic {
+  class _Impl {// implements UnderscoreStatic {
     // Current version.
     /*@ VERSION : string */
     public static VERSION = '1.6.0';
@@ -89,33 +89,36 @@
                     //     // Internal Functions
                     //     // --------------------
                         
-                    //     // Generates lookup iterators.
-                    //     private lookupIterator1<X, TResult>(func: (x:X) => TResult, context: any): (x:X) => TResult {
-                    //       if (func == null) return this.identity;
-                    //       return this.createCallback1(func, context);
-                    //     }
-
-    /*@ lookupIterator3 : forall X Y Z TResult . (f: (x:X, y:Y, z:Z) => TResult, context: top) : (x2:X, y2:Y, z2:Z) => TResult */
-    private static lookupIterator3<X, Y, Z, TResult>(f: (x:X, y:Y, z:Z) => TResult, context: any): (x:X, y:Y, z:Z) => TResult {
-      if (f === null) return _.identity;
-      return _.createCallback3(f, context);
+    // Generates lookup iterators.
+    /*@ lookupIterator1 : forall X TResult . (f: (x:X) => TResult, context: top) : (x2:X) => {TResult | true} */
+    private static lookupIterator1<X, TResult>(f: (x:X) => TResult, context: any): (x:X) => TResult {
+      if (f === null) return _Impl.identity;
+      return _Impl.createCallback1(f, context);
     }
 
-                    //     private lookupIterator4<X, Y, Z, W, TResult>(f: (x:X, y:Y, z:Z, w:W) => TResult, context: any): (x:X, y:Y, z:Z, w:W) => TResult {
-                    //       if (f == null) return this.identity;
-                    //       return this.createCallback4(f, context);
-                    //     }
+    /*@ lookupIterator3 : forall X Y Z TResult . (f: (x:X, y:Y, z:Z) => TResult, context: top) : (x2:X, y2:Y, z2:Z) => {TResult | true} */
+    private static lookupIterator3<X, Y, Z, TResult>(f: (x:X, y:Y, z:Z) => TResult, context: any): (x:X, y:Y, z:Z) => TResult {
+      if (f === null) return _Impl.identity;
+      return _Impl.createCallback3(f, context);
+    }
 
-                    //     //TODO: is each f.call an implicit any?
-                    //     // Creates a callback bound to its context if supplied
-                    //     private createCallback1<X, TResult>(f: (x:X) => TResult, context: any): (x:X) => TResult {
-                    //       if (context === void 0) return f;
-                    //       return function(value) {
-                    //         return f.call(context, value);
-                    //       };
-                    //     }
+    /*@ lookupIterator4 : forall X Y Z W TResult . (f: (x:X, y:Y, z:Z, w:W) => TResult, context: top) : (x2:X, y2:Y, z2:Z, w2:W) => {TResult | true } */
+    private static lookupIterator4<X, Y, Z, W, TResult>(f: (x:X, y:Y, z:Z, w:W) => TResult, context: any): (x:X, y:Y, z:Z, w:W) => TResult {
+      if (f === null) return _Impl.identity;
+      return _Impl.createCallback4(f, context);
+    }
 
-    /*@ createCallback3 : forall X Y Z TResult . (f: (x:X, y:Y, z:Z) => TResult, context: top) : (x2:X, y2:Y, z2:Z) => TResult */
+    //TODO: is each f.call an implicit any?
+    // Creates a callback bound to its context if supplied
+    /*@ createCallback1 : forall X TResult . (f: (x:X) => TResult, context: top) : (x2:X) => {TResult | true} */
+    private static createCallback1<X, TResult>(f: (x:X) => TResult, context: any): (x:X) => TResult {
+      if (context === undefined) return f;
+      return function(value) {
+        return f.call(context, value);
+      };
+    }
+
+    /*@ createCallback3 : forall X Y Z TResult . (f: (x:X, y:Y, z:Z) => TResult, context: top) : (x2:X, y2:Y, z2:Z) => {TResult | true} */
     private static createCallback3<X, Y, Z, TResult>(f: (x:X, y:Y, z:Z) => TResult, context: any): (x:X, y:Y, z:Z) => TResult {
       if (context === undefined) return f;   
       return function(value, index, collection) {
@@ -123,38 +126,43 @@
       };
     }
 
-                    //     private createCallback4<X, Y, Z, W, TResult>(f: (x:X, y:Y, z:Z, w:W) => TResult, context: any): (x:X, y:Y, z:Z, w:W) => TResult {
-                    //       if (context === void 0) return f;
-                    //       return function(accumulator, value, index, collection) {
-                    //         return f.call(context, accumulator, value, index, collection);
-                    //       };
-                    //     }
+    /*@ createCallback4 : forall X Y Z W TResult . (f: (x:X, y:Y, z:Z, w:W) => TResult, context: top) : (x2:X, y2:Y, z2:Z, w2:W) => {TResult | true} */
+    private static createCallback4<X, Y, Z, W, TResult>(f: (x:X, y:Y, z:Z, w:W) => TResult, context: any): (x:X, y:Y, z:Z, w:W) => TResult {
+      if (context === undefined) return f;
+      return function(accumulator, value, index, collection) {
+        return f.call(context, accumulator, value, index, collection);
+      };
+    }
 
                     //     // Collection Functions
                     //     // --------------------
 
-                    //     // The cornerstone, an `each` implementation, aka `forEach`.
-                    //     // Handles raw objects in addition to array-likes. Treats all
-                    //     // sparse array-likes as if they were dense.
-                    //     public each<T>(obj: _.List<T>, iterator: _.ListIterator<T, any>, context?: any): _.List<T> {
-                    //       var i:number, length:number;
-                    //       if (obj == null) return obj;
-                    //       iterator = this.createCallback3(iterator, context);
-                    //       for (i = 0, length = obj.length; i < length; i++) {
-                    //         if (iterator(obj[i], i, obj) === breaker) break;
-                    //       }
-                    //       return obj;
-                    //     }
+    // The cornerstone, an `each` implementation, aka `forEach`.
+    // Handles raw objects in addition to array-likes. Treats all
+    // sparse array-likes as if they were dense.
+    /*@ each : forall T . (ob: IArray<T>, iterator: (value: T, index: number, list: IArray<T>) => top, context: top?) : {IArray<T> | true} */
+    public static each<T>(ob: T[], iterator: (value: T, index: number, list: T[]) => any, context?: any): T[] {
+      if (ob === null) return ob;
+      var length = ob.length;
+      iterator = _Impl.createCallback3(iterator, context);
+      var shouldBreak = false;
+      for (var i = 0; i < length && !shouldBreak; i++) {
+        shouldBreak = iterator(ob[i], i, ob) === breaker;
+      }
+      return ob;
+    }
 
-                    //     public eachD<T>(obj: _.Dictionary<T>, iterator: _.ObjectIterator<T, any>, context?: any): _.Dictionary<T> {
-                    //       var i:number, length:number;
-                    //       if (obj == null) return obj;
-                    //       iterator = this.createCallback3(iterator, context);
-                    //       var keys = this.keys(obj);
-                    //       for (i = 0, length = keys.length; i < length; i++) {
-                    //         if (iterator(obj[keys[i]], keys[i], obj) === breaker) break;
+                    //     /*@ eachD : forall T . (ob: {[s:string]:T}, iterator: (element: T, key: string, list: {[s:string]:T}) => TResult, context: top?): {{[s:string]:T} | true} */
+                    //     public eachD<T>(ob, iterator, context?) {
+                    //       if (ob == null) return ob;
+                    //       iterator = _Impl.createCallback3(iterator, context);
+                    //       var keys = _Impl.keys(ob);
+                    //       var length = keys.length;
+                    //       var shouldBreak = false;
+                    //       for (var i = 0; i < length && !shouldBreak; i++) {
+                    //         shouldBreak = iterator(ob[keys[i]], keys[i], ob) === breaker;
                     //       }
-                    //       return obj;
+                    //       return ob;
                     //     }
 
                     //     public forEach = this.each;
@@ -1261,10 +1269,10 @@
                     //       return !!(obj && obj.nodeType === 1);
                     //     }
 
-                    //     // Is a given variable an object?
-                    //     public isObject(obj: any): boolean {
-                    //       return obj === Object(obj);
-                    //     }
+    // // Is a given variable an object?
+    // public isObject(ob: any): boolean {
+    //   return ob === Object(ob);
+    // }
 
                     //     // some isType methods
                     //     public isString(obj: any): boolean { return toString.call(obj) === '[object String]'; }
@@ -1304,15 +1312,16 @@
                     //       return this.isNumber(obj) && obj !== +obj;
                     //     }
 
-                    //     // Is a given value a boolean?
-                    //     public isBoolean(obj: any): boolean {
-                    //       return obj === true || obj === false || toString.call(obj) === '[object Boolean]';
-                    //     }
+    // // Is a given value a boolean?
+    // public static isBoolean(ob: any): boolean {
+    //   return ob === true || ob === false || toString.call(ob) === '[object Boolean]';
+    // }
 
-                    //     // Is a given value equal to null?
-                    //     public isNull(obj: any): boolean {
-                    //       return obj === null;
-                    //     }
+    // Is a given value equal to null?
+    /*@ isNull : (ob:top) : {boolean | true} */
+    public static isNull(ob: any): boolean {
+      return ob === null;
+    }
 
                     //     // Is a given variable undefined?
                     //     public isUndefined(obj: any): boolean {
@@ -1341,13 +1350,15 @@
       return value;
     }
 
-                    //     public constant<T>(value: T): () => T {
-                    //       return function() {
-                    //         return value;
-                    //       };
-                    //     }
+    /*@ constant : forall T . (value:T) : {()=>T | true} */
+    public static constant<T>(value: T): () => T {
+      return function() {
+        return value;
+      };
+    }
 
-                    //     public noop(): void {}
+    /*@ noop : () : {void | true} */
+    public static noop(): void {}
 
                     //     public property(key: string): (object: Object) => any {
                     //       return function(obj:any) {
