@@ -90,19 +90,19 @@
                     //     // --------------------
                         
     // Generates lookup iterators.
-    /*@ lookupIterator1 : forall X TResult . (f: (x:X) => TResult, context: top) : (x2:X) => {TResult | true} */
+    /*@ lookupIterator1 : forall X TResult . (f: (X) => TResult, context: top) : {(X) => TResult | true} */
     private static lookupIterator1<X, TResult>(f: (x:X) => TResult, context: any): (x:X) => TResult {
       if (f === null) return _Impl.identity;
       return _Impl.createCallback1(f, context);
     }
 
-    /*@ lookupIterator3 : forall X Y Z TResult . (f: (x:X, y:Y, z:Z) => TResult, context: top) : (x2:X, y2:Y, z2:Z) => {TResult | true} */
+    /*@ lookupIterator3 : forall X Y Z TResult . (f: (X,Y,Z) => TResult, context: top) : {(X,Y,Z) => TResult | true} */
     private static lookupIterator3<X, Y, Z, TResult>(f: (x:X, y:Y, z:Z) => TResult, context: any): (x:X, y:Y, z:Z) => TResult {
       if (f === null) return _Impl.identity;
       return _Impl.createCallback3(f, context);
     }
 
-    /*@ lookupIterator4 : forall X Y Z W TResult . (f: (x:X, y:Y, z:Z, w:W) => TResult, context: top) : (x2:X, y2:Y, z2:Z, w2:W) => {TResult | true } */
+    /*@ lookupIterator4 : forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult, context: top) : {(X,Y,Z,W) => TResult | true } */
     private static lookupIterator4<X, Y, Z, W, TResult>(f: (x:X, y:Y, z:Z, w:W) => TResult, context: any): (x:X, y:Y, z:Z, w:W) => TResult {
       if (f === null) return _Impl.identity;
       return _Impl.createCallback4(f, context);
@@ -110,7 +110,7 @@
 
     //TODO: is each f.call an implicit any?
     // Creates a callback bound to its context if supplied
-    /*@ createCallback1 : forall X TResult . (f: (x:X) => TResult, context: top) : (x2:X) => {TResult | true} */
+    /*@ createCallback1 : forall X TResult . (f: (X) => TResult, context: top) : {(X) => TResult | true} */
     private static createCallback1<X, TResult>(f: (x:X) => TResult, context: any): (x:X) => TResult {
       if (context === undefined) return f;
       return function(value) {
@@ -118,7 +118,7 @@
       };
     }
 
-    /*@ createCallback3 : forall X Y Z TResult . (f: (x:X, y:Y, z:Z) => TResult, context: top) : (x2:X, y2:Y, z2:Z) => {TResult | true} */
+    /*@ createCallback3 : forall X Y Z TResult . (f: (X,Y,Z) => TResult, context: top) : {(X,Y,Z) => TResult | true} */
     private static createCallback3<X, Y, Z, TResult>(f: (x:X, y:Y, z:Z) => TResult, context: any): (x:X, y:Y, z:Z) => TResult {
       if (context === undefined) return f;   
       return function(value, index, collection) {
@@ -126,7 +126,7 @@
       };
     }
 
-    /*@ createCallback4 : forall X Y Z W TResult . (f: (x:X, y:Y, z:Z, w:W) => TResult, context: top) : (x2:X, y2:Y, z2:Z, w2:W) => {TResult | true} */
+    /*@ createCallback4 : forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult, context: top) : {(X,Y,Z,W) => TResult | true} */
     private static createCallback4<X, Y, Z, W, TResult>(f: (x:X, y:Y, z:Z, w:W) => TResult, context: any): (x:X, y:Y, z:Z, w:W) => TResult {
       if (context === undefined) return f;
       return function(accumulator, value, index, collection) {
@@ -134,8 +134,8 @@
       };
     }
 
-                    //     // Collection Functions
-                    //     // --------------------
+    // Collection Functions
+    // --------------------
 
     // The cornerstone, an `each` implementation, aka `forEach`.
     // Handles raw objects in addition to array-likes. Treats all
