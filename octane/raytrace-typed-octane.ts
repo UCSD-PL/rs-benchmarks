@@ -286,9 +286,9 @@ module VERSION {
 
         export class Scene {
             public camera : Camera;
-            /*@ shapes : Array<Immutable, Shape<Immutable>> */
+            /*@ shapes : Array<Mutable, Shape<Immutable>> */
             public shapes : Shape[];
-            /*@ lights : Array<Immutable, Light<Immutable>> */
+            /*@ lights : Array<Mutable, Light<Immutable>> */
             public lights : Light[];
             public background : Background;
 
@@ -830,7 +830,9 @@ module VERSION {
                         shadowInfo = this.testIntersection(shadowRay, scene, infoShape);
                         if (shadowInfo.isHit && shadowInfo.shape != infoShape /*&& shadowInfo.shape.type != 'PLANE'*/) {
                             var vA = Color.multiplyScalar(color, 1/2);
-                            var dB = (1/2 * Math.pow(shadowInfo.shape.material.transparency, 1/2));
+                            var shadowInfoShape = shadowInfo.shape;
+                            if (!shadowInfoShape) throw new Error('This should probably never happen');
+                            var dB = (1/2 * Math.pow(shadowInfoShape.material.transparency, 1/2));
                             color = Color.addScalar(vA, dB);
                         }
                     }
