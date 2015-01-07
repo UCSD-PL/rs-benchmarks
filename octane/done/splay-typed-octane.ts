@@ -44,8 +44,7 @@ module SplayVERSION {
     /*@ splayTree :: SplayTree<Mutable> + null */
     var splayTree:SplayTree = null;
 
-    /*@ GeneratePayloadTree :: (depth:number, tag:string) => {top | true} */
-    function GeneratePayloadTree(depth, tag) {
+    function GeneratePayloadTree(depth:number, tag:string) {
         if (depth === 0) {
             return <any>{
                 array: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
@@ -59,14 +58,12 @@ module SplayVERSION {
         }
     }
 
-    /*@ GenerateKey :: () => {number | true} */
     function GenerateKey() {
         // The benchmark framework guarantees that Math.random is
         // deterministic; see base.js.
         return Math.random();
     }
 
-    /*@ InsertNewNode :: () => {number | true} */
     function InsertNewNode() {
         var tree = splayTree;
         if (!tree) throw new Error('splayTree is null! did you forget to call SplaySetup?');
@@ -302,10 +299,9 @@ module SplayVERSION {
         /**
          * @return {Array<*>} An array containing all the keys of tree's nodes.
          */
-        /*@ exportKeys : () : {Array<Mutable, number> | true} */
         public exportKeys() {
             /*@ result :: Array<Mutable, number> */
-            var result = [];
+            var result:number[] = [];
             var root = this.root_;
             if (root) {
                 var f = function (node)

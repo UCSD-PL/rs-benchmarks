@@ -15,10 +15,12 @@
 // Variable used to hold a number that can be used to verify that
 // the scene was ray traced correctly.
 
+
 //TODO: move this stuff to prelude?
 /*@ qualif Bot(v:a, s:string): keyIn(v,s) */
 /*@ qualif Bot(v:a, s:string): enumProp(v,s) */
 interface HTMLCanvasElement {
+    /*@ getContext : (string) => {CanvasRenderingContext2D<Mutable> | true} */
     getContext(s:string):CanvasRenderingContext2D; //or WebGLRenderingContext or null
 }
 interface CanvasRenderingContext2D {
@@ -286,9 +288,9 @@ module VERSION {
 
         export class Scene {
             public camera : Camera;
-            /*@ shapes : Array<Mutable, Shape<Immutable>> */
+            /*@ shapes : IArray<Shape<Immutable>> */
             public shapes : Shape[];
-            /*@ lights : Array<Mutable, Light<Immutable>> */
+            /*@ lights : IArray<Light<Immutable>> */
             public lights : Light[];
             public background : Background;
 
@@ -640,24 +642,22 @@ module VERSION {
 
             /*@ new(options:EngineOptions) => {void | true} */
             constructor(options) {
-                var this_options = options
-                //TODO PORTME: revert to the below version
-	//			   var this_options = extend({
-    //                 canvasHeight: 100,
-    //                 canvasWidth: 100,
-    //                 pixelWidth: 2,
-    //                 pixelHeight: 2,
-    //                 renderDiffuse: false,
-    //                 renderShadows: false,
-    //                 renderHighlights: false,
-    //                 renderReflections: false,
-    //                 rayDepth: 2
-    //             }, options || {});
+                var this_options = extend({
+                    canvasHeight: 100,
+                    canvasWidth: 100,
+                    pixelWidth: 2,
+                    pixelHeight: 2,
+                    renderDiffuse: false,
+                    renderShadows: false,
+                    renderHighlights: false,
+                    renderReflections: false,
+                    rayDepth: 2
+                }, options || {});
 
                 this_options.canvasHeight /= this_options.pixelHeight;
                 this_options.canvasWidth /= this_options.pixelWidth;
 
-				this.options = this_options;
+                this.options = this_options;
 
                 /* TODO: dynamically include other scripts */
             }
@@ -680,7 +680,7 @@ module VERSION {
                 }
             }
 
-            /* renderScene : (scene:Scene<ReadOnly>, canvas:HTMLCanvasElement<ReadOnly>) : {void | true} */
+            /*@ renderScene : (this:Engine<Mutable>, scene:Scene<ReadOnly>, canvas:HTMLCanvasElement<ReadOnly>?) : {void | true} */
             public renderScene(scene:Scene, canvas:HTMLCanvasElement) {
                 checkNumber = 0;
                 /* Get canvas */
@@ -919,13 +919,16 @@ module VERSION {
                 )
             );
 
-            scene.shapes.push(plane);
-            scene.shapes.push(sphere);
-            scene.shapes.push(sphere1);
+            // ORIG:
+            // scene.shapes.push(plane);
+            // scene.shapes.push(sphere);
+            // scene.shapes.push(sphere1);
+            scene.shapes = [<Shape>plane, <Shape>sphere, <Shape>sphere1];
 
             var light = new Light(
                 new Vector(5, 10, -1),
-                new Color(4/5, 4/5, 4/5)
+                new Color(4/5, 4/5, 4/5),
+                10 // (ORIG: default param omitted)
             );
 
             var light1 = new Light(
@@ -934,8 +937,10 @@ module VERSION {
                 100
             );
 
-            scene.lights.push(light);
-            scene.lights.push(light1);
+            // ORIG:
+            // scene.lights.push(light);
+            // scene.lights.push(light1);
+            scene.lights = [light, light1];
 
             var imageWidth = 100; // $F('imageWidth');
             var imageHeight = 100; // $F('imageHeight');
