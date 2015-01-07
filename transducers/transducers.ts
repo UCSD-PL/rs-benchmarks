@@ -12,11 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+
+//TODO: restore "ATATiterator" to "@@iterator"
+
 //TODO: move to prelude?
 /*@ qualif Bot(v:a, s:string): keyIn(v,s) */
 /*@ qualif Bot(v:a, s:string): enumProp(v,s) */
 
 module transducers {
+
+
+
+/*@ predicate Inst(X, Key, Type) = ((Prop (keyVal(X, Key))) => instanceof (X, Type)) */
+
+/*@ predicate InstIterator(V) = Inst(V,"next","Iterator") */
+/*@ predicate InstIterable(V) = Inst(V,"ATATiterator","Iterable") */
+
+/*@ alias ObjectK<T> = { v: [Immutable]{[s:string]:T} | InstIterator(v) && InstIterable(v) } */
+
+
 
 interface Goog {
     /*@ typeOf : /\ forall M T . (x:Array<M,T>) : {string | v = "array"}
@@ -31,6 +45,9 @@ interface IterResult<T> {
 }
 interface Iterator<T> {
     next():IterResult<T>;
+}
+interface Iterable<T> {
+    ATATiterator:Iterator<T>;
 }
 interface TruncatedTransformer<IN, INTER> {
     init:()=>INTER;
@@ -97,7 +114,7 @@ function isObject(x:any) {
 
 /*@ isIterable :: forall T . (x:[Immutable]{[s:string]:T}) => {T | true} */
 function isIterable(x:any) {
-    return x["@@iterator"] || x["next"];
+    return x["ATATiterator"] || x["next"];
 }
 
         // NOTICE: this seems inherently not typesafe and thus impossible to support
@@ -1047,10 +1064,10 @@ function objectReduce<INTER, OUT>(xf:Transformer<{}, INTER, OUT>, init:INTER, ob
     return xf.result(wrappedAcc);
 }
 
-/*@ iterableReduce :: forall IN INTER OUT . (xf:ITransformer<IN, INTER, OUT>, init:INTER, iter:Iterator<Immutable,IN>) => {OUT | true} */
+/*@ iterableReduce :: /\ forall IN INTER OUT . (xf:ITransformer<IN, INTER, OUT>, init:INTER, iter:Iterator<Immutable,IN>) => {OUT | true} */
 function iterableReduce(xf, init, iter) {
-    // if(iter["@@iterator"]) {
-    //     iter = iter["@@iterator"]();
+    // if(iter["ATATiterator"]) {
+    //     iter = iter["ATATiterator"]();
     // }
 
     var acc = init;
