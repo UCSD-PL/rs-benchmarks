@@ -15,6 +15,7 @@
 // Variable used to hold a number that can be used to verify that
 // the scene was ray traced correctly.
 
+
 //TODO: move this stuff to prelude?
 /*@ qualif Bot(v:a, s:string): keyIn(v,s) */
 /*@ qualif Bot(v:a, s:string): enumProp(v,s) */
@@ -641,24 +642,22 @@ module VERSION {
 
             /*@ new(options:EngineOptions) => {void | true} */
             constructor(options) {
-                var this_options = options
-                //TODO PORTME: revert to the below version
-	//			   var this_options = extend({
-    //                 canvasHeight: 100,
-    //                 canvasWidth: 100,
-    //                 pixelWidth: 2,
-    //                 pixelHeight: 2,
-    //                 renderDiffuse: false,
-    //                 renderShadows: false,
-    //                 renderHighlights: false,
-    //                 renderReflections: false,
-    //                 rayDepth: 2
-    //             }, options || {});
+                var this_options = extend({
+                    canvasHeight: 100,
+                    canvasWidth: 100,
+                    pixelWidth: 2,
+                    pixelHeight: 2,
+                    renderDiffuse: false,
+                    renderShadows: false,
+                    renderHighlights: false,
+                    renderReflections: false,
+                    rayDepth: 2
+                }, options || {});
 
                 this_options.canvasHeight /= this_options.pixelHeight;
                 this_options.canvasWidth /= this_options.pixelWidth;
 
-				this.options = this_options;
+                this.options = this_options;
 
                 /* TODO: dynamically include other scripts */
             }
