@@ -19,10 +19,19 @@
 module transducers {
 
 interface Goog {
+    /*@ typeOf : /\ forall M T . (x:Array<M,T>) : {string | v = "array"}
+                 /\ (x:top) : {string | v != "array"} */
     typeOf(x:any):string;
 }
 declare var goog:Goog;
 
+interface IterResult<T> {
+    done:boolean;
+    value:T;
+}
+interface Iterator<T> {
+    next():IterResult<T>;
+}
 interface TruncatedTransformer<IN, INTER> {
     init:()=>INTER;
     /*@ step : (result:INTER, input:IN) => {QQ<Mutable, INTER> | true} */
@@ -74,7 +83,8 @@ function isString(x:any) {
         //         return Array.isArray(x);
         //     }
         // } else {
-/*@ isArray :: (x:top) => {boolean | true} */
+/*@ isArray :: /\ forall M T . (x:Array<M,T>) => {boolean | Prop v}
+               /\ (x:top) => {boolean | not (Prop v)} */
 function isArray(x:any) {
     return goog.typeOf(x) === "array";
 }
@@ -85,10 +95,9 @@ function isObject(x:any) {
     return goog.typeOf(x) === "object";
 }
 
-/*@ isIterable :: (x:top) => {top | true} */
+/*@ isIterable :: forall T . (x:[Immutable]{[s:string]:T}) => {T | true} */
 function isIterable(x:any) {
-    throw new Error("PORTME");
-    //return x["@@iterator"] || x["next"];
+    return x["@@iterator"] || x["next"];
 }
 
         // NOTICE: this seems inherently not typesafe and thus impossible to support
@@ -1038,25 +1047,30 @@ function objectReduce<INTER, OUT>(xf:Transformer<{}, INTER, OUT>, init:INTER, ob
     return xf.result(wrappedAcc);
 }
 
-        // transducers.iterableReduce = function(xf, init, iter) {
-        //     if(iter["@@iterator"]) {
-        //         iter = iter["@@iterator"]();
-        //     }
+/*@ iterableReduce :: forall IN INTER OUT . (xf:ITransformer<IN, INTER, OUT>, init:INTER, iter:Iterator<Immutable,IN>) => {OUT | true} */
+function iterableReduce(xf, init, iter) {
+    // if(iter["@@iterator"]) {
+    //     iter = iter["@@iterator"]();
+    // }
 
-        //     var acc  = init,
-        //         step = iter.next();
-            
-        //     while(!step.done) {
-        //         acc = xf.step(acc, step.value);
-        //         if(transducers.isReduced(acc)) {
-        //             acc = transducers.deref(acc);
-        //             break;
-        //         }
-        //         step = iter.next();
-        //     }
+    var acc = init;
+    var wrappedAcc = new QQ(acc, 0);    
+    var shouldBreak = false;
+    var step = iter.next();    
+    while(!shouldBreak) {
+        wrappedAcc = xf.step(acc, step.value);
+        if(isReduced(wrappedAcc)) {
+            wrappedAcc.__transducers_reduced__--;
+            shouldBreak = true;
+        } else {
+            step = iter.next();
+            shouldBreak = step.done;
+            acc = wrappedAcc.value;
+        }
+    }
 
-        //     return xf.result(acc);
-        // };
+    return xf.result(wrappedAcc);
+}
 
 /**
  * Given a transducer, an intial value and a 
@@ -1083,8 +1097,7 @@ function reduce(xf:any, init:any, coll:any):any {
         throw new Error("PORTME");
         // return iterableReduce(xf, init, coll);
     } else if(isObject(coll)) {
-        throw new Error("PORTME");
-        // return objectReduce(xf, init, coll);
+        return objectReduce(xf, init, coll);
     } else {
         throw new Error("Cannot reduce instance of ");// + coll.constructor.name); //TODO
     }
