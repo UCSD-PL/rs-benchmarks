@@ -103,7 +103,6 @@ module RichardsTYPEDVERSION {
      * The Richards benchmark simulates the task dispatcher of an
      * operating system.
      **/
-    /*@ runRichards :: () => {void | true} */
     function runRichards() {
         var scheduler = new Scheduler(0, 0, new Array(NUMBER_OF_IDS), null, null, -1);
         scheduler.addIdleTask(ID_IDLE, 0, null, COUNT);
@@ -414,7 +413,7 @@ module RichardsTYPEDVERSION {
         /*@ run : (this:Self<Mutable>) : {TaskControlBlock<Mutable> + null | true} */
         public run () {
             if (!(this.state === STATE_SUSPENDED_RUNNABLE)) {
-                return this.task.run(null);
+                return this.task.run();
             }
             var packet = this.queue;
             if (!packet) throw new Error("Illegal state: this.queue is null yet this.state is SUSPENDED_RUNNABLE");
@@ -455,7 +454,8 @@ module RichardsTYPEDVERSION {
     class Task {
         /*@ new () => {void | true} */
         constructor() {}
-        /*@ run : (this:Self<Mutable>, packet: Packet<Mutable> + null) : { TaskControlBlock<Mutable> + null | true } */
+        /*@ run : /\ (this:Self<Mutable>, packet: Packet<Mutable>) : { TaskControlBlock<Mutable> + null | true }
+                  /\ (this:Self<Mutable>) : { TaskControlBlock<Mutable> + null | true } */
         public run(packet?) {
             throw "Abstract method";
         }
@@ -484,7 +484,8 @@ module RichardsTYPEDVERSION {
             this.count = count;
         }
 
-        /*@ run : (this: Self<Mutable>, packet: Packet<ReadOnly> + null) : {TaskControlBlock<Mutable> + null | true} */
+        /*@ run : /\ (this:Self<Mutable>, packet: Packet<ReadOnly>) : { TaskControlBlock<Mutable> + null | true }
+                  /\ (this:Self<Mutable>) : { TaskControlBlock<Mutable> + null | true } */
         public run(packet?) {
             this.count--;
             if (this.count === 0) return this.scheduler.holdCurrent();
@@ -522,7 +523,8 @@ module RichardsTYPEDVERSION {
             this.v1 = v1;
         }
 
-        /*@ run : (this: Self<Mutable>, packet: Packet<Mutable> + null) : {TaskControlBlock<Mutable> + null | true} */
+        /*@ run : /\ (this:Self<Mutable>, packet: Packet<Mutable>) : { TaskControlBlock<Mutable> + null | true }
+                  /\ (this:Self<Mutable>) : { TaskControlBlock<Mutable> + null | true } */
         public run(packet?) {
             if (!packet) {
                 var v1 = this.v1;
@@ -566,7 +568,8 @@ module RichardsTYPEDVERSION {
             this.v2 = v2;
         }
 
-        /*@ run : (this:Self<Mutable>, packet: Packet<Mutable> + null) : {TaskControlBlock<Mutable> + null | true} */
+        /*@ run : /\ (this:Self<Mutable>, packet: Packet<Mutable>) : { TaskControlBlock<Mutable> + null | true }
+                  /\ (this:Self<Mutable>) : { TaskControlBlock<Mutable> + null | true } */
         public run(packet?) {
             if (!packet) {
                 return this.scheduler.suspendCurrent();
@@ -614,7 +617,8 @@ module RichardsTYPEDVERSION {
             this.v2 = v2;
         }
 
-        /*@ run : (this:Self<Mutable>, packet: Packet<Mutable> + null) : {TaskControlBlock<Mutable> + null | true} */
+        /*@ run : /\ (this:Self<Mutable>, packet: Packet<Mutable>) : { TaskControlBlock<Mutable> + null | true }
+                  /\ (this:Self<Mutable>) : { TaskControlBlock<Mutable> + null | true } */
         public run(packet?) {
             if (packet) {
                 if (packet.kind === KIND_WORK) {
