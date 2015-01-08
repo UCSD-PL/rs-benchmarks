@@ -19,9 +19,9 @@
 /*@ qualif Bot(v:a, s:string): keyIn(v,s) */
 /*@ qualif Bot(v:a, s:string): enumProp(v,s) */
 
+module com {
+module cognitect {
 module transducers {
-
-
 
 /*@ predicate Inst(X, Key, Type) = ((Prop (keyVal(X, Key))) => instanceof (X, Type)) */
 
@@ -30,6 +30,7 @@ module transducers {
 
 /*@ alias ObjectK<T> = { v: [Immutable]{[s:string]:T} | InstIterator(v) && InstIterable(v) } */
 
+/*@ alias ITransformer<T, U, V> = Transformer<Immutable, T, U, V> */
 
 
 interface Goog {
@@ -43,12 +44,14 @@ interface IterResult<T> {
     done:boolean;
     value:T;
 }
-interface Iterator<T> {
-    next():IterResult<T>;
+//TODO make these interfaces?
+class Iterator<T> extends IterLike<T> {
+    next():IterResult<T> { throw new Error(); }
 }
-interface Iterable<T> {
-    ATATiterator:Iterator<T>;
+class Iterable<T> extends IterLike<T> {
+    ATATiterator:Iterator<T> = new Iterator<T>();
 }
+class IterLike<T> { }
 interface TruncatedTransformer<IN, INTER> {
     init:()=>INTER;
     /*@ step : (result:INTER, input:IN) => {QQ<Mutable, INTER> | true} */
@@ -58,7 +61,6 @@ interface Transformer<IN, INTER, OUT> extends TruncatedTransformer<IN, INTER> {
     /*@ result : (result:QQ<Mutable, INTER>) => {OUT | true} */
     result:(result:QQ<INTER>)=>OUT;
 }
-/*@ alias ITransformer<T, U, V> = Transformer<Immutable, T, U, V> */
 
         // "use strict";
 
@@ -1289,4 +1291,4 @@ var first:Wrap<any, any> = generalWrap(function(result:any, input:any)
 // Exporting
 // NOTICE: this section was removed as irrelevant to the JS->RS port
 
-} // end of module transducers
+}}} // end of module com.cognitecttransducers
