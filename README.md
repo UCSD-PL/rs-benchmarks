@@ -4,7 +4,7 @@
 
 To run all tests:
 ```
-$ make test
+$ make all
 ```
 
 To run tests in a particular project (e.g. `d3`): 
