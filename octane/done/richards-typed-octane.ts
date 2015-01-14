@@ -453,7 +453,7 @@ module RichardsTYPEDVERSION {
          * necessary, and returns the next runnable object to run (the one
          * with the highest priority).
          */
-        /*@ checkPriorityAdd : (this: TaskControlBlock<Mutable>, 
+        /*@ checkPriorityAdd : (this:TaskControlBlock<Mutable>, 
                                 task:TaskControlBlock<Mutable>, 
                                 packet:Packet<Mutable>) : {TaskControlBlock<Mutable> | true} */
         public checkPriorityAdd (task, packet) {
@@ -703,10 +703,7 @@ module RichardsTYPEDVERSION {
          * @param {int} kind the type of this packet
          * @constructor
          */
-        /*@ new(link:Packet<Mutable> + null, 
-                id:{nat | v<NUMBER_OF_IDS},
-                kind:number, 
-                a1:nat) => {void | true} */
+        /*@ new(link:Packet<Mutable> + null, id:{nat | v<NUMBER_OF_IDS}, kind:number, a1:nat) => {void | true} */
         constructor(link, id, kind, a1?) {
             this.a2 = new Array(DATA_SIZE);
             this.link = link;
