@@ -34,6 +34,8 @@
 // The benchmark was originally implemented in BCPL by
 // Martin Richards.
 
+/*@ alias nat = {number | 0 <= v} */
+
 module RichardsTYPEDVERSION {
     var COUNT = 1000;
 
@@ -179,7 +181,11 @@ module RichardsTYPEDVERSION {
          * @param {Packet} queue the queue of work to be processed by the task
          * @param {int} count the number of times to schedule the task
          */
-        /*@ addIdleTask : (this: Scheduler<Mutable>, id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Mutable> + null, count:number) : {void | true} */
+        /*@ addIdleTask : (this: Scheduler<Mutable>, 
+                           id:{nat | v<NUMBER_OF_IDS}, 
+                           priority:number, 
+                           queue:Packet<Mutable> + null, 
+                           count:number) : {void | true} */
         public addIdleTask(id, priority, queue, count) {
             this.addRunningTask(id, priority, queue, new IdleTask(this, 1, count));
         }
@@ -190,7 +196,10 @@ module RichardsTYPEDVERSION {
          * @param {int} priority the task's priority
          * @param {Packet} queue the queue of work to be processed by the task
          */
-        /*@ addWorkerTask : (this: Scheduler<Mutable>, id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Mutable> + null) : {void | true} */
+        /*@ addWorkerTask : (this: Scheduler<Mutable>, 
+                             id:{nat | v<NUMBER_OF_IDS}, 
+                             priority:number, 
+                             queue:Packet<Mutable> + null) : {void | true} */
         public addWorkerTask(id, priority, queue) {
             this.addTask(id, priority, queue, new WorkerTask(this, ID_HANDLER_A, 0));
         }
@@ -201,7 +210,10 @@ module RichardsTYPEDVERSION {
          * @param {int} priority the task's priority
          * @param {Packet} queue the queue of work to be processed by the task
          */
-        /*@ addHandlerTask : (this: Scheduler<Mutable>, id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Mutable> + null) : {void | true} */
+        /*@ addHandlerTask : (this: Scheduler<Mutable>, 
+                              id:{nat | v<NUMBER_OF_IDS}, 
+                              priority:number, 
+                              queue:Packet<Mutable> + null) : {void | true} */
         public addHandlerTask(id, priority, queue) {
             this.addTask(id, priority, queue, new HandlerTask(this, null, null));
         }
@@ -212,7 +224,10 @@ module RichardsTYPEDVERSION {
          * @param {int} priority the task's priority
          * @param {Packet} queue the queue of work to be processed by the task
          */
-        /*@ addDeviceTask : (this: Scheduler<Mutable>, id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Mutable> + null) : {void | true} */
+        /*@ addDeviceTask : (this: Scheduler<Mutable>, 
+                             id:{nat | v<NUMBER_OF_IDS}, 
+                             priority:number, 
+                             queue:Packet<Mutable> + null) : {void | true} */
         public addDeviceTask(id, priority, queue) {
             this.addTask(id, priority, queue, new DeviceTask(this, null))
         }
@@ -224,7 +239,11 @@ module RichardsTYPEDVERSION {
          * @param {Packet} queue the queue of work to be processed by the task
          * @param {Task} task the task to add
          */
-        /*@ addRunningTask : (this:Scheduler<Mutable>, id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Mutable> + null, task:Task<Mutable>) : {void | true} */
+        /*@ addRunningTask : (this:Scheduler<Mutable>, 
+                              id:{nat | v<NUMBER_OF_IDS}, 
+                              priority:number, 
+                              queue:Packet<Mutable> + null, 
+                              task:Task<Mutable>) : {void | true} */
         public addRunningTask(id, priority, queue, task) {
             this.addTask(id, priority, queue, task);
             var currentTcb = this.currentTcb;
@@ -239,7 +258,11 @@ module RichardsTYPEDVERSION {
          * @param {Packet} queue the queue of work to be processed by the task
          * @param {Task} task the task to add
          */
-        /*@ addTask : (this:Scheduler<Mutable>, id:{number | 0<=v && v<NUMBER_OF_IDS}, priority:number, queue:Packet<Mutable> + null, task:Task<Mutable>) : {void | true} */
+        /*@ addTask : (this:Scheduler<Mutable>, 
+                       id:{nat | v<NUMBER_OF_IDS}, 
+                       priority:number, 
+                       queue:Packet<Mutable> + null, 
+                       task:Task<Mutable>) : {void | true} */
         public addTask(id, priority, queue, task) {
             this.currentTcb = new TaskControlBlock(this.list, id, priority, queue, task);
             this.list = this.currentTcb;
@@ -270,7 +293,7 @@ module RichardsTYPEDVERSION {
          * Release a task that is currently blocked and return the next block to run.
          * @param {int} id the id of the task to suspend
          */
-        /*@ release : (id:{number | 0<=v && v<NUMBER_OF_IDS}) : {TaskControlBlock<Mutable> + null | true} */
+        /*@ release : (id:{nat | v<NUMBER_OF_IDS}) : {TaskControlBlock<Mutable> + null | true} */
         public release(id) {
             var tcb = this.blocks[id];
             if (!tcb) return tcb;
@@ -318,7 +341,7 @@ module RichardsTYPEDVERSION {
          * suspended.
          * @param {Packet} packet the packet to add
          */
-        /*@ queue : (this:Scheduler<Mutable>, packet: Packet<Mutable>) : {TaskControlBlock<Mutable> + null | true}*/
+        /*@ queue : (this:Scheduler<Mutable>, packet: Packet<Mutable>) : {TaskControlBlock<Mutable> + null | true} */
         public queue(packet) {
             var t = this.blocks[packet.id];
             if (!t) return t;
@@ -341,7 +364,7 @@ module RichardsTYPEDVERSION {
         private state = 0;
         /*@ link : TaskControlBlock<Mutable> + null */
         public link;
-        /*@ id : {number | 0<=v && v<NUMBER_OF_IDS} */
+        /*@ id : {nat | v<NUMBER_OF_IDS} */
         public id;
         public priority;
         /*@ queue : Packet<Mutable> + null */
@@ -360,7 +383,7 @@ module RichardsTYPEDVERSION {
          * @constructor
          */
         /*@ new(link:TaskControlBlock<Mutable> + null, 
-                id:{number | 0<=v && v<NUMBER_OF_IDS}, 
+                id:{nat | v<NUMBER_OF_IDS}, 
                 priority:number, 
                 queue:Packet<Mutable> + null, 
                 task:Task<Mutable>) => {void | true} */
@@ -392,7 +415,6 @@ module RichardsTYPEDVERSION {
             this.state = this.state | STATE_HELD;
         }
 
-        /*@ isHeldOrSuspended : () : {boolean | true} */
         public isHeldOrSuspended () {
             return (this.state & STATE_HELD) != 0 || (this.state === STATE_SUSPENDED);
         }
@@ -431,7 +453,9 @@ module RichardsTYPEDVERSION {
          * necessary, and returns the next runnable object to run (the one
          * with the highest priority).
          */
-        /*@ checkPriorityAdd : (this: TaskControlBlock<Mutable>, task:TaskControlBlock<Mutable>, packet:Packet<Mutable>) : {TaskControlBlock<Mutable> | true} */
+        /*@ checkPriorityAdd : (this: TaskControlBlock<Mutable>, 
+                                task:TaskControlBlock<Mutable>, 
+                                packet:Packet<Mutable>) : {TaskControlBlock<Mutable> | true} */
         public checkPriorityAdd (task, packet) {
             if (!this.queue) {
                 this.queue = packet;
@@ -547,9 +571,9 @@ module RichardsTYPEDVERSION {
     class WorkerTask extends Task {
         /*@ scheduler : Scheduler<Mutable> */
         public scheduler;
-        /*@ v1 : {number | 0<=v && v<NUMBER_OF_IDS} */
+        /*@ v1 : {nat | v<NUMBER_OF_IDS} */
         public v1;
-        /*@ v2 : {number | 0<=v} */
+        /*@ v2 : nat */
         public v2;
         /**
          * A task that manipulates work packets.
@@ -558,9 +582,7 @@ module RichardsTYPEDVERSION {
          * @param {int} v2 another seed used to specify how work packets are manipulated
          * @constructor
          */
-        /*@ new(scheduler:Scheduler<Mutable>, 
-                v1:{number | 0<=v && v<NUMBER_OF_IDS}, 
-                v2:{number | 0<=v}) => {void | true} */
+        /*@ new(scheduler:Scheduler<Mutable>, v1:{nat | v<NUMBER_OF_IDS}, v2:nat) => {void | true} */
         constructor(scheduler, v1, v2) {
             super();
             this.scheduler = scheduler;
@@ -659,15 +681,15 @@ module RichardsTYPEDVERSION {
      * --- */
 
     class Packet {
-        /*@ a2 : {IArray<{number | 0<=v}> | (len v) = DATA_SIZE} */
+        /*@ a2 : {IArray<nat> | (len v) = DATA_SIZE} */
         public a2;
 
         /*@ link : Packet<Mutable> + null */
         public link;
-        /*@ id : {number | 0<=v && v<NUMBER_OF_IDS} */
+        /*@ id : {nat | v<NUMBER_OF_IDS} */
         public id;
         public kind:number;
-        /*@ a1 : {number | 0<=v} */
+        /*@ a1 : nat */
         public a1 = 0;
         /**
          * A simple package of data that is manipulated by the tasks.  The exact layout
@@ -682,9 +704,9 @@ module RichardsTYPEDVERSION {
          * @constructor
          */
         /*@ new(link:Packet<Mutable> + null, 
-                id:{number | 0<=v && v<NUMBER_OF_IDS},
+                id:{nat | v<NUMBER_OF_IDS},
                 kind:number, 
-                a1:{number | 0<=v}) => {void | true} */
+                a1:nat) => {void | true} */
         constructor(link, id, kind, a1?) {
             this.a2 = new Array(DATA_SIZE);
             this.link = link;
