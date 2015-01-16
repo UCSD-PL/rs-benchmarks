@@ -6,8 +6,7 @@
   - EventTarget (selection/* ??)
   - Date (time/time.ts)
   - window and document (core/document.ts)
-  - Cannot call 'toRsExp' on...
-  - SyntaxKind CommaExpression (arrays/shuffle.ts:6)
+  - Cannot call 'toRsExp' on SyntaxKind CommaExpression (arrays/shuffle.ts:6)
 
 
 ## Done
@@ -25,17 +24,16 @@ src-ts/
     shuffle.ts
     pairs.ts
     quantile.ts
-    sum.ts              [overload/dyn-args-check, isNan, HOF]
+    sum.ts              [overload, isNan, HOF]
     zip.ts              [TODO: https://github.com/UCSD-PL/RefScript/issues/32]
-    mean.ts             [args-check, isNaN, TODO: #38]
-    median.ts           [args-check, isNan, TODO: #39,#40]
-    extent.ts           [args-check]
+    mean.ts             [isNaN]
+    median.ts           [isNan, TODO: #39,#40]
+    extent.ts
 ```
 
 
 ## Issues
 
-- [#38](https://github.com/UCSD-PL/RefScript/issues/38)
 - [#39](https://github.com/UCSD-PL/RefScript/issues/39)
 - [#40](https://github.com/UCSD-PL/RefScript/issues/40)
 
