@@ -25,9 +25,9 @@ src-ts/
     pairs.ts
     quantile.ts
     sum.ts              [overload, isNan, HOF]
-    zip.ts              [TODO: https://github.com/UCSD-PL/RefScript/issues/32]
+    zip.ts              [TODO: remove 'assume'?]
     mean.ts             [isNaN]
-    median.ts           [isNan, TODO: #39,#40]
+    median.ts           [isNan, TODO: #39]
     extent.ts
 ```
 
@@ -35,7 +35,6 @@ src-ts/
 ## Issues
 
 - [#39](https://github.com/UCSD-PL/RefScript/issues/39)
-- [#40](https://github.com/UCSD-PL/RefScript/issues/40)
 
 ## Interesting Features
 
