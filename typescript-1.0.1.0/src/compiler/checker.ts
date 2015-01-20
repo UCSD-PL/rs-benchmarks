@@ -1,5 +1,6 @@
 /// <reference path="types.ts"/>
 /// <reference path="core.ts"/>
+
 //  <reference path="scanner.ts"/>
 //  <reference path="parser.ts"/>
 //  <reference path="binder.ts"/>
@@ -8,17 +9,20 @@
 
 
 module ts {
+
     /*@ alias nat = { number | v > 0 } */
 
     /*@ nextSymbolId :: nat */
     var nextSymbolId = 1;
 
+    /*@ nextNodeId :: nat */
     var nextNodeId = 1;
 
     /*@ nextMergeId :: nat */
     var nextMergeId = 1;
 
-    /*@ getDeclarationOfKind :: (symbol: ISymbol, kind: SyntaxKind) => { Declaration<Immutable> | keyVal(v,"kind") = kind } + { undefined | true } */
+    /*@ getDeclarationOfKind :: (symbol: ISymbol, kind: SyntaxKind) 
+                             => { Declaration<Immutable> | keyVal(v,"kind") = kind } + undefined */
     export function getDeclarationOfKind(symbol: Symbol, kind: SyntaxKind): Declaration {
         var declarations = symbol.declarations;
         for (var i = 0; i < declarations.length; i++) {
@@ -51,16 +55,19 @@ module ts {
         var Type = objectAllocator.getTypeConstructor();
         var Signature = objectAllocator.getSignatureConstructor();
 
+        /*@ typeCount :: { number | v >= 0 } */
         var typeCount = 0;
 
         /*@ emptyArray :: forall T . () => { IArray<T> | (len v) = 0 }  */
-        function emptyArray(): any[] { return []; };
-        // var emptyArray: any[] = [];
+        function emptyArray(): any[] { return []; };        // ORIGINAL: var emptyArray: any[] = [];
+
         var emptySymbols: SymbolTable = {};
 
         var compilerOptions = program.getCompilerOptions();
 
-//         var checker: TypeChecker = {
+
+
+        var checker: TypeChecker = {
 //             getProgram: () => program,
 //             getDiagnostics: getDiagnostics,
 //             getGlobalDiagnostics: getGlobalDiagnostics,
@@ -86,13 +93,13 @@ module ts {
 //             getAugmentedPropertiesOfApparentType: getAugmentedPropertiesOfApparentType,
 //             getRootSymbol: getRootSymbol,
 //             getContextualType: getContextualType
-//         };
-// 
-//         var undefinedSymbol = createSymbol(SymbolFlags.Property | SymbolFlags.Transient, "undefined");
-//         var argumentsSymbol = createSymbol(SymbolFlags.Property | SymbolFlags.Transient, "arguments");
-//         var unknownSymbol = createSymbol(SymbolFlags.Property | SymbolFlags.Transient, "unknown");
-//         var resolvingSymbol = createSymbol(SymbolFlags.Transient, "__resolving__");
-// 
+        };
+
+        var undefinedSymbol = createSymbol(SymbolFlags.Property | SymbolFlags.Transient, "undefined");
+        var argumentsSymbol = createSymbol(SymbolFlags.Property | SymbolFlags.Transient, "arguments");
+        var unknownSymbol = createSymbol(SymbolFlags.Property | SymbolFlags.Transient, "unknown");
+        var resolvingSymbol = createSymbol(SymbolFlags.Transient, "__resolving__");
+
 //         var anyType = createIntrinsicType(TypeFlags.Any, "any");
 //         var stringType = createIntrinsicType(TypeFlags.String, "string");
 //         var numberType = createIntrinsicType(TypeFlags.Number, "number");
@@ -125,13 +132,14 @@ module ts {
 //         var stringLiteralTypes: Map<StringLiteralType> = {};
 //         var emitExtends = false;
 // 
-//         /*@ mergedSymbols :: Array<Mutable,ISymbol> */
-//         var mergedSymbols: Symbol[] = [];
+        /*@ mergedSymbols :: MArray<ISymbol> */
+        var mergedSymbols: Symbol[] = [];
 
-        /*@ symbolLinks :: Array<Mutable, SymbolLinks<Immutable>> */
+        /*@ symbolLinks :: MArray<SymbolLinks<Immutable>> */
         var symbolLinks: SymbolLinks[] = [];
 
-//         var nodeLinks: NodeLinks[] = [];
+        /*@ nodeLinks :: MArray<NodeLinks<Immutable>> */
+        var nodeLinks: NodeLinks[] = [];
 //         var potentialThisCollisions: Node[] = [];
 // 
 //         var diagnostics: Diagnostic[] = [];
@@ -149,37 +157,37 @@ module ts {
 //             addDiagnostic(diagnostic);
 //         }
 
-// 
-//         /*@ createSymbol :: (flags: SymbolFlags, name: string) => { ISymbol | keyVal(v, "flags") = flags } */
-//         function createSymbol(flags: SymbolFlags, name: string): Symbol {
-//             return new Symbol(flags, name);
-//         }
 
-        // XXX: DONE
+        /*@ createSymbol :: (flags: SymbolFlags, name: string) => { ISymbol | keyVal(v, "flags") = flags } */
+        function createSymbol(flags: SymbolFlags, name: string): Symbol {
+            return new Symbol(flags, name);
+        }
+
+        // XXX
         /*@ getExcludedSymbolFlags :: (flags: SymbolFlags) => { SymbolFlags | true } */
         function getExcludedSymbolFlags(flags: SymbolFlags): SymbolFlags {
             var result: SymbolFlags = 0;
             if (flags & SymbolFlags.Variable)      result = result | SymbolFlags.VariableExcludes;
             if (flags & SymbolFlags.Property)      result = result | SymbolFlags.PropertyExcludes;
-//             if (flags & SymbolFlags.EnumMember)    result = result | SymbolFlags.EnumMemberExcludes;
-//             if (flags & SymbolFlags.Function)      result = result | SymbolFlags.FunctionExcludes;
-//             if (flags & SymbolFlags.Class)         result = result | SymbolFlags.ClassExcludes;
-//             if (flags & SymbolFlags.Interface)     result = result | SymbolFlags.InterfaceExcludes;
-//             if (flags & SymbolFlags.Enum)          result = result | SymbolFlags.EnumExcludes;
-//             if (flags & SymbolFlags.ValueModule)   result = result | SymbolFlags.ValueModuleExcludes;
-//             if (flags & SymbolFlags.Method)        result = result | SymbolFlags.MethodExcludes;
-//             if (flags & SymbolFlags.GetAccessor)   result = result | SymbolFlags.GetAccessorExcludes;
-//             if (flags & SymbolFlags.SetAccessor)   result = result | SymbolFlags.SetAccessorExcludes;
-//             if (flags & SymbolFlags.TypeParameter) result = result | SymbolFlags.TypeParameterExcludes;
-//             if (flags & SymbolFlags.Import)        result = result | SymbolFlags.ImportExcludes;
+            if (flags & SymbolFlags.EnumMember)    result = result | SymbolFlags.EnumMemberExcludes;
+            if (flags & SymbolFlags.Function)      result = result | SymbolFlags.FunctionExcludes;
+            if (flags & SymbolFlags.Class)         result = result | SymbolFlags.ClassExcludes;
+            if (flags & SymbolFlags.Interface)     result = result | SymbolFlags.InterfaceExcludes;
+            if (flags & SymbolFlags.Enum)          result = result | SymbolFlags.EnumExcludes;
+            if (flags & SymbolFlags.ValueModule)   result = result | SymbolFlags.ValueModuleExcludes;
+            if (flags & SymbolFlags.Method)        result = result | SymbolFlags.MethodExcludes;
+            if (flags & SymbolFlags.GetAccessor)   result = result | SymbolFlags.GetAccessorExcludes;
+            if (flags & SymbolFlags.SetAccessor)   result = result | SymbolFlags.SetAccessorExcludes;
+            if (flags & SymbolFlags.TypeParameter) result = result | SymbolFlags.TypeParameterExcludes;
+            if (flags & SymbolFlags.Import)        result = result | SymbolFlags.ImportExcludes;
             return result ;
         }
 
-//         /*@ recordMergedSymbol :: (target: ISymbol, source: ISymbol) => { void | true } */
-//         function recordMergedSymbol(target: Symbol, source: Symbol) {
-//             if (!source.mergeId) source.mergeId = nextMergeId++;
-//             mergedSymbols[source.mergeId] = target;
-//         }
+        /*@ recordMergedSymbol :: (target: ISymbol, source: ISymbol) => { void | true } */
+        function recordMergedSymbol(target: Symbol, source: Symbol) {
+            if (!source.mergeId) source.mergeId = nextMergeId++;
+            mergedSymbols[source.mergeId] = target;
+        }
 // 
 //         function cloneSymbol(symbol: Symbol): Symbol {
 //             var result = createSymbol(symbol.flags | SymbolFlags.Merged, symbol.name);
@@ -243,12 +251,11 @@ module ts {
 //             }
 //         }
 
-        /*@ getSymbolLinks :: (symbol: ISymbolF) => SymbolLinks<Immutable> */
+        /*@ getSymbolLinks :: (symbol: ISymbolF) => { SymbolLinks<Immutable> | true } */
         function getSymbolLinks(symbol: Symbol): SymbolLinks {
 
-            if ((symbol.flags & SymbolFlags.Transient) === SymbolFlags.Transient) { 
-              // ORIG: if (symbol.flags & sft) { 
-              return <TransientSymbol>symbol;
+            if ((symbol.flags & SymbolFlags.Transient) === SymbolFlags.Transient) {
+                return <TransientSymbol>symbol;
             }
             
             if (!symbol.id) symbol.id = nextSymbolId++;
@@ -258,18 +265,36 @@ module ts {
             else { var o = {}; symbolLinks[symbol.id] = o; return o; }
 
             // ORIG: return symbolLinks[symbol.id] || (symbolLinks[symbol.id] = {});
-
+ 
         }
 
-//         function getNodeLinks(node: Node): NodeLinks {
-//             if (!node.id) node.id = nextNodeId++;
-//             return nodeLinks[node.id] || (nodeLinks[node.id] = {});
-//         }
-// 
-//         function getSourceFile(node: Node): SourceFile {
-//             return <SourceFile>getAncestor(node, SyntaxKind.SourceFile);
-//         }
-// 
+        /*@ getNodeLinks :: (node: INode) => { NodeLinks<Immutable> | true } */
+        function getNodeLinks(node: Node): NodeLinks {
+            var node_id = node.id;
+            if (!node_id) {
+                node_id = nextNodeId++;
+                node.id = node_id;
+            }
+            // ORIG: if (!node.id) node.id = nextNodeId++;
+
+            var n = nodeLinks[node_id];
+            if(n) { return n; }
+            else { var o = {}; nodeLinks[node_id] = o; return o; }
+            // ORIG: return nodeLinks[node.id] || (nodeLinks[node.id] = {});
+        }
+
+        /*@ getSourceFile :: (node: INodeK + undefined)
+                          => undefined + { SourceFile<Immutable> | true } 
+         */
+        function getSourceFile(node: Node): SourceFile {
+            var ancestor = getAncestor(node, SyntaxKind.SourceFile);
+            if (ancestor) {
+                return <SourceFile> (<Node>ancestor);
+            } else {
+                return undefined;
+            }
+        }
+
 //         function isGlobalSourceFile(node: Node) {
 //             return node.kind === SyntaxKind.SourceFile && !isExternalModule(<SourceFile>node);
 //         }
@@ -635,13 +660,22 @@ module ts {
 //             }
 //         }
 // 
-//         function createType(flags: TypeFlags): Type {
-//             var result = new Type(checker, flags);
-//             result.id = typeCount++;
-//             return result;
-//         }
+//
+// XXX: HERE
+
+        function createType(flags: TypeFlags): Type {
+            var result = new TypeC(checker, flags);     //PV: instead of 'new Type'
+            result.id = typeCount++;
+            return result;
+        }
 // 
+//         /*@ createIntrinsicType :: (kind: TypeFlags, intrinsicName: string) 
+//                                 => IntrinsicType<Immutable> 
+//         */
 //         function createIntrinsicType(kind: TypeFlags, intrinsicName: string): IntrinsicType {
+
+// XXX: This should be extended before the cast !!!
+
 //             var type = <IntrinsicType>createType(kind);
 //             type.intrinsicName = intrinsicName;
 //             return type;
@@ -3456,53 +3490,56 @@ module ts {
 //         }
 
 
-        // PV: Rewriting below
-        // function getAncestor(node: Node, kind: SyntaxKind): Node {
-        //     switch (kind) {
-        //         // special-cases that can be come first
-        //         case SyntaxKind.ClassDeclaration:
-        //             while (node) {
-        //                 switch (node.kind) {
-        //                     case SyntaxKind.ClassDeclaration:
-        //                         return <ClassDeclaration>node;
-        //                     case SyntaxKind.EnumDeclaration:
-        //                     case SyntaxKind.InterfaceDeclaration:
-        //                     case SyntaxKind.ModuleDeclaration:
-        //                     case SyntaxKind.ImportDeclaration:
-        //                         // early exit cases - declarations cannot be nested in classes
-        //                         return undefined;
-        //                     default:
-        //                         node = node.parent;
-        //                         continue;
-        //                 }
-        //             }
-        //             break;
-        //         default:
-        //             while (node) {
-        //                 if (node.kind === kind) {
-        //                     return node;
-        //                 }
-        //                 else {
-        //                     node = node.parent;
-        //                 }
-        //             }
-        //             break;
-        //     }
-
-        //     return undefined;
-        // }
-
+// XXX
+//         // PV: Rewriting below
+//         // function getAncestor(node: Node, kind: SyntaxKind): Node {
+//         //     switch (kind) {
+//         //         // special-cases that can be come first
+//         //         case SyntaxKind.ClassDeclaration:
+//         //             while (node) {
+//         //                 switch (node.kind) {
+//         //                     case SyntaxKind.ClassDeclaration:
+//         //                         return <ClassDeclaration>node;
+//         //                     case SyntaxKind.EnumDeclaration:
+//         //                     case SyntaxKind.InterfaceDeclaration:
+//         //                     case SyntaxKind.ModuleDeclaration:
+//         //                     case SyntaxKind.ImportDeclaration:
+//         //                         // early exit cases - declarations cannot be nested in classes
+//         //                         return undefined;
+//         //                     default:
+//         //                         node = node.parent;
+//         //                         continue;
+//         //                 }
+//         //             }
+//         //             break;
+//         //         default:
+//         //             while (node) {
+//         //                 if (node.kind === kind) {
+//         //                     return node;
+//         //                 }
+//         //                 else {
+//         //                     node = node.parent;
+//         //                 }
+//         //             }
+//         //             break;
+//         //     }
+// 
+//         //     return undefined;
+//         // }
+// 
 
         // PV: Returns a node with the same SyntaxKind with `kind` 
         //     and in some case undefined
 
-        /*@ getAncestor :: (node: INodeK + undefined, kind: SyntaxKind) => INodeK + { undefined | true } 
+        /*@ getAncestor :: (node: INodeK + undefined, kind: SyntaxKind) 
+                        => undefined + { INodeK | keyVal(v,"kind") ~~ kind }
          */
         function getAncestor(node: Node, kind: SyntaxKind): Node {
             if (kind === SyntaxKind.ClassDeclaration) {
                 while (typeof node !== "undefined") {
                     if (node.kind === SyntaxKind.ClassDeclaration) {
-                        return <ClassDeclaration>node;
+                        //return <ClassDeclaration>node;
+                        return <Node>node;
                     }
                     else if (kind === SyntaxKind.EnumDeclaration      ||
                              kind === SyntaxKind.InterfaceDeclaration ||
@@ -3517,14 +3554,14 @@ module ts {
                 }
             }
             else {
-//                 while (node) {
-//                     if (node.kind === kind) {
-//                         return node;
-//                     }
-//                     else {
-//                         node = node.parent;
-//                     }
-//                 }
+                while (node) {
+                    if (node.kind === kind) {
+                        return <Node>node;
+                    }
+                    else {
+                        node = node.parent;
+                    }
+                }
             }
 
             return undefined;

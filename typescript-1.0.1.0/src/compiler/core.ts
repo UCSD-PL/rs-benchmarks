@@ -7,6 +7,8 @@ module ts {
 
     export interface StringSet extends Map<any> { }
 
+// // <<<< DONE >>>>
+// 
 //     /*@  forEach :: forall T U . (array: IArray<T>, callback: (element: T) => U) => { U | true } + undefined */
 //     export function forEach<T, U>(array: T[], callback: (element: T) => U): U {
 //         /*@ result :: U */
@@ -45,7 +47,8 @@ module ts {
 //         }
 //         return -1;
 //     }
-
+// 
+//     /*@  filter :: forall T . (array: IArray<T>, f: (T) => boolean) => { MArray<T> | true } + undefined */
 //     export function filter<T>(array: T[], f: (x: T) => boolean): T[] {
 //         var result: T[];
 //         if (array) {
@@ -59,6 +62,8 @@ module ts {
 //         }
 //         return result;
 //     }
+// 
+// // >>>> DONE <<<<
 // 
 //     export function map<T, U>(array: T[], f: (x: T) => U): U[] {
 //         var result: U[];
@@ -536,13 +541,36 @@ module ts {
 //         this.name = name;
 //         this.declarations = undefined;
 //     }
-// 
-//     function Type(checker: TypeChecker, flags: TypeFlags) {
-//         this.flags = flags;
-//     }
-// 
+ 
+    //// ORIGINAL >>>>
+    // function Type(checker: TypeChecker, flags: TypeFlags) {
+    //    this.flags = flags;
+    // }
+    //// <<<< ORIGINAL
+
+    // NEW >>>>
+    export class TypeC {
+
+        public flags: TypeFlags;  // Flags
+        public id: number;        // Unique ID
+        // public symbol?: Symbol;   // Symbol associated with type (if any)
+
+        constructor(checker: TypeChecker, flags: TypeFlags) {
+            this.flags = flags;
+            this.id    = -1;      // PV: adding this myself cause it's required
+        }
+
+    }
+    // <<<< NEW
+
+
 //     function Signature(checker: TypeChecker) {
 //     }
+
+    export class SignatureC {
+    
+    }
+    
 // 
 //     export var objectAllocator: ObjectAllocator = {
 //         getNodeConstructor: kind => {

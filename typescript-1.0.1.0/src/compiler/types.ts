@@ -5,30 +5,49 @@ module ts {
 
 
 
-////////////////////////////////////////////////////////////// 
-// RefScript 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+//
+//  RefScript 
+
+//
+//  Field_BV_Set_At_I(X, F, I)               : Object X has a field F that is a 
+//                                             bit-vector with position I set.
+//  
+//  Field_BV_Imp_Type(X, F, I, T)            : If object X has the I-th position of 
+//                                             its F field set, then it is of type T
+//
+//  KeyVal_Is_Val(X, K, V)                   : The value of the object at field K is V
+//
+//  Field_Val_Imp_Type(X, K, V, T)           : If object X has a field K whose value is V,
+//                                             then it is of type T
+//
+
+/*@ predicate Field_BV_Set(X, F, I)          = bv_idx(keyVal(X, F), I) */
+
+/*@ predicate Field_Val   (X, K, V)          = (keyVal(X, K) ~~ V)     */
+
+/*@ predicate Field_BV_Imp_Type (X, F, I, T) = (Field_BV_Set(X, F, I) => extends_interface(X, T)) */
+
+/*@ predicate Field_Val_Imp_Type(X, K, V, T) = (Field_Val   (X, K, V) => extends_interface(X, T)) */
 
 
-/*@ predicate FlagInstance(X, i, Type) = (bv_idx(keyVal(X, "flags"), i) => instanceof (X, Type)) */
-
-/*@ predicate FlagInstTransient(V) = FlagInstance(V, 25, "TransientSymbol") */
-
-/*@ alias ISymbolF = { v: Symbol<Immutable> | FlagInstTransient(v) } */
 
 
+/*@ predicate P_TransientSymbol(X)           = Field_BV_Imp_Type(X, "flags", 25, "TransientSymbol") */
 
-/*@ predicate SyntaxInstance(X, Key, Val, Type) = ((keyVal(X, Key) ~~ Val) => instanceof (X, Type)) */
+/*@ predicate P_ClassDeclaration(V)          = Field_Val_Imp_Type(V, "kind", 169, "ClassDeclaration") */
+/*@ predicate P_SourceFile(V)                = Field_Val_Imp_Type(V, "kind", 177, "SourceFile") */
 
-// XXX: alias the number to SyntaxKind.ClassDeclaration
-/*@ predicate InstClassDeclaration(V) = SyntaxInstance(V, "kind", 169, "ClassDeclaration") */
 
-/*@ alias INode  =      Node<Immutable> */
-/*@ alias INodeK = { v: Node<Immutable> | InstClassDeclaration(v) } */
-
+/*@ alias ISymbolF                           = { v: Symbol<Immutable> | P_TransientSymbol(v)    } */
+/*@ alias INode                              = { v: Node<Immutable>   | true                    } */
+/*@ alias INodeK                             = { v: Node<Immutable>   | [ P_ClassDeclaration(v)
+                                                                        ; P_SourceFile(v)]   
+                                               } */
 
 
 //
-////////////////////////////////////////////////////////////// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 
 
     export interface TextRange {
@@ -271,7 +290,9 @@ module ts {
     export interface Node extends TextRange {
         kind: SyntaxKind;
         flags: NodeFlags;
+        /*@ id?: [Mutable] number */
         id?: number;                  // Unique id (used to look up NodeLinks)
+        /*@ parent?: INodeK */
         parent?: Node;                // Parent node (initialized by binding)
         symbol?: Symbol;              // Symbol declared by node (initialized by binding)
         locals?: SymbolTable;         // Locals associated with node (initialized by binding)
@@ -623,31 +644,34 @@ module ts {
     }
 
     export interface TypeChecker {
-        getProgram(): Program;
-        getDiagnostics(sourceFile?: SourceFile): Diagnostic[];
-        getGlobalDiagnostics(): Diagnostic[];
-        getNodeCount(): number;
-        getIdentifierCount(): number;
-        getSymbolCount(): number;
-        getTypeCount(): number;
-        checkProgram(): void;
-        emitFiles(): EmitResult;
-        getParentOfSymbol(symbol: Symbol): Symbol;
-        getTypeOfSymbol(symbol: Symbol): Type;
-        getPropertiesOfType(type: Type): Symbol[];
-        getPropertyOfType(type: Type, propetyName: string): Symbol;
-        getSignaturesOfType(type: Type, kind: SignatureKind): Signature[];
-        getIndexTypeOfType(type: Type, kind: IndexKind): Type;
-        getReturnTypeOfSignature(signature: Signature): Type;
-        getSymbolsInScope(location: Node, meaning: SymbolFlags): Symbol[];
-        getSymbolInfo(node: Node): Symbol;
-        getTypeOfNode(node: Node): Type;
-        getApparentType(type: Type): ApparentType;
-        typeToString(type: Type, enclosingDeclaration?: Node, flags?: TypeFormatFlags): string;
-        symbolToString(symbol: Symbol, enclosingDeclaration?: Node, meaning?: SymbolFlags): string;
-        getAugmentedPropertiesOfApparentType(type: Type): Symbol[];
-        getRootSymbol(symbol: Symbol): Symbol;
-        getContextualType(node: Node): Type;
+
+
+// TODO: Gradually add these
+//         getProgram(): Program;
+//         getDiagnostics(sourceFile?: SourceFile): Diagnostic[];
+//         getGlobalDiagnostics(): Diagnostic[];
+//         getNodeCount(): number;
+//         getIdentifierCount(): number;
+//         getSymbolCount(): number;
+//         getTypeCount(): number;
+//         checkProgram(): void;
+//         emitFiles(): EmitResult;
+//         getParentOfSymbol(symbol: Symbol): Symbol;
+//         getTypeOfSymbol(symbol: Symbol): Type;
+//         getPropertiesOfType(type: Type): Symbol[];
+//         getPropertyOfType(type: Type, propetyName: string): Symbol;
+//         getSignaturesOfType(type: Type, kind: SignatureKind): Signature[];
+//         getIndexTypeOfType(type: Type, kind: IndexKind): Type;
+//         getReturnTypeOfSignature(signature: Signature): Type;
+//         getSymbolsInScope(location: Node, meaning: SymbolFlags): Symbol[];
+//         getSymbolInfo(node: Node): Symbol;
+//         getTypeOfNode(node: Node): Type;
+//         getApparentType(type: Type): ApparentType;
+//         typeToString(type: Type, enclosingDeclaration?: Node, flags?: TypeFormatFlags): string;
+//         symbolToString(symbol: Symbol, enclosingDeclaration?: Node, meaning?: SymbolFlags): string;
+//         getAugmentedPropertiesOfApparentType(type: Type): Symbol[];
+//         getRootSymbol(symbol: Symbol): Symbol;
+//         getContextualType(node: Node): Type;
     }
 
     export interface TextWriter {
