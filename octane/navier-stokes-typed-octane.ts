@@ -456,14 +456,13 @@ module NavierStokes {
     }
 
     export class Field {
-        public setDensity : (x:number,y:number,d:number) => void = null;
-        public getDensity : (x:number, y:number) => number = null;
-        public setVelocity : (x:number, y:number, xv:number, yv:number) => void = null;
-        public getXVelocity : (x:number, y:number) => number = null;
-        public getYVelocity : (x:number, y:number) => number = null;
-        public width : () => number = null;
-        public height : () => number = null;
-        
+        private final rowSize;
+        private final w;
+        private final h;
+        private final dens;
+        private final u;
+        private final v;
+
         /*@ new (rowSize:{number | v = width+2}, 
                  width:  {number | 0 < v}, 
                  height: {number | 0 < v}, 
@@ -471,38 +470,38 @@ module NavierStokes {
                  u:      {IArray<number> | (len v) = (len dens)}, 
                  v:      {IArray<number> | (len v) = (len dens)}) => void */
         constructor(rowSize:number, width:number, height:number, dens:number[], u:number[], v:number[]) {
-            this.setDensity = function(x:number, y:number, d:number)
-            /*@ <anonymous> (x:{number | 0 <= v && v < width}, y:{number | 0 <= v && v < height}, d:number) => void */
-            {
+            this.rowSize = rowSize;
+            this.w = width;
+            this.h = height;
+            this.dens = dens;
+            this.u = u;
+            this.v = v;
+        }
+
+            /*@ setDensity : (x:{number | 0 <= v && v < width}, y:{number | 0 <= v && v < height}, d:number) : void */
+            public setDensity(x:number,y:number,d:number):void {
                 dens[(x + 1) + (y + 1) * rowSize] = d;
             }
-            this.getDensity = function(x:number, y:number)
-            /*@ <anonymous> (x:{number | 0 <= v && v < width}, y:{number | 0 <= v && v < height}) => number */
-            {
+            /*@ getDensity : (x:{number | 0 <= v && v < width}, y:{number | 0 <= v && v < height}) : number */
+            public getDensity(x:number, y:number):number {
                 return dens[(x + 1) + (y + 1) * rowSize];
             }
-            this.setVelocity = function(x:number, y:number, xv:number, yv:number)
-            /*@ <anonymous> (x:{number | 0 <= v && v < width}, y:{number | 0 <= v && v < height}, xv:number, yv:number) => void */
-            {
+            /*@ setVelocity : (x:{number | 0 <= v && v < width}, y:{number | 0 <= v && v < height}, xv:number, yv:number) : void */
+            public setVelocity(x:number, y:number, xv:number, yv:number):void {
                 u[(x + 1) + (y + 1) * rowSize] = xv;
                 v[(x + 1) + (y + 1) * rowSize] = yv;
             }
-            this.getXVelocity = function(x:number, y:number)
-            /*@ <anonymous> (x:{number | 0 <= v && v < width}, y:{number | 0 <= v && v < height}) => number */
-            {
+            /*@ getXVelocity : (x:{number | 0 <= v && v < width}, y:{number | 0 <= v && v < height}) : number */
+            public getXVelocity(x:number, y:number):number {
                 return u[(x + 1) + (y + 1) * rowSize];
             }
-            this.getYVelocity = function(x:number, y:number)
-            /*@ <anonymous> (x:{number | 0 <= v && v < width}, y:{number | 0 <= v && v < height}) => number */
-            {
+            /*@ getYVelocity : (x:{number | 0 <= v && v < width}, y:{number | 0 <= v && v < height}) : number */
+            public getYVelocity(x:number, y:number):number {
                 return v[(x + 1) + (y + 1) * rowSize];
             }
-            this.width = function() 
-            /*@ <anonymous> () => {number | true} */
-            { return width; }
-            this.height = function()
-            /*@ <anonymous> () => {number | true} */
-            { return height; }
-        }
+            /*@ width : () : {number | true} */    
+            public width():number { return width; }
+            /*@ height : () : {number | true} */
+            public height():number { return height; }
     }
 }
