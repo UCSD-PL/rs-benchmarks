@@ -174,7 +174,7 @@ declare module D3 {
         */
 
         /*@ sum : /\ (array : IArray<number>) => {number | true} 
-                  /\ forall T. (array : IArray<T>, f: (T, {#nat | v < len(array)}) => number) => {number | true} */ 
+                  /\ forall T. (array : IArray<T>, f: (T, idx[array]) => number) => {number | true} */ 
         sum(arr: any, f?:any) : number;
 
         /**
@@ -184,7 +184,7 @@ declare module D3 {
         * @param map Accsessor function
         */
         
-        /*@ mean : forall T. (array : IArray<T>, f: (T, {#nat | v < len(array)}) => number) => {number + undefined | true} */
+        /*@ mean : forall T. (array : IArray<T>, f: (T, idx[array]) => number) => {number + undefined | true} */
         mean<T>(arr: T[], map: (v: T) => number): number;
         /**
         * Compute the arithmetic mean of an array of numbers

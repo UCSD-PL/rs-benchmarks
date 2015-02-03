@@ -2,7 +2,7 @@
 
 
 /*@ d3_sum :: /\ (array : IArray<number>) => {number | true} 
-              /\ forall T. (array : IArray<T>, f: (T, {#nat | v < len(array)}) => number) => {number | true } */ 
+              /\ forall T. (array : IArray<T>, f: (T, idx[array]) => number) => {number | true} */ 
 function d3_sum(array: any, f?:any): number {
   var s = 0;
   var n = array.length;
