@@ -496,24 +496,24 @@ module NavierStokes {
             this.v = v;
         }
 
-            /*@ setDensity : (x:{nat | v < w}, y:{nat | v < h}, d:number) : void */
+            /*@ setDensity : (x:{nat | v < keyVal(this,"w")}, y:{nat | v < keyVal(this,"h")}, d:number) : void */
             public setDensity(x:number,y:number,d:number):void {
                 this.dens[(x + 1) + (y + 1) * this.rowSize] = d;
             }
-            /*@ getDensity : (x:{nat | v < w}, y:{nat | v < h}) : number */
+            /*@ getDensity : (x:{nat | v < keyVal(this,"w")}, y:{nat | v < keyVal(this,"h")}) : number */
             public getDensity(x:number, y:number):number {
                 return this.dens[(x + 1) + (y + 1) * this.rowSize];
             }
-            /*@ setVelocity : (x:{nat | v < w}, y:{nat | v < h}, xv:number, yv:number) : void */
+            /*@ setVelocity : (x:{nat | v < keyVal(this,"w")}, y:{nat | v < keyVal(this,"h")}, xv:number, yv:number) : void */
             public setVelocity(x:number, y:number, xv:number, yv:number):void {
                 this.u[(x + 1) + (y + 1) * this.rowSize] = xv;
                 this.v[(x + 1) + (y + 1) * this.rowSize] = yv;
             }
-            /*@ getXVelocity : (x:{nat | v < w}, y:{nat | v < h}) : number */
+            /*@ getXVelocity : (x:{nat | v < keyVal(this,"w")}, y:{nat | v < keyVal(this,"h")}) : number */
             public getXVelocity(x:number, y:number):number {
                 return this.u[(x + 1) + (y + 1) * this.rowSize];
             }
-            /*@ getYVelocity : (x:{nat | v < w}, y:{nat | v < h}) : number */
+            /*@ getYVelocity : (x:{nat | v < keyVal(this,"w")}, y:{nat | v < keyVal(this,"h")}) : number */
             public getYVelocity(x:number, y:number):number {
                 return this.v[(x + 1) + (y + 1) * this.rowSize];
             }
