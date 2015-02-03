@@ -438,19 +438,19 @@ declare module D3 {
 //        /*
 //        * Interpolate two numbers
 //        */
-//        interpolateNumber: Transition.BaseInterpolate;
+//        interpolateNumber: Transition.STPInterpolateFactory<number>;
 //        /*
 //        * Interpolate two integers
 //        */
-//        interpolateRound: Transition.BaseInterpolate;
+//        interpolateRound: Transition.STPInterpolateFactory<number>;
 //        /*
 //        * Interpolate two strings
 //        */
-//        interpolateString: Transition.BaseInterpolate;
+//        interpolateString: Transition.STPInterpolateFactory<string>;
 //        /*
 //        * Interpolate two RGB colors
 //        */
-//        interpolateRgb: Transition.BaseInterpolate;
+//        interpolateRgb: Transition.STPInterpolateFactory<Color.RGBColor>;
 //        /*
 //        * Interpolate two HSL colors
 //        */
@@ -458,11 +458,11 @@ declare module D3 {
 //        /*
 //        * Interpolate two HCL colors
 //        */
-//        interpolateHcl: Transition.BaseInterpolate;
+//        interpolateHcl: Transition.STPInterpolateFactory<Color.HCLColor>;
 //        /*
 //        * Interpolate two L*a*b* colors
 //        */
-//        interpolateLab: Transition.BaseInterpolate;
+//        interpolateLab: Transition.STPInterpolateFactory<Color.LABColor>;
 //        /*
 //        * Interpolate two arrays of values
 //        */
@@ -1025,7 +1025,11 @@ declare module D3 {
 //        // a preferred version with no optional arguments where
 //        // all inputs and the interpolator's output are the same type
 //        export interface STPInterpolateFactory<T> extends InterpolateFactory {
-//            (a: T, b: T): (t: number)=>T;
+//            (a: T, b: T): STPInterpolate<T>;
+//        }
+//
+//        export interface STPInterpolate<T> extends BaseInterpolate {
+//            (t: number): T;
 //        }
 //
 //        export interface BaseInterpolate {
@@ -1227,6 +1231,19 @@ declare module D3 {
 //                */
 //                (size: Array<number>): TreeLayout;
 //            };
+//            /**
+//            * Gets or sets the available node size
+//            */
+//            nodeSize: {
+//                /**
+//                * Gets the available node size
+//                */
+//                (): Array<number>;
+//                /**
+//                * Sets the available node size
+//                */
+//                (size: Array<number>): TreeLayout;
+//            };
 //        }
 //
 //        export interface PieLayout {
@@ -1289,6 +1306,21 @@ declare module D3 {
 //            target: GraphNode;
 //        }
 //
+//        export interface GraphNodeForce {
+//            index?: number;
+//            x?: number;
+//            y?: number;
+//            px?: number;
+//            py?: number;
+//            fixed?: boolean;
+//            weight?: number;
+//        }
+//
+//        export interface GraphLinkForce {
+//            source: GraphNodeForce;
+//            target: GraphNodeForce;
+//        }
+//
 //        export interface ForceLayout {
 //            (): ForceLayout;
 //            size: {
@@ -1338,14 +1370,14 @@ declare module D3 {
 //            };
 //
 //            links: {
-//                (): GraphLink[];
-//                (arLinks: GraphLink[]): ForceLayout;
+//                (): GraphLinkForce[];
+//                (arLinks: GraphLinkForce[]): ForceLayout;
 //
 //            };
 //            nodes:
 //            {
-//                (): GraphNode[];
-//                (arNodes: GraphNode[]): ForceLayout;
+//                (): GraphNodeForce[];
+//                (arNodes: GraphNodeForce[]): ForceLayout;
 //
 //            };
 //            start(): ForceLayout;
@@ -1790,7 +1822,18 @@ declare module D3 {
 //            };
 //
 //            tickSubdivide(count: number): Axis;
-//            tickSize(major?: number, minor?: number, end?: number): Axis;
+//            tickSize: {
+//                (): number;
+//                (inner: number, outer?: number): Axis;
+//            }
+//            innerTickSize: {
+//                (): number;
+//                (value: number): Axis;
+//            }
+//            outerTickSize: {
+//                (): number;
+//                (value: number): Axis;
+//            }
 //            tickFormat(formatter: (value: any) => string): Axis;
 //        }
 //
@@ -2511,7 +2554,7 @@ declare module D3 {
 //            /**
 //            * Construct a linear quantitative scale.
 //            */
-//            linear(): QuantitiveScale;
+//            linear(): QuantitativeScale;
 //            /*
 //            * Construct an ordinal scale.
 //            */
@@ -2543,11 +2586,11 @@ declare module D3 {
 //            /*
 //            * Construct a quantitative scale with an logarithmic transform.
 //            */
-//            log(): QuantitiveScale;
+//            log(): QuantitativeScale;
 //            /*
 //            * Construct a quantitative scale with an exponential transform.
 //            */
-//            pow(): QuantitiveScale;
+//            pow(): QuantitativeScale;
 //            /*
 //            * Construct a quantitative scale mapping to quantiles.
 //            */
@@ -2555,7 +2598,7 @@ declare module D3 {
 //            /*
 //            * Construct a quantitative scale with a square root transform.
 //            */
-//            sqrt(): QuantitiveScale;
+//            sqrt(): QuantitativeScale;
 //            /*
 //            * Construct a threshold scale with a discrete output range.
 //            */
@@ -2578,7 +2621,7 @@ declare module D3 {
 //
 //        export interface UntypedScale extends Scale<any,any,UntypedScale> { }
 //
-//        export interface QuantitiveScale extends Scale<number,number,QuantitiveScale> {
+//        export interface QuantitativeScale extends Scale<number,number,QuantitativeScale> {
 //            /**
 //            * Get the domain value corresponding to a given range value.
 //            *
@@ -2590,26 +2633,29 @@ declare module D3 {
 //            *
 //            * @param value The output range.
 //            */
-//            rangeRound: (values: any[]) => QuantitiveScale;
+//            rangeRound: (values: any[]) => QuantitativeScale;
 //            /**
 //            * get or set the scale's output interpolator.
 //            */
 //            interpolate: {
 //                (): D3.Transition.Interpolate;
-//                (factory: D3.Transition.Interpolate): QuantitiveScale;
+//                (factory: D3.Transition.Interpolate): QuantitativeScale;
 //            };
 //            /**
 //            * enable or disable clamping of the output range.
 //            *
 //            * @param clamp Enable or disable
 //            */
-//            clamp(clamp: boolean): QuantitiveScale;
+//            clamp: {
+//                (): boolean;
+//                (clamp: boolean): QuantitativeScale;
+//            }
 //            /**
 //            * extend the scale domain to nice round numbers.
 //            * 
 //            * @param count Optional number of ticks to exactly fit the domain
 //            */
-//            nice(count?: number): QuantitiveScale;
+//            nice(count?: number): QuantitativeScale;
 //            /**
 //            * get representative values from the input domain.
 //            *
@@ -3324,7 +3370,7 @@ declare module D3 {
 //                *
 //                * @param constant The new constant value.
 //                */
-//                (constant: number): Voronoi<T>;   
+//                (constant: number): Voronoi<T>;
 //            }
 //            clipExtent: {
 //                /**

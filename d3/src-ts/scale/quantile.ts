@@ -12,7 +12,9 @@ d3.scale.quantile = function() {
 class QuantileScaleImpl implements D3.Scale.QuantileScale {
   thresholds:number[];
 
-  constructor(private dmn:number[], private rng:any[]) {
+  constructor(dmn:number[], rng:any[]) {
+    this.dmn = dmn;
+    this.rng = rng;
     this.rescale();
   }
 
