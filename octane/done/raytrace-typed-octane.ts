@@ -17,7 +17,7 @@
 
 
 //TODO: move this stuff to prelude?
-/*@ qualif Bot(v:a, s:string): keyIn(v,s) */
+/*@ qualif Bot(v:a, s:string): hasProperty(v,s) */
 /*@ qualif Bot(v:a, s:string): enumProp(v,s) */
 interface HTMLCanvasElement {
     /*@ getContext : (string) => {CanvasRenderingContext2D<Mutable> | true} */
@@ -642,17 +642,19 @@ module VERSION {
 
             /*@ new(options:EngineOptions) => {void | true} */
             constructor(options) {
-                var this_options = extend({
-                    canvasHeight: 100,
-                    canvasWidth: 100,
-                    pixelWidth: 2,
-                    pixelHeight: 2,
-                    renderDiffuse: false,
-                    renderShadows: false,
-                    renderHighlights: false,
-                    renderReflections: false,
-                    rayDepth: 2
-                }, options || {});
+                // ORIG:
+                // var this_options = extend({
+                //     canvasHeight: 100,
+                //     canvasWidth: 100,
+                //     pixelWidth: 2,
+                //     pixelHeight: 2,
+                //     renderDiffuse: false,
+                //     renderShadows: false,
+                //     renderHighlights: false,
+                //     renderReflections: false,
+                //     rayDepth: 2
+                // }, options || {});
+                var this_options = options;
 
                 this_options.canvasHeight /= this_options.pixelHeight;
                 this_options.canvasWidth /= this_options.pixelWidth;
