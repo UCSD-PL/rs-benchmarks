@@ -110,7 +110,8 @@ module CryptoVERSION {
 
     // Basic JavaScript BN library - subset useful for RSA encryption.
     class BigInteger {
-        public array : number[] = null;
+        /*@ array : Array<Immutable, number> */
+        public array : number[]; //ORIG: =null
         public t:number = 0;
         public s:number = 0;
         // "constants"
@@ -137,6 +138,7 @@ module CryptoVERSION {
         // am1: use a single mult and divide to get the high bits,
         // max digit bits should be 26 because
         // max internal value = 2*dvalue^2-2*dvalue (< 2^53)
+        /*@ am1 : (i:number,x:number,w:BigInteger<ReadOnly>,j:number,c:number,n:number) : {number | true} */
         private am1(i:number,x:number,w:BigInteger,j:number,c:number,n:number) {
             var this_array = this.array;
             var w_array    = w.array;
@@ -616,7 +618,7 @@ module CryptoVERSION {
         // (public) this^e % m, 0 <= e < 2^32
         public modPowInt(e:number,m:BigInteger) {
             var z:ModularReducer = null;
-            if(e < 256 || m.isEven()) z = new Classic(m); else z = new Montgomery(m);
+            if(e < 256 || m.isEven()) z = <ModularReducer>(new Classic(m)); else z = <ModularReducer>(new Montgomery(m));
             return this.exp(e,z);
         }
 
@@ -994,11 +996,11 @@ module CryptoVERSION {
             else if(i < 768) k = 5;
             else k = 6;
             if(i < 8)
-                z = new Classic(m);
+                z = <ModularReducer>(new Classic(m));
             else if(m.isEven())
-                z = new Barrett(m);
+                z = <ModularReducer>(new Barrett(m));
             else
-                z = new Montgomery(m);
+                z = <ModularReducer>(new Montgomery(m));
 
             // precomputation 
             var g : BigInteger[] = new Array<BigInteger>(0), n = 3, k1 = k-1, km = (1<<k)-1;
@@ -1336,7 +1338,7 @@ module CryptoVERSION {
                 j = i+this.m.t;
                 x_array[j] += this.m.am(0,u0,x,i,0,this.m.t);
                 // propagate carry
-                while(x_array[j] >= BI_DV) { x_array[j] -= BI_DV; x_array[++j]++; }
+                while(x_array[j] >= BI_DV) { x_array[j] -= BI_DV; j++; x_array[j]++; }
             }
             x.clamp();
             x.drShiftTo(this.m.t,x);
