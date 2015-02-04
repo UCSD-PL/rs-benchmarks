@@ -300,7 +300,7 @@ module SplayVERSION {
          * @return {Array<*>} An array containing all the keys of tree's nodes.
          */
         public exportKeys() {
-            /*@ result :: Array<Mutable, number> */
+            /*@ result :: MArray<number> */
             var result:number[] = [];
             var root = this.root_;
             if (root) {
