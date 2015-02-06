@@ -297,7 +297,7 @@ declare module D3 {
         *
         * @param map Array of objects to get the key values from
         */
-        /*@ keys : (map: [Immutable]{ }) => Array<Mutable, {string | hasProperty(v, map) && enumProp(v, map)}> */
+        /*@ keys : (map: [Immutable]{ }) => MArray<{string | hasProperty(v, map) && enumProp(v, map)}> */
         keys(map:{ }): string[];
         /**
         * List the values of an associative array.
@@ -305,7 +305,7 @@ declare module D3 {
         * @param map Array of objects to get the values from
         */
 
-        /*@ values : forall T . (map: [Immutable]{[k:string]:T}) => {Array<Mutable,T> | true} */
+        /*@ values : forall T . (map: [Immutable]{[k:string]:T}) => {MArray<T> | true} */
         values<T>(map:{[k:string]:T}): T[];
 //        /**
 //        * List the key-value entries of an associative array.
@@ -318,7 +318,7 @@ declare module D3 {
         *
         * @param map Arrays to merge
         */
-        /*@ merge : forall T . (map: IArray<IArray<T>>) => {IArray<T> | true}*/
+        /*@ merge : forall T . (map: IArray<IArray<T>>) => {IArray<T> | true} */
         merge<T>(map: T[][]): T[];
 
         /**

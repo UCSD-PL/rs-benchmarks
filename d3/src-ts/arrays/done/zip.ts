@@ -1,6 +1,7 @@
 /// <reference path="../../../d3.d.ts" />
 // <reference path="min.ts" />
 
+// ORIG:
 // d3.zip = function(...arrs:any[]):any[] {
 //   if (!(n = arguments.length)) return [];
 //   for (var i = -1, m = d3.min(arguments, d3_zipLength), zips = new Array(m); ++i < m;) {
@@ -13,7 +14,7 @@
 
 
 /*@ d3_zipLength :: forall T . (d:IArray<T>, i:number) => #nat */
-function d3_zipLength<T>(d, i) {
+function d3_zipLength(d, i) {
   return d.length;
 }
 
