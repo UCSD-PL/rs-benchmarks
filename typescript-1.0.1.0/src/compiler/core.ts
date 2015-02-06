@@ -64,7 +64,10 @@ module ts {
 //     }
 // 
 // // >>>> DONE <<<<
+// // NOTE: BC added a few more possible annotations below but changed nothing else
 // 
+//     /*@ map :: /\ forall T U . (array: IArray<T>, f: (x:T)=>U) => {MArray<U> | true}
+//                /\ forall T U . (array: undefined, f: (x:T)=>U) => {undefined | true} */
 //     export function map<T, U>(array: T[], f: (x: T) => U): U[] {
 //         var result: U[];
 //         if (array) {
@@ -77,12 +80,15 @@ module ts {
 //         return result;
 //     }
 // 
+//     //TODO should we relax the inputs to allow e.g. nulls? otherwise the checks seem pretty silly
+//     /*@ concatenate :: forall T M . (array1: Array<M,T>, array2: Array<M,T>) => { Array<M,T> | true } */
 //     export function concatenate<T>(array1: T[], array2: T[]): T[] {
 //         if (!array2 || !array2.length) return array1;
 //         if (!array1 || !array1.length) return array2;
 //         return array1.concat(array2);
 //     }
 // 
+//     /*@ sum :: (array: IArray<{{[s:string]:number} | hasProperty(prop, v)}>, prop: string) => { number | true } */
 //     export function sum(array: any[], prop: string): number {
 //         var result = 0;
 //         for (var i = 0; i < array.length; i++) {
@@ -91,6 +97,7 @@ module ts {
 //         return result;
 //     }
 // 
+//     /*@ binarySearch :: (array: IArray<number>, value: number) => { number | true } */
 //     export function binarySearch(array: number[], value: number): number {
 //         var low = 0;
 //         var high = array.length - 1;
