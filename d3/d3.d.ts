@@ -5,9 +5,9 @@
 
 // Aliases
 
-/*@ alias idx[a]    = {number | (0 <= v && v < (len a)) }  */
-/*@ alias nat       = {number | 0 <= v}    */
-/*@ alias pair[T]   = {IArray<T> | len(v) = 2} */
+/*@ alias nat       = {number | 0 <= v} */
+/*@ alias idx[a]    = {nat | v < (len a) } */
+/*@ alias pair[T]   = {IArray<T> | (len v) = 2} */
 
 
 // Qualifiers
@@ -93,7 +93,7 @@ declare module D3 {
             /\ (a: number, b: number) => { number | [ (a < b => v = -1);
                                                       (a = b => v =  0);
                                                       (a > b => v =  1)] }
-            /\ forall T . (T,T) => number 
+            /\ forall T . (T,T) => {number | true}
          */
         ascending<T>(a: T, b: T): number;
 
@@ -108,7 +108,7 @@ declare module D3 {
             /\ (a: number, b: number) => { number | [ (a > b => v = -1);
                                                       (a = b => v =  0);
                                                       (a < b => v =  1)] }
-            /\ forall T . (T,T) => number 
+            /\ forall T . (T,T) => {number | true}
          */
         descending<T>(a: T, b: T): number;
 
@@ -118,7 +118,7 @@ declare module D3 {
         * @param arr Array to search
         * @param map Accsessor function
         */
-        /*@ min : forall T U . (arr: IArray<T>, f: (x:T, i:number) => U) => { U | true } */
+        /*@ min : forall T U . (arr: IArray<T>, f: (T, number) => U) => { U | true } */
         min<T, U>(array: T[], f: (x:T, i:number) => U): U;
         /**
         * Find the minimum value in an array
@@ -134,22 +134,22 @@ declare module D3 {
         * @param arr Array to search
         * @param map Accsessor function
         */
-        /*@ max : forall T U . (arr: IArray<T>, f: (T, number) => T) => { T + undefined | true } */
+        /*@ max : forall T U . (arr: IArray<T>, f: (T, number) => U) => { U | true } */
         max<T, U>(array: T[], f: (v: T) => U): U;
 
-//        /**
-//        * Find the maximum value in an array
-//        *
-//        * @param arr Array to search
-//        */
-//        max(arr: number[]): number;
+        /**
+        * Find the maximum value in an array
+        *
+        * @param arr Array to search
+        */
+        /*@ max : forall T . (arr: IArray<T>) => { T | true } */
+        max<T>(array: T[]): number;
         /**
         * Find the minimum and maximum value in an array
         *
         * @param arr Array to search
         * @param map Accsessor function
         */
-
         /*@ extent : forall T U . ({IArray<T> | 0 < len v}, f: (x:T, i:number) => U) => #pair[U] */
         extent<T, U>(arr: T[], map: (v: T) => U): U[];
         /**
@@ -157,7 +157,6 @@ declare module D3 {
         *
         * @param arr Array to search
         */
-
         /*@ extent : forall T . ({IArray<T> | 0 < len v}) => #pair[T] */
         extent<T>(arr: T[]): T[];
         /**
@@ -166,16 +165,15 @@ declare module D3 {
         * @param arr Array to search
         * @param map Accsessor function
         */
-        // sum<T>(arr: T[], map: (v: T) => number): number;
+        /*@ sum : forall T. (arr : IArray<T>, f: (T, idx[array]) => number) => {number | true} */ 
+        sum<T>(arr: T[], map: (v: T) => number): number;
         /**
         * Compute the sum of an array of numbers
         *
         * @param arr Array to search
         */
-
-        /*@ sum : /\ (array : IArray<number>) => {number | true} 
-                  /\ forall T. (array : IArray<T>, f: (T, idx[array]) => number) => {number | true} */ 
-        sum(arr: any, f?:any) : number;
+        /*@ sum : (array : IArray<number>) => {number | true} */
+        sum(arr: number[]) : number;
 
         /**
         * Compute the arithmetic mean of an array of numbers

@@ -1,23 +1,18 @@
 /// <reference path="../../../d3.d.ts" />
 /// <reference path="../../../d3.rsc.ts" />
 
-
+/* d3_max_1 :: forall T . (arr: IArray<T>) => { T + undefined | true } */
 /*@ d3_max_1 :: forall T . (arr: IArray<T>) => { T | true } */
 function d3_max_1<T>(array: T[]) : any {
-
-  //d3.max = function(array, f?) {
-
-  var i = -1,
+  var i = 0,
       n = array.length;
-
   /*@ a :: T + undefined */
-  var a = undefined;
+  var a;
   /*@ b :: T + undefined */
-  var b = undefined;
+  var b;
 
   //ORIG: while (++i < n && !((a = array[i]) != null && a <= a)) a = undefined;
   //PV: skip over null or undefined values
-  i++;
   var cnt = true;
   while (i < n && cnt) {
     a = array[i];
@@ -35,24 +30,19 @@ function d3_max_1<T>(array: T[]) : any {
   }
 
   return check_undefined(a);
-
 }
 
 
 /*@ d3_max_2 :: forall T U . (arr: IArray<T>, f: (x:T, i:number) => U) => { U | true } */
 function d3_max_2 <T, U>(array:T[], f:(x:T, i:number) => U) : any {
-
-  var i = -1,
+  var i = 0,
       n = array.length;
-
   /*@ a :: U + undefined */
-  var a = undefined;
+  var a;
   /*@ b :: U + undefined */
-  var b = undefined;
-
+  var b;
 
   //ORIG: while (++i < n && !((a = f.call(array, array[i], i)) != null && a <= a)) a = undefined;
-  i++;
   while (i < n) {
     a = f.call(array, array[i], i);
     if (!(a != null && a <= a)) a = undefined; 
@@ -70,14 +60,13 @@ function d3_max_2 <T, U>(array:T[], f:(x:T, i:number) => U) : any {
   return check_undefined(a);
 }
 
-/*@ d3_max :: /\ forall T U . (arr: IArray<T>, f: (x:T, i:number) => U) => { U | true }
-              /\ forall T   . (arr: IArray<T>) => { T | true } 
+/* d3_max :: /\ forall T U . (arr: IArray<T>, f: (T, number) => U) => { U | true }
+             /\ forall T   . (arr: IArray<T>) => { T | true } 
  */
-function d3_max(array:any, f?:any) {
+d3.max = function(array:any, f?:any) {
   if (arguments.length === 1) {
     return d3_max_1(array);
   } else {
     return d3_max_2(array, f);
   }
 }
-
