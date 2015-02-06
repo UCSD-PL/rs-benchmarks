@@ -253,11 +253,11 @@ declare module D3 {
 //        * @param accessor Accessor function
 //        */
 //        bisector(accessor: (data: any, index: number) => any): any;
-//        /**
-//        * Randomize the order of an array.
-//        *
-//        * @param arr Array to randomize
-//        */
+        /**
+        * Randomize the order of an array.
+        *
+        * @param arr Array to randomize
+        */
         /*@ shuffle : forall T . (arr: IArray<T>) => {IArray<T> | true} */
         shuffle<T>(arr: T[]): T[];
         /**
@@ -283,12 +283,13 @@ declare module D3 {
 //        * @param definition 2D affine transform string
 //        */
 //        transform(definition: string): any;
-//        /**
-//        * Transpose an array of arrays.
-//        *
-//        * @param matrix Two dimensional array to transpose
-//        */
-//        transpose(matrix: any[]): any[];
+        /**
+        * Transpose an array of arrays.
+        *
+        * @param matrix Two dimensional array to transpose
+        */
+        /*@ transpose : (matrix:IArray<IArray<number>>) => {IArray<IArray<number>> | true} */
+        transpose(matrix: any[]): any[];
         /**
         * List the keys of an associative array.
         *
