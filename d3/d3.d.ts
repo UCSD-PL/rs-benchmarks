@@ -317,26 +317,24 @@ declare module D3 {
         */
         /*@ merge : forall T . (map: IArray<IArray<T>>) => {IArray<T> | true}*/
         merge<T>(map: T[][]): T[];
-//        /**
-//        * Generate a range of numeric values.
-//        */
-//        range: {
-//            /**
-//            * Generate a range of numeric values from 0.
-//            *
-//            * @param stop Value to generate the range to
-//            * @param step Step between each value
-//            */
-//            (stop: number, step?: number): number[];
-//            /**
-//            * Generate a range of numeric values.
-//            *
-//            * @param start Value to start
-//            * @param stop Value to generate the range to
-//            * @param step Step between each value
-//            */
-//            (start: number, stop?: number, step?: number): number[];
-//        };
+
+        /**
+        * Generate a range of numeric values from 0.
+        *
+        * @param stop Value to generate the range to
+        */
+        /*@ range : /\ (number) : { MArray<number> | true } */
+        range(stop: number): number[];
+        /**
+        * Generate a range of numeric values.
+        *
+        * @param start Value to start
+        * @param stop Value to generate the range to
+        * @param step Step between each value
+        */
+        /*@ range : /\ (number, number, {number | v != 0}) : { MArray<number> | true }
+                    /\ (number, number                   ) : { MArray<number> | true } */
+        range(start: number, stop: number, step?: number): number[];
 //        /**
 //        * Create new nest operator
 //        */
