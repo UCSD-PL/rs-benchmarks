@@ -275,6 +275,7 @@ declare module D3 {
         *
         * @param arrs Arrays to transpose
         */
+        //TODO: should actually be forall T, not number
         /*@ zip : (args:IArray<IArray<number>>) => {IArray<IArray<number>> | true} */
         zip(...arrs: any[]): any[];
 //        /**
@@ -288,6 +289,7 @@ declare module D3 {
         *
         * @param matrix Two dimensional array to transpose
         */
+        //TODO: should actually be T, not number (see zip)
         /*@ transpose : (matrix:IArray<IArray<number>>) => {IArray<IArray<number>> | true} */
         transpose(matrix: any[]): any[];
         /**

@@ -12,28 +12,23 @@
 // };
 
 
-/*@ d3_zipLength :: (d:IArray<number>, i:number) => #nat */
-function d3_zipLength(d:number[], i:number):number {
+/*@ d3_zipLength :: forall T . (d:IArray<T>, i:number) => #nat */
+function d3_zipLength<T>(d, i) {
   return d.length;
 }
 
-d3.zip = function(args:number[][]):number[][] {
-  var n:number = args.length;
-
+d3.zip = function<T>(args) {
+  var n = args.length;
   if (!n) return [];
 
-  assert (n > 0);
-
   var m = d3.min(args, d3_zipLength);
-
-  var zips = new Array<Array<number>>(m);
-
+  var zips = new Array<Array<T>>(m);
   for (var i = 0; i < m; i++) {
-    var zip = new Array<number>(n);
+    var zip = new Array<T>(n);
     zips[i] = zip;
     for (var j = 0; j < n; j++) {
       var tmp = args[j];
-      assume(i < tmp.length); // NOTE: check relies on d3_min returning a number that is smaller than length of ALL input rows.
+      assume(i < tmp.length); // NOTE: check relies on d3_min returning a number <= the length of EVERY input row.
       zip[j] = tmp[i];
     }
   }
