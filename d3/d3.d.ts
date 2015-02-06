@@ -307,12 +307,13 @@ declare module D3 {
 
         /*@ values : forall T . (map: [Immutable]{[k:string]:T}) => {MArray<T> | true} */
         values<T>(map:{[k:string]:T}): T[];
-//        /**
-//        * List the key-value entries of an associative array.
-//        *
-//        * @param map Array of objects to get the key-value pairs from
-//        */
-//        entries<T>(map: {[k:string]:T}): {key:string; value:T}[];
+        /**
+        * List the key-value entries of an associative array.
+        *
+        * @param map Array of objects to get the key-value pairs from
+        */
+        /*@ entries : forall T . ([Immutable]{[k:string]:T}) => {MArray<{key:string; value:T}> | true} */ 
+        entries<T>(map: {[k:string]:T}): {key:string; value:T}[];
         /**
         * merge multiple arrays into one array
         *
