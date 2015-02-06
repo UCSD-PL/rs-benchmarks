@@ -1,6 +1,6 @@
 /// <reference path="../../d3.d.ts" />
 
-/*@ qualif KeyIn(v:a,s:string): keyIn(v,s) */
+/*@ qualif KeyIn(v:a,s:string): hasProperty(v,s) */
 
 
 d3.values = function<T>(map:{[k:string]:T}):T[] {
