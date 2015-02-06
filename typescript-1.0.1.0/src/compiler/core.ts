@@ -130,6 +130,7 @@ module ts {
 //         return hasOwnProperty.call(map, key) ? map[key] : undefined;
 //     }
 // 
+//     /*@ isEmpty :: forall T . (map: Map<T>) => { boolean | true } */
 //     export function isEmpty<T>(map: Map<T>) {
 //         for (var id in map) {
 //             if (hasProperty(map, id)) {
@@ -303,6 +304,7 @@ module ts {
 //         };
 //     }
 // 
+//     /*@ compareValues :: forall T . (a:T, b:T) => { number | true } */
 //     export function compareValues<T>(a: T, b: T): number {
 //         if (a === b) return 0;
 //         if (a === undefined) return -1;
@@ -342,6 +344,7 @@ module ts {
 //         return newDiagnostics;
 //     }
 // 
+//     /*@ normalizeSlashes :: (path:string) => { string | true } */
 //     export function normalizeSlashes(path: string): string {
 //         return path.replace(/\\/g, "/");
 //     }
