@@ -294,7 +294,7 @@ declare module D3 {
         *
         * @param map Array of objects to get the key values from
         */
-        /*@ keys : (map: [Immutable]{ }) => Array<Mutable, {string | keyIn(v, map) && enumProp(v, map)}> */
+        /*@ keys : (map: [Immutable]{ }) => Array<Mutable, {string | hasProperty(v, map) && enumProp(v, map)}> */
         keys(map:{ }): string[];
         /**
         * List the values of an associative array.
