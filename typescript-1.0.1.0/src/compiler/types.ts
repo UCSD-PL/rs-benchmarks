@@ -4,50 +4,16 @@
 module ts {
 
 
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+///////////////////////////////////////////////////////////////////////// 
 //
 //  RefScript 
 
-//
-//  Field_BV_Set_At_I(X, F, I)               : Object X has a field F that is a 
-//                                             bit-vector with position I set.
-//  
-//  Field_BV_Imp_Type(X, F, I, T)            : If object X has the I-th position of 
-//                                             its F field set, then it is of type T
-//
-//  KeyVal_Is_Val(X, K, V)                   : The value of the object at field K is V
-//
-//  Field_Val_Imp_Type(X, K, V, T)           : If object X has a field K whose value is V,
-//                                             then it is of type T
-//
 
-/*@ predicate Field_BV_Set(X, F, I)          = bv_idx(keyVal(X, F), I) */
-
-/*@ predicate Field_Val   (X, K, V)          = (keyVal(X, K) ~~ V)     */
-
-/*@ predicate Field_BV_Imp_Type (X, F, I, T) = (Field_BV_Set(X, F, I) => extends_interface(X, T)) */
-
-/*@ predicate Field_Val_Imp_Type(X, K, V, T) = (Field_Val   (X, K, V) => extends_interface(X, T)) */
-
-
-
-
-/*@ predicate P_TransientSymbol(X)           = Field_BV_Imp_Type(X, "flags", 25, "TransientSymbol") */
-
-/*@ predicate P_ClassDeclaration(V)          = Field_Val_Imp_Type(V, "kind", 169, "ClassDeclaration") */
-/*@ predicate P_SourceFile(V)                = Field_Val_Imp_Type(V, "kind", 177, "SourceFile") */
-
-
-/*@ alias ISymbolF                           = { v: Symbol<Immutable> | P_TransientSymbol(v)    } */
-/*@ alias INode                              = { v: Node<Immutable>   | true                    } */
-/*@ alias INodeK                             = { v: Node<Immutable>   | [ P_ClassDeclaration(v)
-                                                                        ; P_SourceFile(v)]   
-                                               } */
-
+/*@ alias INode   = Node<Immutable> */
+/*@ alias ISymbol = ts.Symbol<Immutable> */
 
 //
-/////////////////////////////////////////////////////////////////////////////////////////////////////////// 
+///////////////////////////////////////////////////////////////////////// 
 
 
     export interface TextRange {
@@ -284,15 +250,17 @@ module ts {
         Synthetic        = 0x00000100,  // Synthetic node (for full fidelity)
         DeclarationFile  = 0x00000200,  // Node is a .d.ts file
 
-        Modifier = Export | Ambient | Public | Private | Static
+        // TODO 
+        // Modifier = Export | Ambient | Public | Private | Static
     }
 
     export interface Node extends TextRange {
+        /*@ kind : [Immutable] SyntaxKind<Immutable> */
         kind: SyntaxKind;
         flags: NodeFlags;
         /*@ id?: [Mutable] number */
         id?: number;                  // Unique id (used to look up NodeLinks)
-        /*@ parent?: INodeK */
+        /*@ parent?: INode */
         parent?: Node;                // Parent node (initialized by binding)
         symbol?: Symbol;              // Symbol declared by node (initialized by binding)
         locals?: SymbolTable;         // Locals associated with node (initialized by binding)
@@ -755,51 +723,58 @@ module ts {
         Transient          = 0x02000000,  // Transient symbol (created during type check)
         Prototype          = 0x04000000,  // Symbol for the prototype property (without source code representation)
 
-        Value     = Variable | Property | EnumMember | Function | Class | Enum | ValueModule | Method | GetAccessor | SetAccessor,
-        Type      = Class | Interface | Enum | TypeLiteral | ObjectLiteral | TypeParameter,
-        Namespace = ValueModule | NamespaceModule,
-        Module    = ValueModule | NamespaceModule,
-        Accessor  = GetAccessor | SetAccessor,
-        Signature = CallSignature | ConstructSignature | IndexSignature,
-
-        ParameterExcludes       = Value,
-        VariableExcludes        = Value & ~Variable,
-        PropertyExcludes        = Value,
-        EnumMemberExcludes      = Value,
-        FunctionExcludes        = Value & ~(Function | ValueModule),
-        ClassExcludes           = (Value | Type) & ~ValueModule,
-        InterfaceExcludes       = Type & ~Interface,
-        EnumExcludes            = (Value | Type) & ~(Enum | ValueModule),
-        ValueModuleExcludes     = Value & ~(Function | Class | Enum | ValueModule),
-        NamespaceModuleExcludes = 0,
-        MethodExcludes          = Value & ~Method,
-        GetAccessorExcludes     = Value & ~SetAccessor,
-        SetAccessorExcludes     = Value & ~GetAccessor,
-        TypeParameterExcludes   = Type & ~TypeParameter,
-
-        // Imports collide with all other imports with the same name.
-        ImportExcludes          = Import,
-
-        ModuleMember = Variable | Function | Class | Interface | Enum | Module | Import,
-
-        ExportHasLocal = Function | Class | Enum | ValueModule,
-
-        HasLocals  = Function | Module | Method | Constructor | Accessor | Signature,
-        HasExports = Class | Enum | Module,
-        HasMembers = Class | Interface | TypeLiteral | ObjectLiteral,
-
-        IsContainer = HasLocals | HasExports | HasMembers,
-        PropertyOrAccessor      = Property | Accessor,
-        Export                  = ExportNamespace | ExportType | ExportValue,
+// TODO 
+//         Value     = Variable | Property | EnumMember | Function | Class | Enum | ValueModule | Method | GetAccessor | SetAccessor,
+//         Type      = Class | Interface | Enum | TypeLiteral | ObjectLiteral | TypeParameter,
+//         Namespace = ValueModule | NamespaceModule,
+//         Module    = ValueModule | NamespaceModule,
+//         Accessor  = GetAccessor | SetAccessor,
+//         Signature = CallSignature | ConstructSignature | IndexSignature,
+// 
+//         ParameterExcludes       = Value,
+//         VariableExcludes        = Value & ~Variable,
+//         PropertyExcludes        = Value,
+//         EnumMemberExcludes      = Value,
+//         FunctionExcludes        = Value & ~(Function | ValueModule),
+//         ClassExcludes           = (Value | Type) & ~ValueModule,
+//         InterfaceExcludes       = Type & ~Interface,
+//         EnumExcludes            = (Value | Type) & ~(Enum | ValueModule),
+//         ValueModuleExcludes     = Value & ~(Function | Class | Enum | ValueModule),
+//         NamespaceModuleExcludes = 0,
+//         MethodExcludes          = Value & ~Method,
+//         GetAccessorExcludes     = Value & ~SetAccessor,
+//         SetAccessorExcludes     = Value & ~GetAccessor,
+//         TypeParameterExcludes   = Type & ~TypeParameter,
+// 
+//         // Imports collide with all other imports with the same name.
+//         ImportExcludes          = Import,
+// 
+//         ModuleMember = Variable | Function | Class | Interface | Enum | Module | Import,
+// 
+//         ExportHasLocal = Function | Class | Enum | ValueModule,
+// 
+//         HasLocals  = Function | Module | Method | Constructor | Accessor | Signature,
+//         HasExports = Class | Enum | Module,
+//         HasMembers = Class | Interface | TypeLiteral | ObjectLiteral,
+// 
+//         IsContainer = HasLocals | HasExports | HasMembers,
+//         PropertyOrAccessor      = Property | Accessor,
+//         Export                  = ExportNamespace | ExportType | ExportValue,
     }
 
     export interface Symbol {
+    
+        /*@ flags : [Immutable] { v: bitvector32 | [(bv_truthy(bvand(v, lit "#x02000000" (BitVec (Size32 obj))))) <=>  extends_interface(this,"TransientSymbol")] } */
         flags: SymbolFlags;            // Symbol flags
+
         name: string;                  // Name of symbol
+
         /*@ id : [#Mutable] number */
         id?: number;                   // Unique id (used to look up SymbolLinks)
+
         /*@ mergeId : [#Mutable] number */
         mergeId?: number;              // Merge id (used to look up merged symbol)
+
         /*@ declarations : IArray<Declaration<Immutable>> */
         declarations?: Declaration[];  // Declarations associated with this symbol
         parent?: Symbol;               // Parent symbol
@@ -808,8 +783,6 @@ module ts {
         exportSymbol?: Symbol;         // Exported symbol associated with this symbol
         valueDeclaration?: Declaration // First value declaration of the symbol
     }
-
-    /*@ alias ISymbol = ts.Symbol<Immutable> */
 
     export interface SymbolLinks {
         target?: Symbol;               // Resolved (non-alias) target of an alias
@@ -822,8 +795,12 @@ module ts {
 
     export interface TransientSymbol extends Symbol, SymbolLinks { }
 
-    export interface SymbolTable {
+    // export interface SymbolTable {
+    export interface SymbolTable extends Map<Symbol> {
+
+        /*@ [index: string]: ISymbol */
         [index: string]: Symbol;
+
     }
 
     export enum NodeCheckFlags {
@@ -864,10 +841,11 @@ module ts {
         Anonymous          = 0x00002000,  // Anonymous
         FromSignature      = 0x00004000,  // Created for signature assignment check
 
-        Intrinsic = Any | String | Number | Boolean | Void | Undefined | Null,
-        StringLike = String | StringLiteral,
-        NumberLike = Number | Enum,
-        ObjectType = Class | Interface | Reference | Anonymous
+// TODO
+//         Intrinsic = Any | String | Number | Boolean | Void | Undefined | Null,
+//         StringLike = String | StringLiteral,
+//         NumberLike = Number | Enum,
+//         ObjectType = Class | Interface | Reference | Anonymous
     }
 
     // Properties common to all types
@@ -1056,137 +1034,138 @@ module ts {
     }
 
     export enum CharacterCodes {
-        nullCharacter = 0,
-        maxAsciiCharacter = 0x7F,
+        nullCharacter     = 0x00000000, // 0,
+        maxAsciiCharacter = 0x0000007F, // 0x7F,
 
-        lineFeed = 0x0A,              // \n
-        carriageReturn = 0x0D,        // \r
-        lineSeparator = 0x2028,
-        paragraphSeparator = 0x2029,
-        nextLine = 0x0085,
-
-        // Unicode 3.0 space characters
-        space = 0x0020,   // " "
-        nonBreakingSpace = 0x00A0,   //
-        enQuad = 0x2000,
-        emQuad = 0x2001,
-        enSpace = 0x2002,
-        emSpace = 0x2003,
-        threePerEmSpace = 0x2004,
-        fourPerEmSpace = 0x2005,
-        sixPerEmSpace = 0x2006,
-        figureSpace = 0x2007,
-        punctuationSpace = 0x2008,
-        thinSpace = 0x2009,
-        hairSpace = 0x200A,
-        zeroWidthSpace = 0x200B,
-        narrowNoBreakSpace = 0x202F,
-        ideographicSpace = 0x3000,
-        mathematicalSpace = 0x205F,
-        ogham = 0x1680, 
-
-        _ = 0x5F,
-        $ = 0x24,
-
-        _0 = 0x30,
-        _1 = 0x31,
-        _2 = 0x32,
-        _3 = 0x33,
-        _4 = 0x34,
-        _5 = 0x35,
-        _6 = 0x36,
-        _7 = 0x37,
-        _8 = 0x38,
-        _9 = 0x39,
-
-        a = 0x61,
-        b = 0x62,
-        c = 0x63,
-        d = 0x64,
-        e = 0x65,
-        f = 0x66,
-        g = 0x67,
-        h = 0x68,
-        i = 0x69,
-        j = 0x6A,
-        k = 0x6B,
-        l = 0x6C,
-        m = 0x6D,
-        n = 0x6E,
-        o = 0x6F,
-        p = 0x70,
-        q = 0x71,
-        r = 0x72,
-        s = 0x73,
-        t = 0x74,
-        u = 0x75,
-        v = 0x76,
-        w = 0x77,
-        x = 0x78,
-        y = 0x79,
-        z = 0x7A,
-
-        A = 0x41,
-        B = 0x42,
-        C = 0x43,
-        D = 0x44,
-        E = 0x45,
-        F = 0x46,
-        G = 0x47,
-        H = 0x48,
-        I = 0x49,
-        J = 0x4A,
-        K = 0x4B,
-        L = 0x4C,
-        M = 0x4D,
-        N = 0x4E,
-        O = 0x4F,
-        P = 0x50,
-        Q = 0x51,
-        R = 0x52,
-        S = 0x53,
-        T = 0x54,
-        U = 0x55,
-        V = 0x56,
-        W = 0x57,
-        X = 0x58,
-        Y = 0x59,
-        Z = 0x5a,
-
-        ampersand = 0x26,             // &
-        asterisk = 0x2A,              // *
-        at = 0x40,                    // @
-        backslash = 0x5C,             // \
-        bar = 0x7C,                   // |
-        caret = 0x5E,                 // ^
-        closeBrace = 0x7D,            // }
-        closeBracket = 0x5D,          // ]
-        closeParen = 0x29,            // )
-        colon = 0x3A,                 // :
-        comma = 0x2C,                 // ,
-        dot = 0x2E,                   // .
-        doubleQuote = 0x22,           // "
-        equals = 0x3D,                // =
-        exclamation = 0x21,           // !
-        greaterThan = 0x3E,           // >
-        lessThan = 0x3C,              // <
-        minus = 0x2D,                 // -
-        openBrace = 0x7B,             // {
-        openBracket = 0x5B,           // [
-        openParen = 0x28,             // (
-        percent = 0x25,               // %
-        plus = 0x2B,                  // +
-        question = 0x3F,              // ?
-        semicolon = 0x3B,             // ;
-        singleQuote = 0x27,           // '
-        slash = 0x2F,                 // /
-        tilde = 0x7E,                 // ~
-
-        backspace = 0x08,             // \b
-        formFeed = 0x0C,              // \f
-        byteOrderMark = 0xFEFF,
-        tab = 0x09,                   // \t
-        verticalTab = 0x0B,           // \v
+// TODO 
+//         lineFeed = 0x0A,              // \n
+//         carriageReturn = 0x0D,        // \r
+//         lineSeparator = 0x2028,
+//         paragraphSeparator = 0x2029,
+//         nextLine = 0x0085,
+// 
+//         // Unicode 3.0 space characters
+//         space = 0x0020,   // " "
+//         nonBreakingSpace = 0x00A0,   //
+//         enQuad = 0x2000,
+//         emQuad = 0x2001,
+//         enSpace = 0x2002,
+//         emSpace = 0x2003,
+//         threePerEmSpace = 0x2004,
+//         fourPerEmSpace = 0x2005,
+//         sixPerEmSpace = 0x2006,
+//         figureSpace = 0x2007,
+//         punctuationSpace = 0x2008,
+//         thinSpace = 0x2009,
+//         hairSpace = 0x200A,
+//         zeroWidthSpace = 0x200B,
+//         narrowNoBreakSpace = 0x202F,
+//         ideographicSpace = 0x3000,
+//         mathematicalSpace = 0x205F,
+//         ogham = 0x1680, 
+// 
+//         _ = 0x5F,
+//         $ = 0x24,
+// 
+//         _0 = 0x30,
+//         _1 = 0x31,
+//         _2 = 0x32,
+//         _3 = 0x33,
+//         _4 = 0x34,
+//         _5 = 0x35,
+//         _6 = 0x36,
+//         _7 = 0x37,
+//         _8 = 0x38,
+//         _9 = 0x39,
+// 
+//         a = 0x61,
+//         b = 0x62,
+//         c = 0x63,
+//         d = 0x64,
+//         e = 0x65,
+//         f = 0x66,
+//         g = 0x67,
+//         h = 0x68,
+//         i = 0x69,
+//         j = 0x6A,
+//         k = 0x6B,
+//         l = 0x6C,
+//         m = 0x6D,
+//         n = 0x6E,
+//         o = 0x6F,
+//         p = 0x70,
+//         q = 0x71,
+//         r = 0x72,
+//         s = 0x73,
+//         t = 0x74,
+//         u = 0x75,
+//         v = 0x76,
+//         w = 0x77,
+//         x = 0x78,
+//         y = 0x79,
+//         z = 0x7A,
+// 
+//         A = 0x41,
+//         B = 0x42,
+//         C = 0x43,
+//         D = 0x44,
+//         E = 0x45,
+//         F = 0x46,
+//         G = 0x47,
+//         H = 0x48,
+//         I = 0x49,
+//         J = 0x4A,
+//         K = 0x4B,
+//         L = 0x4C,
+//         M = 0x4D,
+//         N = 0x4E,
+//         O = 0x4F,
+//         P = 0x50,
+//         Q = 0x51,
+//         R = 0x52,
+//         S = 0x53,
+//         T = 0x54,
+//         U = 0x55,
+//         V = 0x56,
+//         W = 0x57,
+//         X = 0x58,
+//         Y = 0x59,
+//         Z = 0x5a,
+// 
+//         ampersand = 0x26,             // &
+//         asterisk = 0x2A,              // *
+//         at = 0x40,                    // @
+//         backslash = 0x5C,             // \
+//         bar = 0x7C,                   // |
+//         caret = 0x5E,                 // ^
+//         closeBrace = 0x7D,            // }
+//         closeBracket = 0x5D,          // ]
+//         closeParen = 0x29,            // )
+//         colon = 0x3A,                 // :
+//         comma = 0x2C,                 // ,
+//         dot = 0x2E,                   // .
+//         doubleQuote = 0x22,           // "
+//         equals = 0x3D,                // =
+//         exclamation = 0x21,           // !
+//         greaterThan = 0x3E,           // >
+//         lessThan = 0x3C,              // <
+//         minus = 0x2D,                 // -
+//         openBrace = 0x7B,             // {
+//         openBracket = 0x5B,           // [
+//         openParen = 0x28,             // (
+//         percent = 0x25,               // %
+//         plus = 0x2B,                  // +
+//         question = 0x3F,              // ?
+//         semicolon = 0x3B,             // ;
+//         singleQuote = 0x27,           // '
+//         slash = 0x2F,                 // /
+//         tilde = 0x7E,                 // ~
+// 
+//         backspace = 0x08,             // \b
+//         formFeed = 0x0C,              // \f
+//         byteOrderMark = 0xFEFF,
+//         tab = 0x09,                   // \t
+//         verticalTab = 0x0B,           // \v
     }
 
     export interface CancellationToken {

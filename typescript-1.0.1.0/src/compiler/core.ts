@@ -1,6 +1,7 @@
 /// <reference path="types.ts"/>
 
 module ts {
+
     export interface Map<T> {
         [index: string]: T;
     }
@@ -16,7 +17,8 @@ module ts {
 //         if (array) {
 //             var cnt = false;
 //             for (var i = 0, len = array.length; i < len && cnt; i++) {
-//                 if (result = callback(array[i])) cnt = false;
+//                 if (result = callback(array[i])) 
+//                     cnt = false;
 //             }
 //         }
 //         return result;
@@ -64,6 +66,9 @@ module ts {
 //     }
 // 
 // // >>>> DONE <<<<
+
+
+
 // // NOTE: BC added a few more possible annotations below but changed nothing else
 // 
 //     /*@ map :: /\ forall T U . (array: IArray<T>, f: (x:T)=>U) => {MArray<U> | true}
@@ -119,13 +124,22 @@ module ts {
 // 
 //         return ~low;
 //     }
+ 
+//
+// PV: We do not allow extraction of method properties
+//
+//    var hasOwnProperty = Object.prototype.hasOwnProperty;
 // 
-//     var hasOwnProperty = Object.prototype.hasOwnProperty;
-// 
-//     export function hasProperty<T>(map: Map<T>, key: string): boolean {
-//         return hasOwnProperty.call(map, key);
-//     }
-// 
+    /*@ hasProperty :: forall T M . (map: Map<M,T>, key: string)
+                    => { boolean | Prop(v) <=> (hasDirectProperty(key,map) && hasProperty(key,map)) }
+     */
+    export function hasProperty<T>(map_: Map<T>, key: string): boolean {
+        // return hasOwnProperty.call(map_, key);
+        // TODO 
+        // return map_.hasOwnProperty(key);
+        return hasProperty(map_,key);
+    }
+
 //     export function getProperty<T>(map: Map<T>, key: string): T {
 //         return hasOwnProperty.call(map, key) ? map[key] : undefined;
 //     }
@@ -546,11 +560,14 @@ module ts {
         getSignatureConstructor(): { new (checker: TypeChecker): Signature };
     }
 
-//     function Symbol(flags: SymbolFlags, name: string) {
-//         this.flags = flags;
-//         this.name = name;
-//         this.declarations = undefined;
-//     }
+    //// ORIGINAL >>>>
+    //function Symbol(flags: SymbolFlags, name: string) {
+    //    this.flags = flags;
+    //    this.name = name;
+    //    this.declarations = undefined;
+    //}
+    //// ORIGINAL <<<<
+
  
     //// ORIGINAL >>>>
     // function Type(checker: TypeChecker, flags: TypeFlags) {
@@ -560,7 +577,7 @@ module ts {
 
     // NEW >>>>
     export class TypeC {
-
+        
         public flags: TypeFlags;  // Flags
         public id: number;        // Unique ID
         // public symbol?: Symbol;   // Symbol associated with type (if any)
@@ -578,6 +595,8 @@ module ts {
 //     }
 
     export class SignatureC {
+    
+      constructor() {}
     
     }
     

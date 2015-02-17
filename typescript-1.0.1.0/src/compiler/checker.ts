@@ -1,8 +1,9 @@
 /// <reference path="types.ts"/>
 /// <reference path="core.ts"/>
 
-//  <reference path="scanner.ts"/>
 //  <reference path="parser.ts"/>
+
+//  <reference path="scanner.ts"/>
 //  <reference path="binder.ts"/>
 //  <reference path="emitter.ts"/>
 
@@ -21,20 +22,20 @@ module ts {
     /*@ nextMergeId :: nat */
     var nextMergeId = 1;
 
-    /*@ getDeclarationOfKind :: (symbol: ISymbol, kind: SyntaxKind) 
-                             => { Declaration<Immutable> | keyVal(v,"kind") = kind } + undefined */
-    export function getDeclarationOfKind(symbol: Symbol, kind: SyntaxKind): Declaration {
-        var declarations = symbol.declarations;
-        for (var i = 0; i < declarations.length; i++) {
-            var declaration = declarations[i];
-            if (declaration.kind === kind) {
-               return declaration;
-            }
-        }
-
-        return undefined;
-    }
-
+//     /*@ getDeclarationOfKind :: (symbol: ISymbol, kind: SyntaxKind) 
+//                              => { Declaration<Immutable> | keyVal(v,"kind") = kind } + undefined */
+//     export function getDeclarationOfKind(symbol: Symbol, kind: SyntaxKind): Declaration {
+//         var declarations = symbol.declarations;
+//         for (var i = 0; i < declarations.length; i++) {
+//             var declaration = declarations[i];
+//             if (declaration.kind === kind) {
+//                return declaration;
+//             }
+//         }
+// 
+//         return undefined;
+//     }
+// 
     /// fullTypeCheck denotes if this instance of the typechecker will be used to get semantic diagnostics.
     /// If fullTypeCheck === true,  then the typechecker should do every possible check to produce all errors
     /// If fullTypeCheck === false, the typechecker can take shortcuts and skip checks that only produce errors.
@@ -95,10 +96,10 @@ module ts {
 //             getContextualType: getContextualType
         };
 
-        var undefinedSymbol = createSymbol(SymbolFlags.Property | SymbolFlags.Transient, "undefined");
-        var argumentsSymbol = createSymbol(SymbolFlags.Property | SymbolFlags.Transient, "arguments");
+//         var undefinedSymbol = createSymbol(SymbolFlags.Property | SymbolFlags.Transient, "undefined");
+//         var argumentsSymbol = createSymbol(SymbolFlags.Property | SymbolFlags.Transient, "arguments");
         var unknownSymbol = createSymbol(SymbolFlags.Property | SymbolFlags.Transient, "unknown");
-        var resolvingSymbol = createSymbol(SymbolFlags.Transient, "__resolving__");
+//         var resolvingSymbol = createSymbol(SymbolFlags.Transient, "__resolving__");
 
 //         var anyType = createIntrinsicType(TypeFlags.Any, "any");
 //         var stringType = createIntrinsicType(TypeFlags.String, "string");
@@ -158,28 +159,33 @@ module ts {
 //         }
 
 
-        /*@ createSymbol :: (flags: SymbolFlags, name: string) => { ISymbol | keyVal(v, "flags") = flags } */
-        function createSymbol(flags: SymbolFlags, name: string): Symbol {
-            return new Symbol(flags, name);
-        }
+        /*@ createSymbol :: /\ forall M . (flags: bitvector32, name: string) => Symbol<M>
+                            /\ forall M . (flags: number     , name: string) => Symbol<M>
+         */
+        declare function createSymbol(flags: SymbolFlags, name: string): Symbol
 
-        // XXX
-        /*@ getExcludedSymbolFlags :: (flags: SymbolFlags) => { SymbolFlags | true } */
+        //// PV: Making this an ambient function
+        //{
+        //    return new Symbol(flags, name);
+        //}
+
+
+        /*@ getExcludedSymbolFlags :: (flags: SymbolFlags) => { bitvector32 | true } */
         function getExcludedSymbolFlags(flags: SymbolFlags): SymbolFlags {
-            var result: SymbolFlags = 0;
-            if (flags & SymbolFlags.Variable)      result = result | SymbolFlags.VariableExcludes;
-            if (flags & SymbolFlags.Property)      result = result | SymbolFlags.PropertyExcludes;
-            if (flags & SymbolFlags.EnumMember)    result = result | SymbolFlags.EnumMemberExcludes;
-            if (flags & SymbolFlags.Function)      result = result | SymbolFlags.FunctionExcludes;
-            if (flags & SymbolFlags.Class)         result = result | SymbolFlags.ClassExcludes;
-            if (flags & SymbolFlags.Interface)     result = result | SymbolFlags.InterfaceExcludes;
-            if (flags & SymbolFlags.Enum)          result = result | SymbolFlags.EnumExcludes;
-            if (flags & SymbolFlags.ValueModule)   result = result | SymbolFlags.ValueModuleExcludes;
-            if (flags & SymbolFlags.Method)        result = result | SymbolFlags.MethodExcludes;
-            if (flags & SymbolFlags.GetAccessor)   result = result | SymbolFlags.GetAccessorExcludes;
-            if (flags & SymbolFlags.SetAccessor)   result = result | SymbolFlags.SetAccessorExcludes;
-            if (flags & SymbolFlags.TypeParameter) result = result | SymbolFlags.TypeParameterExcludes;
-            if (flags & SymbolFlags.Import)        result = result | SymbolFlags.ImportExcludes;
+            var result = 0x00000000; // 0;
+            // if (flags & SymbolFlags.Variable)      result = result | SymbolFlags.VariableExcludes;
+            // if (flags & SymbolFlags.Property)      result = result | SymbolFlags.PropertyExcludes;
+            // if (flags & SymbolFlags.EnumMember)    result = result | SymbolFlags.EnumMemberExcludes;
+            // if (flags & SymbolFlags.Function)      result = result | SymbolFlags.FunctionExcludes;
+            // if (flags & SymbolFlags.Class)         result = result | SymbolFlags.ClassExcludes;
+            // if (flags & SymbolFlags.Interface)     result = result | SymbolFlags.InterfaceExcludes;
+            // if (flags & SymbolFlags.Enum)          result = result | SymbolFlags.EnumExcludes;
+            // if (flags & SymbolFlags.ValueModule)   result = result | SymbolFlags.ValueModuleExcludes;
+            // if (flags & SymbolFlags.Method)        result = result | SymbolFlags.MethodExcludes;
+            // if (flags & SymbolFlags.GetAccessor)   result = result | SymbolFlags.GetAccessorExcludes;
+            // if (flags & SymbolFlags.SetAccessor)   result = result | SymbolFlags.SetAccessorExcludes;
+            // if (flags & SymbolFlags.TypeParameter) result = result | SymbolFlags.TypeParameterExcludes;
+            // if (flags & SymbolFlags.Import)        result = result | SymbolFlags.ImportExcludes;
             return result ;
         }
 
@@ -188,21 +194,28 @@ module ts {
             if (!source.mergeId) source.mergeId = nextMergeId++;
             mergedSymbols[source.mergeId] = target;
         }
-// 
-//         function cloneSymbol(symbol: Symbol): Symbol {
-//             var result = createSymbol(symbol.flags | SymbolFlags.Merged, symbol.name);
-//             result.declarations = symbol.declarations.slice(0);
-//             result.parent = symbol.parent;
-//             if (symbol.valueDeclaration) result.valueDeclaration = symbol.valueDeclaration;
+
+// XXX
+
+        /*@ cloneSymbol :: (symbol: ISymbol) => { Symbol<Mutable> | true } */
+        function cloneSymbol(symbol: Symbol): Symbol {
+            var result = createSymbol(symbol.flags | SymbolFlags.Merged, symbol.name);
+            result.declarations = symbol.declarations.slice(0);
+            result.parent = symbol.parent;
+            if (symbol.valueDeclaration) result.valueDeclaration = symbol.valueDeclaration;
 //             if (symbol.members) result.members = cloneSymbolTable(symbol.members);
 //             if (symbol.exports) result.exports = cloneSymbolTable(symbol.exports);
 //             recordMergedSymbol(result, symbol);
-//             return result;
-//         }
-// 
-//         function extendSymbol(target: Symbol, source: Symbol) {
-//             if (!(target.flags & getExcludedSymbolFlags(source.flags))) {
-//                 target.flags |= source.flags;
+            return result;
+        }
+ 
+        function extendSymbol(target: Symbol, source: Symbol) {
+            if (!(target.flags & getExcludedSymbolFlags(source.flags))) {
+                // 
+                // PV : update in the 'flags' field, that is supposed to be Immutable
+                //
+                // target.flags |= source.flags; // ORIG
+                target.flags = target.flags | source.flags;
 //                 if (!target.valueDeclaration && source.valueDeclaration) target.valueDeclaration = source.valueDeclaration;
 //                 forEach(source.declarations, node => {
 //                     target.declarations.push(node);
@@ -221,9 +234,9 @@ module ts {
 //                 forEach(source.declarations, node => {
 //                     error(node.name ? node.name : node, Diagnostics.Duplicate_identifier_0, symbolToString(source));
 //                 });
-//             }
-//         }
-// 
+            }
+        }
+
 //         function cloneSymbolTable(symbolTable: SymbolTable): SymbolTable {
 //             var result: SymbolTable = {};
 //             for (var id in symbolTable) {
@@ -251,75 +264,90 @@ module ts {
 //             }
 //         }
 
-        /*@ getSymbolLinks :: (symbol: ISymbolF) => { SymbolLinks<Immutable> | true } */
-        function getSymbolLinks(symbol: Symbol): SymbolLinks {
-
-            if ((symbol.flags & SymbolFlags.Transient) === SymbolFlags.Transient) {
-                return <TransientSymbol>symbol;
-            }
-            
-            if (!symbol.id) symbol.id = nextSymbolId++;
-
-            var s = symbolLinks[symbol.id];
-            if(s) { return s; } 
-            else { var o = {}; symbolLinks[symbol.id] = o; return o; }
-
-            // ORIG: return symbolLinks[symbol.id] || (symbolLinks[symbol.id] = {});
- 
-        }
-
-        /*@ getNodeLinks :: (node: INode) => { NodeLinks<Immutable> | true } */
-        function getNodeLinks(node: Node): NodeLinks {
-            var node_id = node.id;
-            if (!node_id) {
-                node_id = nextNodeId++;
-                node.id = node_id;
-            }
-            // ORIG: if (!node.id) node.id = nextNodeId++;
-
-            var n = nodeLinks[node_id];
-            if(n) { return n; }
-            else { var o = {}; nodeLinks[node_id] = o; return o; }
-            // ORIG: return nodeLinks[node.id] || (nodeLinks[node.id] = {});
-        }
-
-        /*@ getSourceFile :: (node: INodeK + undefined)
-                          => undefined + { SourceFile<Immutable> | true } 
-         */
-        function getSourceFile(node: Node): SourceFile {
-            var ancestor = getAncestor(node, SyntaxKind.SourceFile);
-            if (ancestor) {
-                return <SourceFile> (<Node>ancestor);
-            } else {
-                return undefined;
-            }
-        }
-
-//         function isGlobalSourceFile(node: Node) {
-//             return node.kind === SyntaxKind.SourceFile && !isExternalModule(<SourceFile>node);
+// // <<<< DONE >>>>
+// 
+//         /*@ getSymbolLinks :: (symbol: ISymbol) => { SymbolLinks<Immutable> | true } */
+//         function getSymbolLinks(symbol: Symbol): SymbolLinks {
+//             if (symbol.flags & SymbolFlags.Transient) return <TransientSymbol>symbol;            
+//             if (!symbol.id) symbol.id = nextSymbolId++;
+// 
+//             var s = symbolLinks[symbol.id];
+//             if(s) { return s; } 
+//             else { var o = {}; symbolLinks[symbol.id] = o; return o; }
+// 
+//             // ORIG: return symbolLinks[symbol.id] || (symbolLinks[symbol.id] = {});
+//  
 //         }
 // 
+// 
+//         /*@ getNodeLinks :: (node: INode) => { NodeLinks<Immutable> | true } */
+//         function getNodeLinks(node: Node): NodeLinks {
+//             var node_id = node.id;
+//             if (!node_id) {
+//                 node_id = nextNodeId++;
+//                 node.id = node_id;
+//             }
+//             // ORIG: if (!node.id) node.id = nextNodeId++;
+// 
+//             var n = nodeLinks[node_id];
+//             if(n) { return n; }
+//             else { var o = {}; nodeLinks[node_id] = o; return o; }
+//             // ORIG: return nodeLinks[node.id] || (nodeLinks[node.id] = {});
+//         }
+// 
+// 
+//         /*@ getSourceFile :: (node: INode + undefined)
+//                           => undefined + { SourceFile<Immutable> | true } 
+//          */
+//         function getSourceFile(node: Node): SourceFile {
+//             var ancestor = getAncestor(node, SyntaxKind.SourceFile);
+//             if (ancestor) {
+//                 return <SourceFile> (<Node>ancestor);
+//             } else {
+//                 return undefined;
+//             }
+//         }
+// 
+//         /*@ isGlobalSourceFile :: (node: INodeK) => { boolean | true } 
+//          */
+//         function isGlobalSourceFile(node: Node) {
+//             // return node.kind === SyntaxKind.SourceFile && !isExternalModule(<SourceFile>node);
+//             if (node.kind === SyntaxKind.SourceFile) {
+//                 return !isExternalModule(<SourceFile>node);
+//             }
+//             return false;
+//         }
+// 
+// 
+//  
+//         /*@ getSymbol :: (symbols: SymbolTable<Immutable>, name: string, meaning: SymbolFlags) 
+//                       => { ISymbol | true } + undefined 
+//          */ 
 //         function getSymbol(symbols: SymbolTable, name: string, meaning: SymbolFlags): Symbol {
-//             if (meaning && hasProperty(symbols, name)) {
+//             if (builtin_bv_truthy(meaning) && hasProperty(symbols, name)) {
 //                 var symbol = symbols[name];
-//                 Debug.assert((symbol.flags & SymbolFlags.Instantiated) === 0, "Should never get an instantiated symbol here.");
+//                 // Debug.assert((symbol.flags & SymbolFlags.Instantiated) === 0, "Should never get an instantiated symbol here.");
 //                 if (symbol.flags & meaning) {
 //                     return symbol;
 //                 }
 // 
 //                 if (symbol.flags & SymbolFlags.Import) {
-//                     var target = resolveImport(symbol);
-//                     // unknown symbol will mean that there were reported error during import resolution
-//                     // treat it as positive answer to avoid cascading errors
-//                     if (target === unknownSymbol || target.flags & meaning) {
-//                         return symbol;
-//                     }
+// // // TODO
+// //                     var target = resolveImport(symbol);
+// //                     // unknown symbol will mean that there were reported error during import resolution
+// //                     // treat it as positive answer to avoid cascading errors
+// //                     if (target === unknownSymbol || target.flags & meaning) {
+// //                         return symbol;
+// //                     }
 //                 }
 //             }
+//             return undefined;
 // 
 //             // return undefined if we can't find a symbol.
 //         }
 // 
+// // >>>> DONE <<<<
+
 //         function resolveName(location: Node, name: string, meaning: SymbolFlags, nameNotFoundMessage: DiagnosticMessage, nameArg: string): Symbol {
 //             var errorLocation = location;
 //             var result: Symbol;
@@ -663,15 +691,15 @@ module ts {
 //
 // XXX: HERE
 
-        function createType(flags: TypeFlags): Type {
-            var result = new TypeC(checker, flags);     //PV: instead of 'new Type'
-            result.id = typeCount++;
-            return result;
-        }
+        //function createType(flags: TypeFlags): Type {
+        //    var result = new TypeC(checker, flags);     //PV: instead of 'new Type'
+        //    result.id = typeCount++;
+        //    return result;
+        //}
 // 
 //         /*@ createIntrinsicType :: (kind: TypeFlags, intrinsicName: string) 
 //                                 => IntrinsicType<Immutable> 
-//         */
+//          */
 //         function createIntrinsicType(kind: TypeFlags, intrinsicName: string): IntrinsicType {
 
 // XXX: This should be extended before the cast !!!
@@ -3490,7 +3518,6 @@ module ts {
 //         }
 
 
-// XXX
 //         // PV: Rewriting below
 //         // function getAncestor(node: Node, kind: SyntaxKind): Node {
 //         //     switch (kind) {
@@ -3528,44 +3555,46 @@ module ts {
 //         // }
 // 
 
-        // PV: Returns a node with the same SyntaxKind with `kind` 
-        //     and in some case undefined
-
-        /*@ getAncestor :: (node: INodeK + undefined, kind: SyntaxKind) 
-                        => undefined + { INodeK | keyVal(v,"kind") ~~ kind }
-         */
-        function getAncestor(node: Node, kind: SyntaxKind): Node {
-            if (kind === SyntaxKind.ClassDeclaration) {
-                while (typeof node !== "undefined") {
-                    if (node.kind === SyntaxKind.ClassDeclaration) {
-                        //return <ClassDeclaration>node;
-                        return <Node>node;
-                    }
-                    else if (kind === SyntaxKind.EnumDeclaration      ||
-                             kind === SyntaxKind.InterfaceDeclaration ||
-                             kind === SyntaxKind.ModuleDeclaration    ||
-                             kind === SyntaxKind.ImportDeclaration) {
-                        // early exit cases - declarations cannot be nested in classes
-                        return undefined;
-                    }
-                    else {
-                        node = node.parent;
-                    }
-                }
-            }
-            else {
-                while (node) {
-                    if (node.kind === kind) {
-                        return <Node>node;
-                    }
-                    else {
-                        node = node.parent;
-                    }
-                }
-            }
-
-            return undefined;
-        }
+// // <<<< DONE >>>>
+// 
+//         // PV: Returns a node with the same SyntaxKind with `kind` 
+//         //     and in some case undefined
+// 
+//         /*@ getAncestor :: (node: INode + undefined, kind: SyntaxKind) => undefined + INode */
+//         function getAncestor(node: Node, kind: SyntaxKind): Node {
+//             if (kind === SyntaxKind.ClassDeclaration) {
+//                 while (typeof node !== "undefined") {
+//                     if (node.kind === SyntaxKind.ClassDeclaration) {
+//                         //return <ClassDeclaration>node;
+//                         return <Node>node;
+//                     }
+//                     else if (kind === SyntaxKind.EnumDeclaration      ||
+//                              kind === SyntaxKind.InterfaceDeclaration ||
+//                              kind === SyntaxKind.ModuleDeclaration    ||
+//                              kind === SyntaxKind.ImportDeclaration) {
+//                         // early exit cases - declarations cannot be nested in classes
+//                         return undefined;
+//                     }
+//                     else {
+//                         node = node.parent;
+//                     }
+//                 }
+//             }
+//             else {
+//                 while (node) {
+//                     if (node.kind === kind) {
+//                         return <Node>node;
+//                     }
+//                     else {
+//                         node = node.parent;
+//                     }
+//                 }
+//             }
+// 
+//             return undefined;
+//         }
+// 
+// // >>>> DONE <<<<
 
 //         // EXPRESSION TYPE CHECKING
 // 
