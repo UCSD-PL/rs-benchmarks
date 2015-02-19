@@ -1,6 +1,7 @@
 /// <reference path="../../d3.d.ts" />
 /// <reference path="document.ts" />
 
+/*@ d3_vendorSymbol :: (object: Object, name: string): { string | true } */
 function d3_vendorSymbol(object:any, name:string) {
   if (name in object) return name;
   name = name.charAt(0).toUpperCase() + name.substring(1);

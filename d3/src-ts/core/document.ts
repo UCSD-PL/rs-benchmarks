@@ -1,5 +1,5 @@
 /// <reference path="../../d3.d.ts" />
-/// <reference path="array.ts" />
+// <reference path="array.ts" />
 
 var d3_document = document,
     d3_documentElement = d3_document.documentElement,
