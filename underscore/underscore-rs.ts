@@ -189,8 +189,8 @@
     // Return the results of applying the iterator to each element.
     /*@ map : /\ forall T TResult . (ob: IArray<T>, iterator: ArrIter<T,TResult>, context: top) : {MArray<TResult> | true}
               /\ forall T TResult . (ob: IArray<T>, iterator: ArrIter<T,TResult>)               : {MArray<TResult> | true} */
-    public static map<T, TResult>(ob, iterator, context?) {
-      var results /*@ readonly */ :TResult[] = [];
+    public static map(ob, iterator, context?) {
+      var results /*@ readonly */ = [];
       if (ob === null) return results;
       var riter /*@ readonly */ = UImpl.lookupIterator3(iterator, context);
       UImpl.each(ob, function(value, index, list) 
@@ -275,18 +275,24 @@
 
                     //     public foldr = this.reduceRight;
 
-                    //     // Return the first value which passes a truth test. Aliased as `detect`.
-                    //     public find<T>(list: _.List<T>, predicate: _.ListIterator<T, boolean>, context?: any): T {
-                    //       var result:T;
-                    //       predicate = this.lookupIterator3(predicate, context);
-                    //       this.some(list, function(value, index, list) {
-                    //         if (predicate(value, index, list)) {
-                    //           result = value;
-                    //           return true;
-                    //         }
-                    //       });
-                    //       return result;
-                    //     }
+    // Return the first value which passes a truth test. Aliased as `detect`.
+    /*@ find : /\ forall T . (list: IArray<T>, predicate: ArrIter<T, boolean>, context: top) : {T + undefined | true}
+               /\ forall T . (list: IArray<T>, predicate: ArrIter<T, boolean>              ) : {T + undefined | true} */
+    public static find<T>(list, predicate, context?) {
+      /*@ result :: T + undefined */
+      var result:T;
+      var rpred /*@ readonly */ = UImpl.lookupIterator3(predicate, context);
+      UImpl.some(list, function(value, index, list) 
+        /*@ <anonymous> (T,number,IArray<T>) => {boolean | true} */
+        {
+          if (rpred(value, index, list)) {
+            result = value;
+            return true;
+          }
+          return false;
+        });
+      return result;
+    }
 
                     //     public findD<T>(obj: _.Dictionary<T>, predicate: _.ObjectIterator<T, boolean>, context?: any): T { //=
                     //       var result:T;
@@ -368,18 +374,24 @@
 
                     //     public allD = this.everyD;
 
-                    //     // Determine if at least one element in the object matches a truth test.
-                    //     // Aliased as `any`.
-                    //     public some<T>(list: _.List<T>, predicate?: _.ListIterator<T, boolean>, context?: any): boolean {
-                    //       var result = false;
-                    //       if (list == null) return result;
-                    //       predicate = this.lookupIterator3(predicate, context);
-                    //       this.each(list, function(value, index, list) {
-                    //         result = predicate(value, index, list);
-                    //         if (result) return breaker;
-                    //       });
-                    //       return !!result;
-                    //     }
+    // Determine if at least one element in the object matches a truth test.
+    // Aliased as `any`.
+    /*@ some : /\ forall T . (list: IArray<T>, predicate: ArrIter<T, boolean>, context: top) : {boolean | true}
+               /\ forall T . (list: IArray<T>, predicate: ArrIter<T, boolean>              ) : {boolean | true} */
+    public static some(list, predicate, context?) {
+      /*@ result :: boolean */
+      var result = false;
+      if (list === null) return result;
+      var rpred /*@ readonly */ = UImpl.lookupIterator3(predicate, context);
+      UImpl.each(list, function(value, index, list) 
+        /*@ <anonymous> (T,number,IArray<T>) => {undefined + {} | true} */
+        {
+          result = <boolean>rpred(value, index, list);
+          if (result) return breaker;
+          return undefined;
+        });
+      return !!result;
+    }
 
                     //     public someD<T>(obj: _.Dictionary<T>, predicate?: _.ObjectIterator<T, boolean>, context?: any): boolean { //=
                     //       var result = false;
