@@ -65,6 +65,8 @@
                     //                     //   }
 
 /*@ alias ArrIter<T,TResult> = (value: T, index: number, list: IArray<T>) => {TResult | true} */
+/*@ alias MemoIter<T,TResult> = (prev: TResult, curr: T, index: number, list: T[]) => {TResult | true} */
+
 
   class UImpl {// implements UnderscoreStatic {
     constructor() {}
@@ -105,6 +107,14 @@
       if (f === null) return UImpl.identity;
       return UImpl.createCallback3(f, context);
     }
+
+    // TODO: possible version that actually uses identity:
+    // /*@ lookupIterator3 : /\ forall X Y Z TResult . (f: (X,Y,Z) => TResult, context: top) : {(X,Y,Z) => TResult | true}
+    //                       /\ forall X Y Z . () : {(X,Y,Z) => X | true} */
+    // private static lookupIterator3<X, Y, Z, TResult>(f?: (x:X, y:Y, z:Z) => TResult, context?: any): (x:X, y:Y, z:Z) => TResult {
+    //   if (!f) return UImpl.identity;
+    //   return UImpl.createCallback3(f, context);
+    // }
 
     /*@ lookupIterator4 : forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult, context: top) : {(X,Y,Z,W) => TResult | true } */
     private static lookupIterator4<X, Y, Z, W, TResult>(f: (x:X, y:Y, z:Z, w:W) => TResult, context: any): (x:X, y:Y, z:Z, w:W) => TResult {
@@ -464,21 +474,33 @@
                     //       return this.maxD(list, this.identity);
                     //     }
 
-                    //     // Return the maximum element (or element-based computation).
-                    //     public maxD<T>(list: _.List<T>, iterator: _.ListIterator<T, number>, context?: any): T {
-                    //       var empty = true, result:T, lastComputed:number,
-                    //           value:number, computed:number;
-                    //       iterator = this.lookupIterator3(iterator, context);
-                    //       this.each(list, function(value, index, list) {
-                    //         computed = iterator(value, index, list);
-                    //         if (computed > lastComputed || empty) {
-                    //           empty = false;
-                    //           result = value;
-                    //           lastComputed = computed;
-                    //         }
-                    //       });
-                    //       return result;
-                    //     }
+    // ORIG: returned -Infinity on empty lists (assumed inputs were numbers?)
+    // TODO: allow undefined iterator?
+    // Return the maximum element (or element-based computation).
+    /*@ maxD : /\ forall T COMPARABLE . (list: IArray<T>, iterator: ArrIter<T, COMPARABLE>, context: top) : {T + undefined | true}
+               /\ forall T COMPARABLE . (list: IArray<T>, iterator: ArrIter<T, COMPARABLE>              ) : {T + undefined | true} */
+    public maxD<T, COMPARABLE>(list, iterator, context?) {
+      /*@ empty :: boolean */
+      var empty = true;
+      /*@ result :: T + undefined */
+      var result;
+      /*@ lastComputed :: COMPARABLE + undefined */
+      var lastComputed;
+      /*@ computed :: COMPARABLE + undefined */
+      var computed;
+      var riter /*@ readonly */ = UImpl.lookupIterator3(iterator, context);
+      UImpl.each(list, function(value, index, list) 
+        /*@ <anonymous> (T,number,IArray<T>) => {void | true} */
+        {
+          computed = <COMPARABLE>riter(value, index, list);
+          if (computed > lastComputed || empty) {
+            empty = false;
+            result = value;
+            lastComputed = computed;
+          }
+        });
+      return result;
+    }
 
                     //     // Return the minimum element (or element-based computation).
                     //     public min(list: _.List<number>): number;
@@ -1388,8 +1410,8 @@
                     //                     //   };
 
     // Keep the identity function around for default iterators.
-    /*@ identity : forall T . (t:T) : T */
-    public static identity<T>(value: T): T {
+    /*@ identity : forall T . (value:T) : T */
+    public static identity(value) {
       return value;
     }
 
