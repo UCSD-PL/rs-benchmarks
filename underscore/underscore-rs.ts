@@ -310,17 +310,21 @@
 
                     //     public detectD = this.findD
 
-                    //     // Return all the elements that pass a truth test.
-                    //     // Aliased as `select`.
-                    //     public filter<T>(list: _.List<T>, predicate: _.ListIterator<T, boolean>, context?: any): T[] {
-                    //       var results:T[] = [];
-                    //       if (list == null) return results;
-                    //       predicate = this.lookupIterator3(predicate, context);
-                    //       this.each(list, function(value, index, list) {
-                    //         if (predicate(value, index, list)) results.push(value);
-                    //       });
-                    //       return results;
-                    //     }
+    // Return all the elements that pass a truth test.
+    // Aliased as `select`.
+    /*@ filter : /\ forall T . (list: IArray<T>, predicate: ArrIter<T, boolean>, context: top) : {MArray<T> | true}
+                 /\ forall T . (list: IArray<T>, predicate: ArrIter<T, boolean>              ) : {MArray<T> | true} */
+    public static filter(list, predicate, context?) {
+      var results /*@ readonly */ = [];
+      if (list === null) return results;
+      var rpred /*@ readonly */ = UImpl.lookupIterator3(predicate, context);
+      UImpl.each(list, function(value, index, list) 
+        /*@ <anonymous> (T,number,IArray<T>) => {void | true} */
+        {
+          if (rpred(value, index, list)) results.push(value);
+        });
+      return results;
+    }
 
                     //     public filterD<T>(obj: _.Dictionary<T>, predicate: _.ObjectIterator<T, boolean>, context?: any): T[] { //=
                     //       var results:T[] = [];
@@ -346,18 +350,24 @@
                     //       return this.filterD(obj, this.negate(this.lookupIterator3(predicate, context)), context);
                     //     }
 
-                    //     // Determine whether all of the elements match a truth test.
-                    //     // Aliased as `all`.
-                    //     public every<T>(list: _.List<T>, predicate?: _.ListIterator<T, boolean>, context?: any): boolean {
-                    //       var result = true;
-                    //       if (list == null) return result;
-                    //       predicate = this.lookupIterator3(predicate, context);
-                    //       this.each(list, function(value, index, list) {
-                    //         result = predicate(value, index, list);
-                    //         if (!result) return breaker;
-                    //       });
-                    //       return !!result;
-                    //     }
+    // Determine whether all of the elements match a truth test.
+    // Aliased as `all`.
+    /*@ every : /\ forall T . (list: IArray<T>, predicate: ArrIter<T, boolean>, context: top) : {boolean | true}
+                /\ forall T . (list: IArray<T>, predicate: ArrIter<T, boolean>              ) : {boolean | true} */
+    public static every(list, predicate, context?) {
+      /*@ result :: boolean */
+      var result = true;
+      if (list === null) return result;
+      var rpred /*@ readonly */ = UImpl.lookupIterator3(predicate, context);
+      UImpl.each(list, function(value, index, list) 
+        /*@ <anonymous> (T,number,IArray<T>) => {undefined + {} | true} */
+        {
+          result = <boolean>rpred(value, index, list);
+          if (!result) return breaker;
+          return undefined;
+        });
+      return !!result;
+    }
 
                     //     public everyD<T>(obj: _.Dictionary<T>, predicate?: _.ObjectIterator<T, boolean>, context?: any): boolean {
                     //       var result = true;
