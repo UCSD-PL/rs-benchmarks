@@ -12,7 +12,7 @@
                     // //TODO: by defining UnderscoreStatic as an interface, we lose the ability to actually make the methods static
                     // //Note that member privacy (like typing) is only enforced by the compiler, not the resulting javascript
 
-                    // module _Implementation {
+                    // module UImplementation {
 
                     //                     //   // Baseline setup
                     //                     //   // --------------
@@ -24,7 +24,7 @@
                     //                     //   var previousUnderscore = root._;
 
   // Establish the object that gets returned to break out of a loop iteration.
-  var breaker = {};
+  var breaker /*@ readonly */ = {};
 
                     //   // Save bytes in the minified (but not gzipped) version:
                     //   var ArrayProto = Array.prototype, ObjProto = Object.prototype, FuncProto = Function.prototype;
@@ -64,7 +64,9 @@
                     //                     //     root._ = _;
                     //                     //   }
 
-  class _Impl {// implements UnderscoreStatic {
+  class UImpl {// implements UnderscoreStatic {
+    constructor() {}
+
     // Current version.
     /*@ VERSION : string */
     public static VERSION = '1.6.0';
@@ -92,45 +94,57 @@
     // Generates lookup iterators.
     /*@ lookupIterator1 : forall X TResult . (f: (X) => TResult, context: top) : {(X) => TResult | true} */
     private static lookupIterator1<X, TResult>(f: (x:X) => TResult, context: any): (x:X) => TResult {
-      if (f === null) return _Impl.identity;
-      return _Impl.createCallback1(f, context);
+      if (f === null) return UImpl.identity;
+      return UImpl.createCallback1(f, context);
     }
 
     /*@ lookupIterator3 : forall X Y Z TResult . (f: (X,Y,Z) => TResult, context: top) : {(X,Y,Z) => TResult | true} */
     private static lookupIterator3<X, Y, Z, TResult>(f: (x:X, y:Y, z:Z) => TResult, context: any): (x:X, y:Y, z:Z) => TResult {
-      if (f === null) return _Impl.identity;
-      return _Impl.createCallback3(f, context);
+      if (f === null) return UImpl.identity;
+      return UImpl.createCallback3(f, context);
     }
 
     /*@ lookupIterator4 : forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult, context: top) : {(X,Y,Z,W) => TResult | true } */
     private static lookupIterator4<X, Y, Z, W, TResult>(f: (x:X, y:Y, z:Z, w:W) => TResult, context: any): (x:X, y:Y, z:Z, w:W) => TResult {
-      if (f === null) return _Impl.identity;
-      return _Impl.createCallback4(f, context);
+      if (f === null) return UImpl.identity;
+      return UImpl.createCallback4(f, context);
     }
 
     //TODO: is each f.call an implicit any?
     // Creates a callback bound to its context if supplied
     /*@ createCallback1 : forall X TResult . (f: (X) => TResult, context: top) : {(X) => TResult | true} */
     private static createCallback1<X, TResult>(f: (x:X) => TResult, context: any): (x:X) => TResult {
+      var rf /*@ readonly */ = f;
+      var rcontext /*@ readonly */ = context;
       if (context === undefined) return f;
-      return function(value) {
-        return f.call(context, value);
+      return function(value) 
+      /*@ <anonymous> (X) => {TResult | true} */
+      {
+        return rf.call(rcontext, value);
       };
     }
 
     /*@ createCallback3 : forall X Y Z TResult . (f: (X,Y,Z) => TResult, context: top) : {(X,Y,Z) => TResult | true} */
     private static createCallback3<X, Y, Z, TResult>(f: (x:X, y:Y, z:Z) => TResult, context: any): (x:X, y:Y, z:Z) => TResult {
+      var rf /*@ readonly */ = f;
+      var rcontext /*@ readonly */ = context;
       if (context === undefined) return f;   
-      return function(value, index, collection) {
-        return f.call(context, value, index, collection);
+      return function(value, index, collection) 
+      /*@ <anonymous> (X,Y,Z) => {TResult | true} */
+      {
+        return rf.call(rcontext, value, index, collection);
       };
     }
 
     /*@ createCallback4 : forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult, context: top) : {(X,Y,Z,W) => TResult | true} */
     private static createCallback4<X, Y, Z, W, TResult>(f: (x:X, y:Y, z:Z, w:W) => TResult, context: any): (x:X, y:Y, z:Z, w:W) => TResult {
+      var rf /*@ readonly */ = f;
+      var rcontext /*@ readonly */ = context;
       if (context === undefined) return f;
-      return function(accumulator, value, index, collection) {
-        return f.call(context, accumulator, value, index, collection);
+      return function(accumulator, value, index, collection) 
+      /*@ <anonymous> (X,Y,Z,W) => {TResult | true} */
+      {
+        return rf.call(rcontext, accumulator, value, index, collection);
       };
     }
 
@@ -144,7 +158,7 @@
     public static each<T>(ob: T[], iterator: (value: T, index: number, list: T[]) => any, context?: any): T[] {
       if (ob === null) return ob;
       var length = ob.length;
-      iterator = _Impl.createCallback3(iterator, context);
+      iterator = UImpl.createCallback3(iterator, context);
       var shouldBreak = false;
       for (var i = 0; i < length && !shouldBreak; i++) {
         shouldBreak = iterator(ob[i], i, ob) === breaker;
@@ -155,8 +169,8 @@
                     //     /*@ eachD : forall T . (ob: {[s:string]:T}, iterator: (element: T, key: string, list: {[s:string]:T}) => TResult, context: top?): {{[s:string]:T} | true} */
                     //     public eachD<T>(ob, iterator, context?) {
                     //       if (ob == null) return ob;
-                    //       iterator = _Impl.createCallback3(iterator, context);
-                    //       var keys = _Impl.keys(ob);
+                    //       iterator = UImpl.createCallback3(iterator, context);
+                    //       var keys = UImpl.keys(ob);
                     //       var length = keys.length;
                     //       var shouldBreak = false;
                     //       for (var i = 0; i < length && !shouldBreak; i++) {
@@ -1352,8 +1366,11 @@
 
     /*@ constant : forall T . (value:T) : {()=>T | true} */
     public static constant<T>(value: T): () => T {
-      return function() {
-        return value;
+      var rvalue /*@ readonly */ = value;
+      return function() 
+      /*@ <anonymous> () => {T | true} */
+      {
+        return rvalue;
       };
     }
 
