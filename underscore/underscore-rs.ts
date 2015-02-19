@@ -64,6 +64,8 @@
                     //                     //     root._ = _;
                     //                     //   }
 
+/*@ alias ArrIter<T,TResult> = (value: T, index: number, list: IArray<T>) => {TResult | true} */
+
   class UImpl {// implements UnderscoreStatic {
     constructor() {}
 
@@ -154,8 +156,9 @@
     // The cornerstone, an `each` implementation, aka `forEach`.
     // Handles raw objects in addition to array-likes. Treats all
     // sparse array-likes as if they were dense.
-    /*@ each : forall T . (ob: IArray<T>, iterator: (value: T, index: number, list: IArray<T>) => top, context: top?) : {IArray<T> | true} */
-    public static each<T>(ob: T[], iterator: (value: T, index: number, list: T[]) => any, context?: any): T[] {
+    /*@ each : /\ forall T IGNORED . (ob: IArray<T>, iterator: ArrIter<T,IGNORED>, context: top) : {IArray<T> | true}
+               /\ forall T IGNORED . (ob: IArray<T>, iterator: ArrIter<T,IGNORED>)               : {IArray<T> | true} */
+    public static each(ob, iterator, context?) {
       if (ob === null) return ob;
       var length = ob.length;
       iterator = UImpl.createCallback3(iterator, context);
@@ -183,16 +186,20 @@
 
                     //     public forEachD = this.eachD;
 
-                    //     // Return the results of applying the iterator to each element.
-                    //     public map<T, TResult>(obj: _.List<T>, iterator: _.ListIterator<T, TResult>, context?: any): TResult[] {
-                    //       var results:TResult[] = [];
-                    //       if (obj == null) return results;
-                    //       iterator = this.lookupIterator3(iterator, context);
-                    //       this.each(obj, function(value, index, list) {
-                    //         results.push(iterator(value, index, list));
-                    //       });
-                    //       return results;
-                    //     }
+    // Return the results of applying the iterator to each element.
+    /*@ map : /\ forall T TResult . (ob: IArray<T>, iterator: ArrIter<T,TResult>, context: top) : {MArray<TResult> | true}
+              /\ forall T TResult . (ob: IArray<T>, iterator: ArrIter<T,TResult>)               : {MArray<TResult> | true} */
+    public static map<T, TResult>(ob, iterator, context?) {
+      var results /*@ readonly */ :TResult[] = [];
+      if (ob === null) return results;
+      var riter /*@ readonly */ = UImpl.lookupIterator3(iterator, context);
+      UImpl.each(ob, function(value, index, list) 
+        /*@ <anonymous> (T,number,IArray<T>) => {void | true} */
+        {
+          results.push(riter(value, index, list));
+        });
+      return results;
+    }
 
                     //     public mapD<T, TResult>(obj: _.Dictionary<T>, iterator: _.ObjectIterator<T, TResult>, context?: any): TResult[] { //=
                     //       var results:TResult[] = [];
