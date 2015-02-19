@@ -25,22 +25,8 @@
  */
 
 // Known Size Number Array
-/*@ alias KSNArray[size] = {IArray<number> | (len v) = size} */
+/*@ alias KSNArray[s] = {IArray<number> | (len v) = s} */
 /*@ alias nat = {number | 0 <= v} */
-
-// TODO: strengthen? e.g. add > 0 checks
-/*@ predicate FluidFieldValid(V) = keyVal(V,"rowSize")        ~~ keyVal(V,"width") + 2
-                                && keyVal(V,"size")           ~~ keyVal(V,"width") * keyVal(V,"height")
-                                && len(keyVal(V,"dens"))      ~~ keyVal(V,"size")
-                                && len(keyVal(V,"dens_prev")) ~~ keyVal(V,"size")
-                                && len(keyVal(V,"u"))         ~~ keyVal(V,"size")
-                                && len(keyVal(V,"u_prev"))    ~~ keyVal(V,"size")
-                                && len(keyVal(V,"v"))         ~~ keyVal(V,"size")
-                                && len(keyVal(V,"v_prev"))    ~~ keyVal(V,"size") */
-/*@ predicate FieldValid(V) = keyVal(V,"rowSize")   ~~ keyVal(V,"w") + 2
-                           && len(keyVal(V,"dens")) ~~ (keyVal(V,"w") + 2) * (keyVal(V,"h") + 2)
-                           && len(keyVal(V,"u"))    ~~ (keyVal(V,"w") + 2) * (keyVal(V,"h") + 2)
-                           && len(keyVal(V,"v"))    ~~ (keyVal(V,"w") + 2) * (keyVal(V,"h") + 2) */
 
 module NavierStokes {
     /*@ solver :: FluidField<Immutable> + null */
@@ -73,8 +59,8 @@ module NavierStokes {
     {
         solver = new FluidField(null, 128, 128);
         solver.setIterations(20);
-        solver.setDisplayFunction(function(f:Field){});
-        solver.setUICallback(prepareFrame);
+        // solver.setDisplayFunction(function(f:Field){});
+        // solver.setUICallback(prepareFrame);
         solver.reset();
     }
 
@@ -113,25 +99,35 @@ module NavierStokes {
 
     // Code from Oliver Hunt (http://nerget.com/fluidSim/pressure.js) starts here.
     export class FluidField {
+        /*@ width : [Immutable] {number | width > 0} */
         private width;
+        /*@ height : [Immutable] {number | height > 0} */
         private height;
+        /*@ rowSize : {number | rowSize = width + 2} */
         private rowSize;
+        /*@ size : {number | size = (width+2) * (height+2)} */
         private size;
+        /*@ dens :      {IArray<number> | (len dens) = (width+2) * (height+2)} */
         private dens;
+        /*@ dens_prev : {IArray<number> | (len dens_prev) = (width+2) * (height+2)} */
         private dens_prev;
+        /*@ u :         {IArray<number> | (len u) = (width+2) * (height+2)} */
         private u;
+        /*@ u_prev :    {IArray<number> | (len u_prev) = (width+2) * (height+2)} */
         private u_prev;
+        /*@ v :         {IArray<number> | (len v) = (width+2) * (height+2)} */
         private v;
+        /*@ v_prev :    {IArray<number> | (len v_prev) = (width+2) * (height+2)} */
         private v_prev;
         private iters;
         private visc;
         private dt;
         private displayFunc: (f:Field) => void;
 
-        /*@ uiCallback :: (field:Field) => void */
-        private uiCallback = function(field:Field) {};
+        // /*@ uiCallback : (field:Field) => void */
+        // private uiCallback = function(field:Field) {};
 
-        /*@ new (canvas:top, hRes:{number | v > 0}, wRes:{number | v > 0}) => {FluidField<Immutable> | FluidFieldValid(v)} */
+        /*@ new (canvas:top, hRes:{number | v > 0}, wRes:{number | v > 0}) => {void | true} */
         constructor(canvas, hRes, wRes) {
             // TODO: formerly didn't allow hRes*wRes to be >= 1000000
             var width = wRes;
@@ -167,8 +163,8 @@ module NavierStokes {
             this.visc = 1/2;//.
             this.dt = 1/10;//.
 
-            /*@ displayFunc :: null + (f:Field<Immutable>) => void */
-            this.displayFunc = null;
+            // @ displayFunc :: null + (f:Field<Immutable>) => void 
+            // this.displayFunc = null;
 
             
         }
@@ -428,7 +424,7 @@ module NavierStokes {
             {
                 for (var i = 0; i < this.size; i++)
                     u[i] = v[i] = d[i] = 0;//.
-                this.uiCallback(new Field(this.rowSize, this.width, this.height, d, u, v));
+                // this.uiCallback(new Field(this.rowSize, this.width, this.height, d, u, v));
             } 
 
             /*@ update : () : {void | true} */
@@ -439,20 +435,20 @@ module NavierStokes {
                 this.dens_step(this.dens, this.dens_prev, this.u, this.v, this.dt);
                 this.displayFunc(new Field(this.rowSize, this.width, this.height, this.dens, this.u, this.v));
             }
-            public setDisplayFunction(func:(f:Field) => void) {
-                this.displayFunc = func;
-            }
+            // public setDisplayFunction(func:(f:Field) => void) {
+            //     this.displayFunc = func;
+            // }
             
             /*@ iterations : () : {number | true} */
             public iterations() { return this.iters; }
-            /*@ setIterations : (number) => {void | true} */
+            /*@ setIterations : (number) : {void | true} */
             public setIterations(iters:number) 
             {
                 if (iters > 0 && iters <= 100)
                     this.iters = iters;
             }
             public setUICallback(callback:(f:Field) => void) {
-                this.uiCallback = callback;
+                // this.uiCallback = callback;
             }
             /*@ reset : () : {void | true} */
             public reset()
@@ -466,7 +462,7 @@ module NavierStokes {
                     this.v[i] = 0;
                 }
             }
-            /*@ getDens () => KSNArray[size] */
+            /*@ getDens : () : KSNArray[size] */
             public getDens()
             {
                 return this.dens;
