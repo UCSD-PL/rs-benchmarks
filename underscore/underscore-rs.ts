@@ -103,14 +103,13 @@
                          /\ forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult, context: top, argCount: {number | v = 4}) : {(X,Y,Z,W) => TResult | true } */
     private static lookupIterator(f, context, argCount?) {
       if (f === null) return UImpl.identity;
-      if (arguments.length < 3) argCount = 3; //TODO: unnecessary
+      if (arguments.length < 3) argCount = 3; //TODO: should be unnecessary
       return UImpl.createCallback(f, context, <number>argCount);
     }
 
     // TODO: possible version that actually uses identity:
-    // /*@ lookupIterator3 : /\ forall X Y Z TResult . (f: (X,Y,Z) => TResult, context: top) : {(X,Y,Z) => TResult | true}
     //                       /\ forall X Y Z . () : {(X,Y,Z) => X | true} */
-    // private static lookupIterator3<X, Y, Z, TResult>(f?: (x:X, y:Y, z:Z) => TResult, context?: any): (x:X, y:Y, z:Z) => TResult {
+    // private static lookupIterator3(f?, context?) {
     //   if (!f) return UImpl.identity;
     //   return UImpl.createCallback3(f, context);
     // }
@@ -120,14 +119,11 @@
                          /\ forall X Y Z W TResult . (f: (X,Y) => TResult,     context: top, argCount: {number | v = 2}) : {(X,Y) => TResult | true}
                          /\ forall X Y Z W TResult . (f: (X,Y,Z) => TResult,   context: top, argCount: {number | v = 3}) : {(X,Y,Z) => TResult | true}
                          /\ forall X Y Z W TResult . (f: (X,Y,Z) => TResult,   context: top                            ) : {(X,Y,Z) => TResult | true}
-                         /\ forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult, context: top, argCount: {number | v = 4}) : {(X,Y,Z,W) => TResult | true} */
-                         /* TODO: forall X Y Z W TResult . (f: (X) => TResult      ) : {(X) => TResult | true}
-                         /\ forall X Y Z W TResult . (f: (X,Y) => TResult    ) : {(X,Y) => TResult | true}
-                         /\ forall X Y Z W TResult . (f: (X,Y,Z) => TResult  ) : {(X,Y,Z) => TResult | true}
-                         /\ forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult) : {(X,Y,Z,W) => TResult | true} */
-    private static createCallback(f, context, argCount?) {
-      if (context === undefined) return f;
-      if (arguments.length < 3) argCount = 3;
+                         /\ forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult, context: top, argCount: {number | v = 4}) : {(X,Y,Z,W) => TResult | true}
+                         /\ forall X Y Z W TResult . (f: X) : {X | (v = f)} */
+    private static createCallback(f, context?, argCount?) {
+      if (arguments.length === 1) return f;
+      if (arguments.length === 2) argCount = 3;
       var ff /*@ readonly */ = f;
       var cc /*@ readonly */ = context;
       if (<number>argCount === 1) return function(value)
@@ -1413,7 +1409,7 @@
                     //                     //   };
 
     // Keep the identity function around for default iterators.
-    /*@ identity : forall T . (value:T) : T */
+    /*@ identity : forall T . (value:T) : {T | v = value} */
     public static identity(value) {
       return value;
     }
