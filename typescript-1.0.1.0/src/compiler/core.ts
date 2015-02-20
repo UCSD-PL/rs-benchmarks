@@ -65,10 +65,6 @@ module ts {
 //         return result;
 //     }
 // 
-// // >>>> DONE <<<<
-
-
-
 // // NOTE: BC added a few more possible annotations below but changed nothing else
 // 
 //     /*@ map :: /\ forall T U . (array: IArray<T>, f: (x:T)=>U) => {MArray<U> | true}
@@ -85,30 +81,58 @@ module ts {
 //         return result;
 //     }
 // 
+//
 //     //TODO should we relax the inputs to allow e.g. nulls? otherwise the checks seem pretty silly
-//     /*@ concatenate :: forall T M . (array1: Array<M,T>, array2: Array<M,T>) => { Array<M,T> | true } */
+// 
+//     /*@ concatenate :: forall T M . ( array1: IArray<T> + undefined
+//                                     , array2: IArray<T> + undefined) 
+//                     =>                      { IArray<T> + undefined | true }
+//      */
 //     export function concatenate<T>(array1: T[], array2: T[]): T[] {
+// 
 //         if (!array2 || !array2.length) return array1;
 //         if (!array1 || !array1.length) return array2;
-//         return array1.concat(array2);
+//         // return undefined 
+//         
+//         // 
+//         // PV: This is what casting to the polymorphic type IArray<T>
+//         //     can look like 
+//         //
+// 
+//         /*@ arr1 :: IArray<T> */
+//         var arr1 /*@ readonly */ = array1;
+//         /*@ arr2 :: IArray<T> */
+//         var arr2 /*@ readonly */ = array2;
+//           
+//         return arr1.concat(arr2);
 //     }
+//
 // 
 //     /*@ sum :: (array: IArray<{{[s:string]:number} | hasProperty(prop, v)}>, prop: string) => { number | true } */
 //     export function sum(array: any[], prop: string): number {
 //         var result = 0;
 //         for (var i = 0; i < array.length; i++) {
-//             result += array[i][prop];
+//             result += (array[i][prop]);
 //         }
 //         return result;
 //     }
 // 
-//     /*@ binarySearch :: (array: IArray<number>, value: number) => { number | true } */
+//
+// 
+//     /*@ binarySearch :: (array: { IArray<number> | (len v) > 1 }, value: number) 
+//                      => { number | ((0 <= v && v < (len array)) || v = -1) } */
 //     export function binarySearch(array: number[], value: number): number {
 //         var low = 0;
 //         var high = array.length - 1;
 // 
 //         while (low <= high) {
 //             var middle = low + ((high - low) >> 1);
+//           
+//             //
+//             // PV: Giving up here
+//             //
+//             assume(low <= middle && middle <= high);
+//         
 //             var midValue = array[middle];
 // 
 //             if (midValue === value) {
@@ -121,15 +145,19 @@ module ts {
 //                 low = middle + 1;
 //             }
 //         }
-// 
-//         return ~low;
+//  
+//         //
+//         // PV: Not sure what the purpose of ~low is. 
+//         //
+//         return -1; // ~low;
 //     }
- 
+// 
 //
 // PV: We do not allow extraction of method properties
 //
 //    var hasOwnProperty = Object.prototype.hasOwnProperty;
 // 
+
     /*@ hasProperty :: forall T M . (map: Map<M,T>, key: string)
                     => { boolean | Prop(v) <=> (hasDirectProperty(key,map) && hasProperty(key,map)) }
      */
@@ -140,20 +168,27 @@ module ts {
         return hasProperty(map_,key);
     }
 
+// // >>>> DONE <<<<
+ 
+
 //     export function getProperty<T>(map: Map<T>, key: string): T {
 //         return hasOwnProperty.call(map, key) ? map[key] : undefined;
 //     }
-// 
-//     /*@ isEmpty :: forall T . (map: Map<T>) => { boolean | true } */
-//     export function isEmpty<T>(map: Map<T>) {
-//         for (var id in map) {
-//             if (hasProperty(map, id)) {
-//                 return false;
-//             }
-//         }
-//         return true;
-//     }
-// 
+
+
+/*@ qualif Bot(v:a,s:string): hasProperty(v,s) */
+/*@ qualif Bot(v:a,s:string): enumProp(v,s) */
+
+    /*@ isEmpty :: forall T . (map: Map<Immutable,T>) => { boolean | true } */
+    export function isEmpty<T>(map: Map<T>) {
+        for (var id in map) {
+            if (hasProperty(map, id)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 //     export function clone<T>(object: T): T {
 //         var result: any = {};
 //         for (var id in object) {
