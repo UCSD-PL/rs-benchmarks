@@ -99,10 +99,12 @@
     /*@ lookupIterator : /\ forall X Y Z W TResult . (f: (X) => TResult,       context: top, argCount: {number | v = 1}) : {(X) => TResult | true }
                          /\ forall X Y Z W TResult . (f: (X,Y) => TResult,     context: top, argCount: {number | v = 2}) : {(X,Y) => TResult | true }
                          /\ forall X Y Z W TResult . (f: (X,Y,Z) => TResult,   context: top, argCount: {number | v = 3}) : {(X,Y,Z) => TResult | true }
+                         /\ forall X Y Z W TResult . (f: (X,Y,Z) => TResult,   context: top                            ) : {(X,Y,Z) => TResult | true }
                          /\ forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult, context: top, argCount: {number | v = 4}) : {(X,Y,Z,W) => TResult | true } */
-    private static lookupIterator(f, context, argCount) {
+    private static lookupIterator(f, context, argCount?) {
       if (f === null) return UImpl.identity;
-      return UImpl.createCallback(f, context, argCount);
+      if (arguments.length < 3) argCount = 3; //TODO: unnecessary
+      return UImpl.createCallback(f, context, <number>argCount);
     }
 
     // TODO: possible version that actually uses identity:
@@ -117,6 +119,7 @@
     /*@ createCallback : /\ forall X Y Z W TResult . (f: (X) => TResult,       context: top, argCount: {number | v = 1}) : {(X) => TResult | true}
                          /\ forall X Y Z W TResult . (f: (X,Y) => TResult,     context: top, argCount: {number | v = 2}) : {(X,Y) => TResult | true}
                          /\ forall X Y Z W TResult . (f: (X,Y,Z) => TResult,   context: top, argCount: {number | v = 3}) : {(X,Y,Z) => TResult | true}
+                         /\ forall X Y Z W TResult . (f: (X,Y,Z) => TResult,   context: top                            ) : {(X,Y,Z) => TResult | true}
                          /\ forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult, context: top, argCount: {number | v = 4}) : {(X,Y,Z,W) => TResult | true} */
                          /* TODO: forall X Y Z W TResult . (f: (X) => TResult      ) : {(X) => TResult | true}
                          /\ forall X Y Z W TResult . (f: (X,Y) => TResult    ) : {(X,Y) => TResult | true}
@@ -124,25 +127,25 @@
                          /\ forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult) : {(X,Y,Z,W) => TResult | true} */
     private static createCallback(f, context, argCount?) {
       if (context === undefined) return f;
-      if (argCount === undefined) argCount = 3;
+      if (arguments.length < 3) argCount = 3;
       var ff /*@ readonly */ = f;
       var cc /*@ readonly */ = context;
-      if (argCount === 1) return function(value) 
+      if (<number>argCount === 1) return function(value)
         /*@ <anonymous> (X) => {TResult | true} */
         {
           return ff.call(cc, value);
         };
-      else if (argCount === 2) return function(value, other)
+      else if (<number>argCount === 2) return function(value, other)
         /*@ <anonymous> (X,Y) => {TResult | true} */
         {
           return ff.call(cc, value, other);
         };
-      else if (argCount === 3) return function(value, index, collection) 
+      else if (<number>argCount === 3) return function(value, index, collection)
         /*@ <anonymous> (X,Y,Z) => {TResult | true} */
         {
           return ff.call(cc, value, index, collection);
         };
-      else if (argCount === 4) return function(accumulator, value, index, collection) 
+      else if (<number>argCount === 4) return function(accumulator, value, index, collection)
         /*@ <anonymous> (X,Y,Z,W) => {TResult | true} */
         {
           return ff.call(cc, accumulator, value, index, collection);
@@ -165,7 +168,7 @@
     public static each(ob, iterator, context?) {
       if (ob === null) return ob;
       var length = ob.length;
-      iterator = UImpl.createCallback(iterator, context, 3);
+      iterator = UImpl.createCallback(iterator, context);
       var shouldBreak = false;
       for (var i = 0; i < length && !shouldBreak; i++) {
         shouldBreak = iterator(ob[i], i, ob) === breaker;
@@ -196,7 +199,7 @@
     public static map(ob, iterator, context?) {
       var results /*@ readonly */ = [];
       if (ob === null) return results;
-      var riter /*@ readonly */ = UImpl.lookupIterator(iterator, context, 3);
+      var riter /*@ readonly */ = UImpl.lookupIterator(iterator, context);
       UImpl.each(ob, function(value, index, list) 
         /*@ <anonymous> (T,number,IArray<T>) => {void | true} */
         {
@@ -291,7 +294,7 @@
     public static find<T>(list, predicate, context?) {
       /*@ result :: T + undefined */
       var result:T;
-      var rpred /*@ readonly */ = UImpl.lookupIterator(predicate, context, 3);
+      var rpred /*@ readonly */ = UImpl.lookupIterator(predicate, context);
       UImpl.some(list, function(value, index, list) 
         /*@ <anonymous> (T,number,IArray<T>) => {boolean | true} */
         {
@@ -327,7 +330,7 @@
     public static filter(list, predicate, context?) {
       var results /*@ readonly */ = [];
       if (list === null) return results;
-      var rpred /*@ readonly */ = UImpl.lookupIterator(predicate, context, 3);
+      var rpred /*@ readonly */ = UImpl.lookupIterator(predicate, context);
       UImpl.each(list, function(value, index, list) 
         /*@ <anonymous> (T,number,IArray<T>) => {void | true} */
         {
@@ -368,7 +371,7 @@
       /*@ result :: boolean */
       var result = true;
       if (list === null) return result;
-      var rpred /*@ readonly */ = UImpl.lookupIterator(predicate, context, 3);
+      var rpred /*@ readonly */ = UImpl.lookupIterator(predicate, context);
       UImpl.each(list, function(value, index, list) 
         /*@ <anonymous> (T,number,IArray<T>) => {undefined + {} | true} */
         {
@@ -402,7 +405,7 @@
       /*@ result :: boolean */
       var result = false;
       if (list === null) return result;
-      var rpred /*@ readonly */ = UImpl.lookupIterator(predicate, context, 3);
+      var rpred /*@ readonly */ = UImpl.lookupIterator(predicate, context);
       UImpl.each(list, function(value, index, list) 
         /*@ <anonymous> (T,number,IArray<T>) => {undefined + {} | true} */
         {
@@ -488,7 +491,7 @@
       var lastComputed;
       /*@ computed :: COMPARABLE + undefined */
       var computed;
-      var riter /*@ readonly */ = UImpl.lookupIterator(iterator, context, 3);
+      var riter /*@ readonly */ = UImpl.lookupIterator(iterator, context);
       UImpl.each(list, function(value, index, list) 
         /*@ <anonymous> (T,number,IArray<T>) => {void | true} */
         {
