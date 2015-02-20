@@ -60,10 +60,11 @@ function d3_max_2 <T, U>(array:T[], f:(x:T, i:number) => U) : any {
   return check_undefined(a);
 }
 
-/* d3_max :: /\ forall T U . (arr: IArray<T>, f: (T, number) => U) => { U | true }
-             /\ forall T   . (arr: IArray<T>) => { T | true } 
+d3.max = function(array:any, f?:any) 
+/*@ <anonymous> /\ forall T U . (arr: IArray<T>, f: (T, number) => U) => { U | true }
+                /\ forall T   . (arr: IArray<T>) => { T | true } 
  */
-d3.max = function(array:any, f?:any) {
+{
   if (arguments.length === 1) {
     return d3_max_1(array);
   } else {

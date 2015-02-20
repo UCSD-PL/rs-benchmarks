@@ -43,7 +43,11 @@ function d3_extent_2<T, U>(array: T[], f:(T, number) => U): U[] {
   return [a, c];
 };
 
-d3.extent = function(array: any, f?:any):any {
+d3.extent = function(array: any, f?:any):any 
+/*@ <anonymous> /\ forall T U . ({IArray<T> | 0 < len v}, f: (x:T, i:number) => U) => #pair[U] 
+                /\ forall T   . ({IArray<T> | 0 < len v}) => #pair[T] 
+ */
+{
   if (arguments.length === 1) {
       return d3_extent_1(array);
   } else {

@@ -3,7 +3,9 @@
 
 /*@ qualif RemoveMe(v:a): 0 < len(v) */
 
-d3.quantile = function(values:number[], p:number): number {
+d3.quantile = function(values:number[], p:number): number 
+/*@ <anonymous> (arr: {IArray<number> | 0 < len v}, p: {number | 0 <= v && v < 1}) => number */
+{
     var H = (values.length - 1) * p + 1;
     var h:number = Math.floor(H);
     assume(1 <= h && h < values.length);

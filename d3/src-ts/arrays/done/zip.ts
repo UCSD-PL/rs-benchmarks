@@ -18,7 +18,9 @@ function d3_zipLength(d, i) {
   return d.length;
 }
 
-d3.zip = function<T>(args) {
+d3.zip = function<T>(args) 
+/*@ <anonymous> (args:IArray<IArray<number>>) => {IArray<IArray<number>> | true} */
+{
   var n = args.length;
   if (!n) return [];
 
