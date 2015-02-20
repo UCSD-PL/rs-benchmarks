@@ -9,21 +9,21 @@ module ts {
     export interface StringSet extends Map<any> { }
 
 // // <<<< DONE >>>>
-// 
-//     /*@  forEach :: forall T U . (array: IArray<T>, callback: (element: T) => U) => { U | true } + undefined */
-//     export function forEach<T, U>(array: T[], callback: (element: T) => U): U {
-//         /*@ result :: U */
-//         var result: U;
-//         if (array) {
-//             var cnt = false;
-//             for (var i = 0, len = array.length; i < len && cnt; i++) {
-//                 if (result = callback(array[i])) 
-//                     cnt = false;
-//             }
-//         }
-//         return result;
-//     }
-// 
+
+    /*@  forEach :: forall T U . (array: IArray<T>, callback: (element: T) => U) => { U | true } + undefined */
+    export function forEach<T, U>(array: T[], callback: (element: T) => U): U {
+        /*@ result :: U */
+        var result: U;
+        if (array) {
+            var cnt = false;
+            for (var i = 0, len = array.length; i < len && cnt; i++) {
+                if (result = callback(array[i])) 
+                    cnt = false;
+            }
+        }
+        return result;
+    }
+
 //     /*@  contains :: forall T . (array: IArray<T>, value: T) => { boolean | true } */
 //     export function contains<T>(array: T[], value: T): boolean {
 //         if (array) {
@@ -168,56 +168,70 @@ module ts {
         return hasProperty(map_,key);
     }
 
-// // >>>> DONE <<<<
- 
-
-//     export function getProperty<T>(map: Map<T>, key: string): T {
-//         return hasOwnProperty.call(map, key) ? map[key] : undefined;
-//     }
-
-
-/*@ qualif Bot(v:a,s:string): hasProperty(v,s) */
-/*@ qualif Bot(v:a,s:string): enumProp(v,s) */
-
-    /*@ isEmpty :: forall T . (map: Map<Immutable,T>) => { boolean | true } */
-    export function isEmpty<T>(map: Map<T>) {
-        for (var id in map) {
-            if (hasProperty(map, id)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-//     export function clone<T>(object: T): T {
-//         var result: any = {};
-//         for (var id in object) {
-//             result[id] = (<any>object)[id];
+//     // TODO 
+//     //export function getProperty<T>(map: Map<T>, key: string): T {
+//     //    return hasOwnProperty.call(map, key) ? map[key] : undefined;
+//     //}
+// 
+// 
+// 
+    /*@ qualif Bot(v:a,s:string): hasProperty(v,s) */
+    /*@ qualif Bot(v:a,s:string): enumProp(v,s) */
+// 
+//     /*@ isEmpty :: forall T . (map: Map<Immutable,T>) => { boolean | true } */
+//     export function isEmpty<T>(map: Map<T>) {
+//         for (var id in map) {
+//             if (hasProperty(map, id)) {
+//                 return false;
+//             }
 //         }
-//         return <T>result;
+//         return true;
 //     }
 // 
+//     //// PV: barely typed
+// 
+//     ///*@ clone :: forall T . (Object<Immutable>) => T */
+//     //export function clone<T>(object: T): T {
+//     //    var result: any = {};
+//     //    for (var id in object) {
+//     //        result[id] = (<any>object)[id];
+//     //    }
+//     //    return <T>result;
+//     //}
+// 
+//     /*@ forEachValue :: forall T U . (map: Map<Immutable,T>, callback: (value: T) => U) => { U | true } + undefined */
 //     export function forEachValue<T, U>(map: Map<T>, callback: (value: T) => U): U {
+//         /*@ result :: U */ 
 //         var result: U;
 //         for (var id in map) {
-//             if (result = callback(map[id])) break;
+//             // if (result = callback(map[id])) break; // ORIG
+//             result = callback(map[id]);
 //         }
 //         return result;
 //     }
 // 
+// 
+//     /*@ forEachKey :: forall T U . (map: Map<Immutable,T>, callback: (key: string) => U) => { U | true } + undefined */
 //     export function forEachKey<T, U>(map: Map<T>, callback: (key: string) => U): U {
+//         /*@ result :: U */
 //         var result: U;
 //         for (var id in map) {
-//             if (result = callback(id)) break;
+//             result = callback(id);
+//             // if (result = callback(id)) break;    // ORIG
 //         }
 //         return result;
 //     }
 // 
+// 
+//     /*@ lookUp :: forall T . (map: Map<Immutable,T>, key: string) => { T | hasProperty(key,map) } + undefined */ 
 //     export function lookUp<T>(map: Map<T>, key: string): T {
 //         return hasProperty(map, key) ? map[key] : undefined;
 //     }
 // 
+// 
+//     /*@ mapToArray :: forall T . (map: Map<Immutable,T>) => { MArray<T> | true } */
 //     export function mapToArray<T>(map: Map<T>): T[] {
+//         /*@ result :: MArray<T> */
 //         var result: T[] = [];
 // 
 //         for (var id in map) {
@@ -226,6 +240,7 @@ module ts {
 // 
 //         return result;
 //     }
+// 
 // 
 //     /**
 //      * Creates a map from the elements of an array.
@@ -237,41 +252,55 @@ module ts {
 //      * the same key with the given 'makeKey' function, then the element with the higher
 //      * index in the array will be the one associated with the produced key.
 //      */
-//     export function arrayToMap<T>(array: T[], makeKey: (value: T) => string): Map<T> {
-//         var result: Map<T> = {};
 // 
-//         forEach(array, value => {
-//             result[makeKey(value)] = value;
+//     /*@ arrayToMap :: forall T . (array: IArray<T>, makeKey: (value: T) => string) => { Map<Mutable,T> | true } */
+//     export function arrayToMap<T>(array: T[], makeKey: (value: T) => string): Map<T> {
+//         
+//         var makeKeyLoc /*@ readonly */ = makeKey;
+// 
+//         /*@ result :: Map<Mutable,T> */
+//         var result /*@ readonly */ : Map<T> = {};
+// 
+//         forEach(array, function(value:T) /*@ <anonymous> (value: T) => undefined */ {
+//             result[makeKeyLoc(value)] = value;
+//             return undefined;
 //         });
 // 
 //         return result;
 //     }
 // 
-//     function formatStringFromArgs(text: string, args: { [index: number]: any; }, baseIndex?: number): string {
-//         baseIndex = baseIndex || 0;
 // 
-//         return text.replace(/{(\d+)}/g, (match, index?) => args[+index + baseIndex]);
-//     }
-
-//     export var localizedDiagnosticMessages: Map<string> = undefined;
+//     //// TODO (OR NOT) 
 // 
-//     export function getLocaleSpecificMessage(message: string) {
-//         if (ts.localizedDiagnosticMessages) {
-//             message = localizedDiagnosticMessages[message];
-//         }
+//     //function formatStringFromArgs(text: string, args: { [index: number]: any; }, baseIndex?: number): string {
+//     //    baseIndex = baseIndex || 0;
+//     //    return text.replace(/{(\d+)}/g, (match, index?) => args[+index + baseIndex]);
+//     //}
 // 
-//         return message;
-//     }
-
-//     export function createFileDiagnostic(file: SourceFile, start: number, length: number, message: DiagnosticMessage, ...args: any[]): Diagnostic;
+//     //// TODO 
+//     //export var localizedDiagnosticMessages: Map<string> = undefined;
+// 
+//     //export function getLocaleSpecificMessage(message: string) {
+//     //    if (ts.localizedDiagnosticMessages) {
+//     //        message = localizedDiagnosticMessages[message];
+//     //    }
+// 
+//     //    return message;
+//     //}
+// 
+//     
+//     // PV : omitting the first overload 
+// 
+//     // export function createFileDiagnostic(file: SourceFile, start: number, length: number, message: DiagnosticMessage, ...args: any[]): Diagnostic;
+//     /*@ createFileDiagnostic :: (SourceFile<Immutable>, number, number, DiagnosticMessage<Immutable>) => Diagnostic<Immutable> */
 //     export function createFileDiagnostic(file: SourceFile, start: number, length: number, message: DiagnosticMessage): Diagnostic {
-//         Debug.assert(start >= 0, "start must be non-negative, is " + start);
-//         Debug.assert(length >= 0, "length must be non-negative, is " + length);
+//         // Debug.assert(start >= 0, "start must be non-negative, is " + start);
+//         // Debug.assert(length >= 0, "length must be non-negative, is " + length);
 // 
-//         var text = getLocaleSpecificMessage(message.key);
+//         var text = ""; // getLocaleSpecificMessage(message.key);
 //         
 //         if (arguments.length > 4) {
-//             text = formatStringFromArgs(text, arguments, 4);
+//             // text = formatStringFromArgs(text, arguments, 4);
 //         }
 // 
 //         return {
@@ -285,6 +314,9 @@ module ts {
 //         };
 //     }
 // 
+// // >>>> DONE <<<<
+
+
 //     export function createCompilerDiagnostic(message: DiagnosticMessage, ...args: any[]): Diagnostic;
 //     export function createCompilerDiagnostic(message: DiagnosticMessage): Diagnostic {
 //         var text = getLocaleSpecificMessage(message.key);
@@ -353,14 +385,14 @@ module ts {
 //         };
 //     }
 // 
-//     /*@ compareValues :: forall T . (a:T, b:T) => { number | true } */
-//     export function compareValues<T>(a: T, b: T): number {
-//         if (a === b) return 0;
-//         if (a === undefined) return -1;
-//         if (b === undefined) return 1;
-//         return a < b ? -1 : 1;
-//     }
-// 
+    /*@ compareValues :: forall T . (a:T, b:T) => { number | true } */
+    export function compareValues<T>(a: T, b: T): number {
+        if (a === b) return 0;
+        if (a === undefined) return -1;
+        if (b === undefined) return 1;
+        return a < b ? -1 : 1;
+    }
+
 //     function getDiagnosticFilename(diagnostic: Diagnostic): string {
 //         return diagnostic.file ? diagnostic.file.filename : undefined;
 //     }
