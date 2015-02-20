@@ -159,8 +159,8 @@
     // The cornerstone, an `each` implementation, aka `forEach`.
     // Handles raw objects in addition to array-likes. Treats all
     // sparse array-likes as if they were dense.
-    /*@ each : /\ forall T IGNORED . (ob: IArray<T>, iterator: ArrIter<T,IGNORED>, context: top) : {IArray<T> | true}
-               /\ forall T IGNORED . (ob: IArray<T>, iterator: ArrIter<T,IGNORED>)               : {IArray<T> | true} */
+    /*@ each : /\ forall T U . (ob: IArray<T>, iterator: ArrIter<T,U>, context: top) : {IArray<T> | true}
+               /\ forall T U . (ob: IArray<T>, iterator: ArrIter<T,U>)               : {IArray<T> | true} */
     public static each(ob, iterator, context?) {
       if (ob === null) return ob;
       var length = ob.length;
@@ -478,7 +478,7 @@
     // Return the maximum element (or element-based computation).
     /*@ maxD : /\ forall T COMPARABLE . (list: IArray<T>, iterator: ArrIter<T, COMPARABLE>, context: top) : {T + undefined | true}
                /\ forall T COMPARABLE . (list: IArray<T>, iterator: ArrIter<T, COMPARABLE>              ) : {T + undefined | true} */
-    public maxD<T, COMPARABLE>(list, iterator, context?) {
+    public static maxD<T, COMPARABLE>(list, iterator, context?) {
       /*@ empty :: boolean */
       var empty = true;
       /*@ result :: T + undefined */
@@ -1427,11 +1427,15 @@
     /*@ noop : () : {void | true} */
     public static noop(): void {}
 
-                    //     public property(key: string): (object: Object) => any {
-                    //       return function(obj:any) {
-                    //         return obj[key];
-                    //       };
-                    //     }
+    /*@ property : (key: string) : {(ob: {{} | (hasProperty key ob)}) => top | true} */
+    public static property(key) {
+      var kkey /*@ readonly */ = key;
+      return function(o) 
+      /*@ <anonymous> (o: {{} | (hasProperty key o)}) => {top | true} */
+      {
+        return o[kkey];
+      };
+    }
 
                     //     // Returns a predicate for checking whether an object has a given set of `key:value` pairs.
                     //     public matches(attrs: any): _.ListIterator<any, boolean> {
