@@ -65,7 +65,7 @@
                     //                     //   }
 
 /*@ alias ArrIter<T,TResult> = (value: T, index: number, list: IArray<T>) => {TResult | true} */
-/*@ alias MemoIter<T,TResult> = (prev: TResult, curr: T, index: number, list: T[]) => {TResult | true} */
+/*@ alias MemoIter<T,TResult> = (prev: TResult, curr: T, index: number, list: IArray<T>) => {TResult | true} */
 
 
   class UImpl {// implements UnderscoreStatic {
@@ -99,13 +99,13 @@
     /*@ lookupIterator1 : forall X TResult . (f: (X) => TResult, context: top) : {(X) => TResult | true} */
     private static lookupIterator1<X, TResult>(f: (x:X) => TResult, context: any): (x:X) => TResult {
       if (f === null) return UImpl.identity;
-      return UImpl.createCallback1(f, context);
+      return UImpl.createCallback(f, context, 1);
     }
 
     /*@ lookupIterator3 : forall X Y Z TResult . (f: (X,Y,Z) => TResult, context: top) : {(X,Y,Z) => TResult | true} */
     private static lookupIterator3<X, Y, Z, TResult>(f: (x:X, y:Y, z:Z) => TResult, context: any): (x:X, y:Y, z:Z) => TResult {
       if (f === null) return UImpl.identity;
-      return UImpl.createCallback3(f, context);
+      return UImpl.createCallback(f, context, 3);
     }
 
     // TODO: possible version that actually uses identity:
@@ -119,45 +119,48 @@
     /*@ lookupIterator4 : forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult, context: top) : {(X,Y,Z,W) => TResult | true } */
     private static lookupIterator4<X, Y, Z, W, TResult>(f: (x:X, y:Y, z:Z, w:W) => TResult, context: any): (x:X, y:Y, z:Z, w:W) => TResult {
       if (f === null) return UImpl.identity;
-      return UImpl.createCallback4(f, context);
+      return UImpl.createCallback(f, context, 4);
     }
 
-    //TODO: is each f.call an implicit any?
-    // Creates a callback bound to its context if supplied
-    /*@ createCallback1 : forall X TResult . (f: (X) => TResult, context: top) : {(X) => TResult | true} */
-    private static createCallback1<X, TResult>(f: (x:X) => TResult, context: any): (x:X) => TResult {
-      var rf /*@ readonly */ = f;
-      var rcontext /*@ readonly */ = context;
+    // Internal function: creates a callback bound to its context if supplied
+    /*@ createCallback : /\ forall X Y Z W TResult . (f: (X) => TResult,       context: top, argCount: {number | v = 1}) : {(X) => TResult | true}
+                         /\ forall X Y Z W TResult . (f: (X,Y) => TResult,     context: top, argCount: {number | v = 2}) : {(X,Y) => TResult | true}
+                         /\ forall X Y Z W TResult . (f: (X,Y,Z) => TResult,   context: top, argCount: {number | v = 3}) : {(X,Y,Z) => TResult | true}
+                         /\ forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult, context: top, argCount: {number | v = 4}) : {(X,Y,Z,W) => TResult | true} */
+                         /* TODO: forall X Y Z W TResult . (f: (X) => TResult      ) : {(X) => TResult | true}
+                         /\ forall X Y Z W TResult . (f: (X,Y) => TResult    ) : {(X,Y) => TResult | true}
+                         /\ forall X Y Z W TResult . (f: (X,Y,Z) => TResult  ) : {(X,Y,Z) => TResult | true}
+                         /\ forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult) : {(X,Y,Z,W) => TResult | true} */
+    private static createCallback(f, context, argCount) {
       if (context === undefined) return f;
-      return function(value) 
-      /*@ <anonymous> (X) => {TResult | true} */
-      {
-        return rf.call(rcontext, value);
-      };
-    }
-
-    /*@ createCallback3 : forall X Y Z TResult . (f: (X,Y,Z) => TResult, context: top) : {(X,Y,Z) => TResult | true} */
-    private static createCallback3<X, Y, Z, TResult>(f: (x:X, y:Y, z:Z) => TResult, context: any): (x:X, y:Y, z:Z) => TResult {
-      var rf /*@ readonly */ = f;
-      var rcontext /*@ readonly */ = context;
-      if (context === undefined) return f;   
-      return function(value, index, collection) 
-      /*@ <anonymous> (X,Y,Z) => {TResult | true} */
-      {
-        return rf.call(rcontext, value, index, collection);
-      };
-    }
-
-    /*@ createCallback4 : forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult, context: top) : {(X,Y,Z,W) => TResult | true} */
-    private static createCallback4<X, Y, Z, W, TResult>(f: (x:X, y:Y, z:Z, w:W) => TResult, context: any): (x:X, y:Y, z:Z, w:W) => TResult {
-      var rf /*@ readonly */ = f;
-      var rcontext /*@ readonly */ = context;
-      if (context === undefined) return f;
-      return function(accumulator, value, index, collection) 
-      /*@ <anonymous> (X,Y,Z,W) => {TResult | true} */
-      {
-        return rf.call(rcontext, accumulator, value, index, collection);
-      };
+      if (argCount === undefined) argCount = 3;
+      var ff /*@ readonly */ = f;
+      var cc /*@ readonly */ = context;
+      if (argCount === 1) return function(value) 
+        /*@ <anonymous> (X) => {TResult | true} */
+        {
+          return ff.call(cc, value);
+        };
+      else if (argCount === 2) return function(value, other)
+        /*@ <anonymous> (X,Y) => {TResult | true} */
+        {
+          return ff.call(cc, value, other);
+        };
+      else if (argCount === 3) return function(value, index, collection) 
+        /*@ <anonymous> (X,Y,Z) => {TResult | true} */
+        {
+          return ff.call(cc, value, index, collection);
+        };
+      else if (argCount === 4) return function(accumulator, value, index, collection) 
+        /*@ <anonymous> (X,Y,Z,W) => {TResult | true} */
+        {
+          return ff.call(cc, accumulator, value, index, collection);
+        };
+      // ORIG:
+      // return function() {
+      //   return ff.apply(cc, arguments);
+      // };
+      throw new Error("can't reach here");
     }
 
     // Collection Functions
@@ -171,7 +174,7 @@
     public static each(ob, iterator, context?) {
       if (ob === null) return ob;
       var length = ob.length;
-      iterator = UImpl.createCallback3(iterator, context);
+      iterator = UImpl.createCallback(iterator, context, 3);
       var shouldBreak = false;
       for (var i = 0; i < length && !shouldBreak; i++) {
         shouldBreak = iterator(ob[i], i, ob) === breaker;
@@ -227,16 +230,22 @@
 
                     //     private reduceError = 'Reduce of empty array with no initial value';
 
-                    //     // **Reduce** builds up a single result from a list of values, aka `inject`,
-                    //     // or `foldl`.
-                    //     public reduce<T, TResult>(obj: _.List<T>, iterator: _.MemoIterator<T, TResult>, memo: TResult, context?: any): TResult {
-                    //       if (obj == null) obj = [];
-                    //       iterator = this.createCallback4(iterator, context);
-                    //       this.each(obj, function(value:T, index:number, list:_.List<T>) {
-                    //         memo = iterator(memo, value, index, list);
-                    //       });
-                    //       return memo;
-                    //     }
+    // **Reduce** builds up a single result from a list of values, aka `inject`,
+    // or `foldl`.
+    /*@ reduce : /\ forall T TResult . (ob: IArray<T>, iterator: MemoIter<T,TResult>, memo: TResult, context: top) : {TResult | true}
+                 /\ forall T TResult . (ob: IArray<T>, iterator: MemoIter<T,TResult>, memo: TResult              ) : {TResult | true} */
+    public static reduce<TResult>(ob, iterator, memo, context?) {
+      /*@ retVal :: TResult */
+      var retVal = memo;
+      if (ob === null) ob = [];
+      var riter /*@ readonly */ = UImpl.createCallback(iterator, context, 4);
+      UImpl.each(ob, function(value, index, list) 
+        /*@ <anonymous> (T,number,IArray<T>) => {void | true} */
+        {
+          retVal = riter(retVal, value, index, list);
+        });
+      return retVal;
+    }
 
                     //     // A version of reduce where you do not give an initial value; must be called with a non-empty list.
                     //     public reduceD<T>(obj: _.List<T>, iterator: _.MemoIterator<T, T>): T {
