@@ -1,4 +1,5 @@
 /// <reference path="core.ts"/>
+
 // <reference path="scanner.ts"/>
 
 module ts {
@@ -11,6 +12,9 @@ module ts {
 
 /*@ alias INode   = Node<Immutable> */
 /*@ alias ISymbol = ts.Symbol<Immutable> */
+/*@ alias IType   = Type<Immutable> */
+
+/*@  predicate non_zero(b) = (b /= (lit "#x00000000" (BitVec (Size32 obj)))) */
 
 //
 ///////////////////////////////////////////////////////////////////////// 
@@ -257,11 +261,17 @@ module ts {
     export interface Node extends TextRange {
         /*@ kind : [Immutable] SyntaxKind<Immutable> */
         kind: SyntaxKind;
+
+        /*  flags : [Immutable] NodeFlags<Immutable> */
+        /*@ flags : [Immutable] bitvector32 */
         flags: NodeFlags;
+
         /*@ id?: [Mutable] number */
         id?: number;                  // Unique id (used to look up NodeLinks)
+
         /*@ parent?: INode */
         parent?: Node;                // Parent node (initialized by binding)
+
         symbol?: Symbol;              // Symbol declared by node (initialized by binding)
         locals?: SymbolTable;         // Locals associated with node (initialized by binding)
         nextContainer?: Node;         // Next container in declaration order (initialized by binding)
@@ -841,17 +851,28 @@ module ts {
         Anonymous          = 0x00002000,  // Anonymous
         FromSignature      = 0x00004000,  // Created for signature assignment check
 
-// TODO
-//         Intrinsic = Any | String | Number | Boolean | Void | Undefined | Null,
-//         StringLike = String | StringLiteral,
-//         NumberLike = Number | Enum,
-//         ObjectType = Class | Interface | Reference | Anonymous
+        //// TODO
+        //Intrinsic = Any | String | Number | Boolean | Void | Undefined | Null,
+        //StringLike = String | StringLiteral,
+        //NumberLike = Number | Enum,
+        //ObjectType = Class | Interface | Reference | Anonymous
+
+        // PV : hardcoding the result here         
+        ObjectType         = 0x00003C00,
     }
+    
+/*@ predicate type_flags(v,o) = ((non_zero(bvand(v, lit "#x00003C00" (BitVec (Size32 obj))))) =>  extends_interface(o,"ObjectType"))         &&
+                                ((non_zero(bvand(v, lit "#x00002000" (BitVec (Size32 obj))))) =>  extends_interface(o,"ResolvedObjectType"))
+ */ 
 
     // Properties common to all types
     export interface Type {
+
+        /*@ flags : [Immutable] { v: bitvector32 | type_flags(v,this) } */
         flags: TypeFlags;  // Flags
+
         id: number;        // Unique ID
+        
         symbol?: Symbol;   // Symbol associated with type (if any)
     }
 
@@ -901,7 +922,10 @@ module ts {
     // Resolved object type
     export interface ResolvedObjectType extends ObjectType {
         members: SymbolTable;              // Properties by name
+
+        /*@ properties  : [InheritedMut] IArray<ISymbol> */
         properties: Symbol[];              // Properties
+
         callSignatures: Signature[];       // Call signatures of type
         constructSignatures: Signature[];  // Construct signatures of type
         stringIndexType: Type;             // String index type

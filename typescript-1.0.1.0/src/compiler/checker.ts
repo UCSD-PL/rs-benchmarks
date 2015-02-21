@@ -169,53 +169,56 @@ module ts {
         //    return new Symbol(flags, name);
         //}
 
-
-        /*@ getExcludedSymbolFlags :: (flags: SymbolFlags) => { bitvector32 | true } */
-        function getExcludedSymbolFlags(flags: SymbolFlags): SymbolFlags {
-            var result = 0x00000000; // 0;
-            // if (flags & SymbolFlags.Variable)      result = result | SymbolFlags.VariableExcludes;
-            // if (flags & SymbolFlags.Property)      result = result | SymbolFlags.PropertyExcludes;
-            // if (flags & SymbolFlags.EnumMember)    result = result | SymbolFlags.EnumMemberExcludes;
-            // if (flags & SymbolFlags.Function)      result = result | SymbolFlags.FunctionExcludes;
-            // if (flags & SymbolFlags.Class)         result = result | SymbolFlags.ClassExcludes;
-            // if (flags & SymbolFlags.Interface)     result = result | SymbolFlags.InterfaceExcludes;
-            // if (flags & SymbolFlags.Enum)          result = result | SymbolFlags.EnumExcludes;
-            // if (flags & SymbolFlags.ValueModule)   result = result | SymbolFlags.ValueModuleExcludes;
-            // if (flags & SymbolFlags.Method)        result = result | SymbolFlags.MethodExcludes;
-            // if (flags & SymbolFlags.GetAccessor)   result = result | SymbolFlags.GetAccessorExcludes;
-            // if (flags & SymbolFlags.SetAccessor)   result = result | SymbolFlags.SetAccessorExcludes;
-            // if (flags & SymbolFlags.TypeParameter) result = result | SymbolFlags.TypeParameterExcludes;
-            // if (flags & SymbolFlags.Import)        result = result | SymbolFlags.ImportExcludes;
-            return result ;
-        }
-
-        /*@ recordMergedSymbol :: (target: ISymbol, source: ISymbol) => { void | true } */
-        function recordMergedSymbol(target: Symbol, source: Symbol) {
-            if (!source.mergeId) source.mergeId = nextMergeId++;
-            mergedSymbols[source.mergeId] = target;
-        }
-
-// XXX
-
-        /*@ cloneSymbol :: (symbol: ISymbol) => { Symbol<Mutable> | true } */
-        function cloneSymbol(symbol: Symbol): Symbol {
-            var result = createSymbol(symbol.flags | SymbolFlags.Merged, symbol.name);
-            result.declarations = symbol.declarations.slice(0);
-            result.parent = symbol.parent;
-            if (symbol.valueDeclaration) result.valueDeclaration = symbol.valueDeclaration;
-//             if (symbol.members) result.members = cloneSymbolTable(symbol.members);
-//             if (symbol.exports) result.exports = cloneSymbolTable(symbol.exports);
-//             recordMergedSymbol(result, symbol);
-            return result;
-        }
- 
-        function extendSymbol(target: Symbol, source: Symbol) {
-            if (!(target.flags & getExcludedSymbolFlags(source.flags))) {
-                // 
-                // PV : update in the 'flags' field, that is supposed to be Immutable
-                //
-                // target.flags |= source.flags; // ORIG
-                target.flags = target.flags | source.flags;
+// // <<<< DONE >>>>
+// 
+//         /*@ getExcludedSymbolFlags :: (flags: SymbolFlags) => { bitvector32 | true } */
+//         function getExcludedSymbolFlags(flags: SymbolFlags): SymbolFlags {
+//             var result = 0x00000000; // 0;
+//             // if (flags & SymbolFlags.Variable)      result = result | SymbolFlags.VariableExcludes;
+//             // if (flags & SymbolFlags.Property)      result = result | SymbolFlags.PropertyExcludes;
+//             // if (flags & SymbolFlags.EnumMember)    result = result | SymbolFlags.EnumMemberExcludes;
+//             // if (flags & SymbolFlags.Function)      result = result | SymbolFlags.FunctionExcludes;
+//             // if (flags & SymbolFlags.Class)         result = result | SymbolFlags.ClassExcludes;
+//             // if (flags & SymbolFlags.Interface)     result = result | SymbolFlags.InterfaceExcludes;
+//             // if (flags & SymbolFlags.Enum)          result = result | SymbolFlags.EnumExcludes;
+//             // if (flags & SymbolFlags.ValueModule)   result = result | SymbolFlags.ValueModuleExcludes;
+//             // if (flags & SymbolFlags.Method)        result = result | SymbolFlags.MethodExcludes;
+//             // if (flags & SymbolFlags.GetAccessor)   result = result | SymbolFlags.GetAccessorExcludes;
+//             // if (flags & SymbolFlags.SetAccessor)   result = result | SymbolFlags.SetAccessorExcludes;
+//             // if (flags & SymbolFlags.TypeParameter) result = result | SymbolFlags.TypeParameterExcludes;
+//             // if (flags & SymbolFlags.Import)        result = result | SymbolFlags.ImportExcludes;
+//             return result ;
+//         }
+// 
+//         /*@ recordMergedSymbol :: (target: ISymbol, source: ISymbol) => { void | true } */
+//         function recordMergedSymbol(target: Symbol, source: Symbol) {
+//             if (!source.mergeId) source.mergeId = nextMergeId++;
+//             mergedSymbols[source.mergeId] = target;
+//         }
+// 
+//  
+//         /*@ cloneSymbol :: (symbol: ISymbol) => { Symbol<Mutable> | true } */
+//         function cloneSymbol(symbol: Symbol): Symbol {
+//             var result = createSymbol(symbol.flags | SymbolFlags.Merged, symbol.name);
+//             result.declarations = symbol.declarations.slice(0);
+//             result.parent = symbol.parent;
+//             if (symbol.valueDeclaration) result.valueDeclaration = symbol.valueDeclaration;
+//             //// TODO
+//             //if (symbol.members) result.members = cloneSymbolTable(symbol.members);
+//             //if (symbol.exports) result.exports = cloneSymbolTable(symbol.exports);
+//             //recordMergedSymbol(result, symbol);
+//             return result;
+//         }
+//
+// // >>>> DONE <<<<
+//  
+//         function extendSymbol(target: Symbol, source: Symbol) {
+//             if (!(target.flags & getExcludedSymbolFlags(source.flags))) {
+//                 // 
+//                 // PV : update in the 'flags' field, that is supposed to be Immutable
+//                 //
+//                 // target.flags |= source.flags; // ORIG
+//                 target.flags = target.flags | source.flags;
 //                 if (!target.valueDeclaration && source.valueDeclaration) target.valueDeclaration = source.valueDeclaration;
 //                 forEach(source.declarations, node => {
 //                     target.declarations.push(node);
@@ -234,8 +237,8 @@ module ts {
 //                 forEach(source.declarations, node => {
 //                     error(node.name ? node.name : node, Diagnostics.Duplicate_identifier_0, symbolToString(source));
 //                 });
-            }
-        }
+//             }
+//         }
 
 //         function cloneSymbolTable(symbolTable: SymbolTable): SymbolTable {
 //             var result: SymbolTable = {};
@@ -265,7 +268,26 @@ module ts {
 //         }
 
 // // <<<< DONE >>>>
-// 
+
+        /*@ getSymbolLinks :: (symbol: ISymbol) => { SymbolLinks<Immutable> | true } */
+        declare function getSymbolLinks(symbol: Symbol): SymbolLinks;
+
+        /*@ getNodeLinks :: (node: INode) => { NodeLinks<Immutable> | true } */
+        declare function getNodeLinks(node: Node): NodeLinks;
+
+        /*@ getSourceFile :: (node: INode + undefined) => undefined + { SourceFile<Immutable> | true } */
+        declare function getSourceFile(node: Node): SourceFile;
+
+        /*@ isGlobalSourceFile :: (node: INode) => { boolean | true } */
+        declare function isGlobalSourceFile(node: Node);
+
+        /*@ getSymbol :: (symbols: SymbolTable<Immutable>, name: string, meaning: SymbolFlags) => { ISymbol | true } + undefined */ 
+        declare function getSymbol(symbols: SymbolTable, name: string, meaning: SymbolFlags): Symbol;
+
+
+//  TOGGLE HERE
+
+
 //         /*@ getSymbolLinks :: (symbol: ISymbol) => { SymbolLinks<Immutable> | true } */
 //         function getSymbolLinks(symbol: Symbol): SymbolLinks {
 //             if (symbol.flags & SymbolFlags.Transient) return <TransientSymbol>symbol;            
@@ -308,7 +330,7 @@ module ts {
 //             }
 //         }
 // 
-//         /*@ isGlobalSourceFile :: (node: INodeK) => { boolean | true } 
+//         /*@ isGlobalSourceFile :: (node: INode) => { boolean | true } 
 //          */
 //         function isGlobalSourceFile(node: Node) {
 //             // return node.kind === SyntaxKind.SourceFile && !isExternalModule(<SourceFile>node);
@@ -318,8 +340,6 @@ module ts {
 //             return false;
 //         }
 // 
-// 
-//  
 //         /*@ getSymbol :: (symbols: SymbolTable<Immutable>, name: string, meaning: SymbolFlags) 
 //                       => { ISymbol | true } + undefined 
 //          */ 
@@ -331,15 +351,16 @@ module ts {
 //                     return symbol;
 //                 }
 // 
-//                 if (symbol.flags & SymbolFlags.Import) {
-// // // TODO
-// //                     var target = resolveImport(symbol);
-// //                     // unknown symbol will mean that there were reported error during import resolution
-// //                     // treat it as positive answer to avoid cascading errors
-// //                     if (target === unknownSymbol || target.flags & meaning) {
-// //                         return symbol;
-// //                     }
-//                 }
+//                 // TODO 
+//                 //if (symbol.flags & SymbolFlags.Import) {
+//                 //    var target = resolveImport(symbol);
+//                 //    // unknown symbol will mean that there were reported error during import resolution
+//                 //    // treat it as positive answer to avoid cascading errors
+//                 //    if (target === unknownSymbol || target.flags & meaning) {
+//                 //        return symbol;
+//                 //    }
+//                 //}
+// 
 //             }
 //             return undefined;
 // 
@@ -688,33 +709,52 @@ module ts {
 //             }
 //         }
 // 
-//
-// XXX: HERE
 
+
+        // 
+        // PV:  This will not be supported any time soon ... 
+        //      The 'id' field is considered immutable.
+        // 
+        //      Using a "declare" function instead.
+        //
+
+        // TODO : more precise type ???
+
+        /*@ createType :: (flags: bitvector32) => { IType | true } */
+        declare function createType(flags: TypeFlags): Type;
+
+        // TODO 
         //function createType(flags: TypeFlags): Type {
-        //    var result = new TypeC(checker, flags);     //PV: instead of 'new Type'
+        //    var result = new Type(checker, flags);
         //    result.id = typeCount++;
         //    return result;
         //}
-// 
-//         /*@ createIntrinsicType :: (kind: TypeFlags, intrinsicName: string) 
-//                                 => IntrinsicType<Immutable> 
-//          */
-//         function createIntrinsicType(kind: TypeFlags, intrinsicName: string): IntrinsicType {
 
-// XXX: This should be extended before the cast !!!
+        /*@ createIntrinsicType :: (kind: TypeFlags, intrinsicName: string) => IntrinsicType<Immutable> */
+        declare function createIntrinsicType(kind: TypeFlags, intrinsicName: string): IntrinsicType;
 
-//             var type = <IntrinsicType>createType(kind);
-//             type.intrinsicName = intrinsicName;
-//             return type;
-//         }
-// 
-//         function createObjectType(kind: TypeFlags, symbol?: Symbol): ObjectType {
-//             var type = <ObjectType>createType(kind);
-//             type.symbol = symbol;
-//             return type;
-//         }
-// 
+        // TODO 
+        //function createIntrinsicType(kind: TypeFlags, intrinsicName: string): IntrinsicType {
+        //    var type = <IntrinsicType>createType(kind);
+        //    type.intrinsicName = intrinsicName;
+        //    return type;
+        //}
+        
+
+        //
+        // PV : Need to use the 'type_flags' predicate cause we don't have keyVal anymore 
+        //
+
+        /*@ createObjectType :: forall M . (kind: bitvector32, symbol: ISymbol + undefined) => { ObjectType<M> | type_flags(kind,v) } */
+        declare function createObjectType(kind: TypeFlags, symbol?: Symbol): ObjectType;
+
+        // TODO
+        //function createObjectType(kind: TypeFlags, symbol?: Symbol): ObjectType {
+        //    var type = <ObjectType>createType(kind);
+        //    type.symbol = symbol;
+        //    return type;
+        //}
+
 //         // A reserved member name starts with two underscores followed by a non-underscore
 //         function isReservedMemberName(name: string) {
 //             return name.charCodeAt(0) === CharacterCodes._ && name.charCodeAt(1) === CharacterCodes._ && name.charCodeAt(2) !== CharacterCodes._;
@@ -1972,6 +2012,11 @@ module ts {
 //             setObjectTypeMembers(type, members, callSignatures, constructSignatures, stringIndexType, numberIndexType);
 //         }
 // 
+        
+        /*@ resolveObjectTypeMembers :: (type: ObjectType<Immutable>) => { ResolvedObjectType<Immutable> | true } */
+        declare function resolveObjectTypeMembers(type: ObjectType): ResolvedObjectType;
+
+// TODO
 //         function resolveObjectTypeMembers(type: ObjectType): ResolvedObjectType {
 //             if (!(<ResolvedObjectType>type).members) {
 //                 if (type.flags & (TypeFlags.Class | TypeFlags.Interface)) {
@@ -1986,13 +2031,19 @@ module ts {
 //             }
 //             return <ResolvedObjectType>type;
 //         }
-// 
-//         function getPropertiesOfType(type: Type): Symbol[] {
-//             if (type.flags & TypeFlags.ObjectType) {
-//                 return resolveObjectTypeMembers(<ObjectType>type).properties;
-//             }
-//             return emptyArray;
-//         }
+
+        /*@ getPropertiesOfType :: (type: IType) => { IArray<ISymbol> | true } */
+        function getPropertiesOfType(type: Type): Symbol[] {
+            if (type.flags & TypeFlags.ObjectType) {
+
+                // PV: the cast to ObjectType is redundant here: 
+                // return resolveObjectTypeMembers(<ObjectType>type).properties;
+
+                return resolveObjectTypeMembers(type).properties;
+            }
+            return emptyArray();
+            // return emptyArray(); // ORIG
+        }
 // 
 //         function getPropertyOfType(type: Type, name: string): Symbol {
 //             if (type.flags & TypeFlags.ObjectType) {
@@ -2486,7 +2537,13 @@ module ts {
 //                     return unknownType;
 //             }
 //         }
-// 
+
+        /*@ instantiateList :: forall T . (items: IArray<T>, 
+                                           mapper: TypeMapper<Immutable>, 
+                                           instantiator: (item: T, mapper: TypeMapper<Immutable>) => T) => IArray<T> 
+         */
+        declare function instantiateList<T>(items: T[], mapper: TypeMapper, instantiator: (item: T, mapper: TypeMapper) => T): T[];
+
 //         function instantiateList<T>(items: T[], mapper: TypeMapper, instantiator: (item: T, mapper: TypeMapper) => T): T[] {
 //             if (items && items.length) {
 //                 var result: T[] = [];
@@ -2550,11 +2607,12 @@ module ts {
 //                 return t;
 //             }
 //         }
-// 
-//         function identityMapper(type: Type): Type {
-//             return type;
-//         }
-// 
+
+        /*@ identityMapper :: (type: IType) => IType */
+        function identityMapper(type: Type): Type {
+            return type;
+        }
+
 //         function combineTypeMappers(mapper1: TypeMapper, mapper2: TypeMapper): TypeMapper {
 //             return t => mapper2(mapper1(t));
 //         }
@@ -2586,6 +2644,11 @@ module ts {
 //             return result;
 //         }
 // 
+
+        /*@ instantiateSymbol :: (symbol: ISymbol, mapper: TypeMapper<Immutable>) => { ISymbol | true } */
+        declare function instantiateSymbol(symbol: Symbol, mapper: TypeMapper): Symbol;
+
+// TODO         
 //         function instantiateSymbol(symbol: Symbol, mapper: TypeMapper): Symbol {
 //             if (symbol.flags & SymbolFlags.Instantiated) {
 //                 var links = getSymbolLinks(symbol);
@@ -2610,9 +2673,15 @@ module ts {
 //             return result;
 //         }
 // 
-//         function instantiateAnonymousType(type: ObjectType, mapper: TypeMapper): ObjectType {
-//             var result = <ResolvedObjectType>createObjectType(TypeFlags.Anonymous, type.symbol);
-//             result.properties = instantiateList(getPropertiesOfType(type), mapper, instantiateSymbol);
+
+
+
+// HEREHERE
+
+        /*@ instantiateAnonymousType :: (type: ObjectType<Mutable>, mapper: TypeMapper<Immutable>) => { ObjectType<Immutable> | true } */
+        function instantiateAnonymousType(type: ObjectType, mapper: TypeMapper): ObjectType {
+            var result = <ResolvedObjectType>createObjectType(TypeFlags.Anonymous, type.symbol);
+            result.properties = instantiateList(getPropertiesOfType(type), mapper, instantiateSymbol);
 //             result.members = createSymbolTable(result.properties);
 //             result.callSignatures = instantiateList(getSignaturesOfType(type, SignatureKind.Call), mapper, instantiateSignature);
 //             result.constructSignatures = instantiateList(getSignaturesOfType(type, SignatureKind.Construct), mapper, instantiateSignature);
@@ -2620,25 +2689,37 @@ module ts {
 //             var numberIndexType = getIndexTypeOfType(type, IndexKind.Number);
 //             if (stringIndexType) result.stringIndexType = instantiateType(stringIndexType, mapper);
 //             if (numberIndexType) result.numberIndexType = instantiateType(numberIndexType, mapper);
-//             return result;
-//         }
-// 
-//         function instantiateType(type: Type, mapper: TypeMapper): Type {
-//             if (mapper !== identityMapper) {
-//                 if (type.flags & TypeFlags.TypeParameter) {
-//                     return mapper(type);
-//                 }
-//                 if (type.flags & TypeFlags.Anonymous) {
-//                     return type.symbol && type.symbol.flags & (SymbolFlags.Function | SymbolFlags.Method | SymbolFlags.TypeLiteral | SymbolFlags.ObjectLiteral) ?
-//                         instantiateAnonymousType(<ObjectType>type, mapper) : type;
-//                 }
-//                 if (type.flags & TypeFlags.Reference) {
-//                     return createTypeReference((<TypeReference>type).target, instantiateList((<TypeReference>type).typeArguments, mapper, instantiateType));
-//                 }
-//             }
-//             return type;
-//         }
-// 
+            return result;
+        }
+
+        /*@ instantiateType :: (type: IType, mapper: TypeMapper<Immutable>) => { IType | true } */
+        function instantiateType(type: Type, mapper: TypeMapper): Type {
+            if (mapper !== identityMapper) {
+
+                if (type.flags & TypeFlags.TypeParameter) {
+                    return mapper(type);
+                }
+                if (type.flags & TypeFlags.Anonymous) {
+                    // ORIG:
+                    //return type.symbol && type.symbol.flags & (SymbolFlags.Function | SymbolFlags.Method | SymbolFlags.TypeLiteral | SymbolFlags.ObjectLiteral) ?
+                    //    instantiateAnonymousType(<ObjectType>type, mapper) : type;
+
+                    if (type.symbol) {
+                        if (type.symbol.flags & (SymbolFlags.Function | SymbolFlags.Method | SymbolFlags.TypeLiteral | SymbolFlags.ObjectLiteral)) {
+                            //return instantiateAnonymousType(<ObjectType>type, mapper);
+                            return <ObjectType>type;
+                        }
+                    }
+                    return type;
+
+                }
+                //if (type.flags & TypeFlags.Reference) {
+                //    return createTypeReference((<TypeReference>type).target, instantiateList((<TypeReference>type).typeArguments, mapper, instantiateType));
+                //}
+            }
+            return type;
+        }
+
 //         // Returns true if the given expression contains (at any level of nesting) a function or arrow expression
 //         // that is subject to contextual typing.
 //         function isContextSensitiveExpression(node: Expression): boolean {
@@ -3595,9 +3676,10 @@ module ts {
 //         }
 // 
 // // >>>> DONE <<<<
-
+// 
 //         // EXPRESSION TYPE CHECKING
 // 
+//         /*@ checkIdentifier :: (node: Identifier<Immutable>) => { IType | true } */
 //         function checkIdentifier(node: Identifier): Type {
 //             function isInTypeQuery(node: Node): boolean {
 //                 // TypeScript 1.0 spec (April 2014): 3.6.3
