@@ -626,9 +626,9 @@
     // TODO: does this match the .d.ts file? if not, why is it compiling?
     // Use a comparator function to figure out the smallest index at which
     // an object should be inserted so as to maintain order. Uses binary search.
-    /*@ sortedIndex : /\ forall T . (list: IArray<T>, value: T, iterator: (T)=>number, context: top) : {number | true}
-                      /\ forall T . (list: IArray<T>, value: T, iterator: (T)=>number              ) : {number | true}
-                      /\ forall T . (list: IArray<T>, value: T                                     ) : {number | true} */
+    /*@ sortedIndex : /\ forall T . (list: IArray<T>, value: T, iterator: (T)=>number, context: top) : {number | 0 <= v && v <= (len list)}
+                      /\ forall T . (list: IArray<T>, value: T, iterator: (T)=>number              ) : {number | 0 <= v && v <= (len list)}
+                      /\ forall T . (list: IArray<T>, value: T                                     ) : {number | 0 <= v && v <= (len list)} */
     public static sortedIndex(list, value, iterator?, context?) {
       iterator = UImpl.lookupIterator(iterator, context, 1);
       var processedValue = iterator(value);
@@ -855,33 +855,44 @@
                     //       return result;
                     //     }
 
-                    //     // Return the position of the first occurrence of an item in an array,
-                    //     // or -1 if the item is not included in the array.
-                    //     // If the array is large and already in sort order, pass `true`
-                    //     // for **isSorted** to use binary search.
-                    //     public indexOf(array: _.List<number>, value: number, isSorted?: boolean): number;
-                    //     public indexOf<T>(array: _.List<T>, value: T, startFrom?: number): number;
-                    //     public indexOf(array: any, value: any, arg?: any): number {
-                    //       if (array == null) return -1;
-                    //       var i = 0, length = array.length;
-                    //       if (arg) {
-                    //         if (typeof arg == 'number') {
-                    //           i = arg < 0 ? Math.max(0, length + arg) : arg;
-                    //         } else {
-                    //           i = this.sortedIndex(array, value);
-                    //           return array[i] === value ? i : -1;
-                    //         }
-                    //       }
-                    //       for (; i < length; i++) if (array[i] === value) return i;
-                    //       return -1;
-                    //     }
+    // Return the position of the first occurrence of an item in an array,
+    // or -1 if the item is not included in the array.
+    // If the array is large and already in sort order, pass `true`
+    // for **isSorted** to use binary search.
+    /*@ indexOf : /\ forall T . (array: IArray<T>, item: T                   ) : {number | (0-1) <= v && v < (len array)}
+                  /\ forall T . (array: IArray<T>, item: T, isSorted: boolean) : {number | (0-1) <= v && v < (len array)}
+                  /\ forall T . (array: IArray<T>, item: T, startFrom: number) : {number | (0-1) <= v && v < (len array)} */
+    public static indexOf(array, item, arg?) {
+      if (array === null) return -1;
+      var i = 0, length = array.length;
+      if (arg) {
+        if (typeof arg === 'number') {
+          i = arg < 0 ? Math.max(0, length + arg) : arg;
+        } else {
+          i = UImpl.sortedIndex(array, item);
+          if (i === array.length) return -1; //ORIG: unneeded
+          return array[i] === item ? i : -1;
+        }
+      }
+      for (true; i < length; i++) if (array[i] === item) return i;
+      return -1;
+    }
 
-                    //     public lastIndexOf<T>(array: _.List<T>, value: T, from?: number): number {
-                    //       if (array == null) return -1;
-                    //       var i = from == null ? array.length : from;
-                    //       while (i--) if (array[i] === value) return i;
-                    //       return -1;
-                    //     }
+    /*@ lastIndexOf : /\ forall T . (array: IArray<T>, item: T                   ) : {number | (0-1) <= v && v < (len array)}
+                      /\ forall T . (array: IArray<T>, item: T, startFrom: number) : {number | (0-1) <= v && v < (len array)} */
+    public static lastIndexOf(array, item, from?) {
+      if (array === null) return -1;
+      var idx = array.length;
+      if (typeof from === 'number') {
+        idx = from < 0 ? idx + from + 1 : Math.min(idx, from + 1);
+      }
+      idx--;
+      while (idx >= 0) {
+        if (array[idx] === item) return idx;
+        idx--;
+      }
+      return -1;
+    }
 
                     //     // Generate an integer Array containing an arithmetic progression. A port of
                     //     // the native Python `range()` function. See
