@@ -96,30 +96,26 @@
                     //     // --------------------
                         
     // Generates lookup iterators.
-    /*@ lookupIterator : /\ forall X Y Z W TResult . (f: (X) => TResult,       context: top, argCount: {number | v = 1}) : {(X) => TResult | true }
-                         /\ forall X Y Z W TResult . (f: (X,Y) => TResult,     context: top, argCount: {number | v = 2}) : {(X,Y) => TResult | true }
-                         /\ forall X Y Z W TResult . (f: (X,Y,Z) => TResult,   context: top, argCount: {number | v = 3}) : {(X,Y,Z) => TResult | true }
-                         /\ forall X Y Z W TResult . (f: (X,Y,Z) => TResult,   context: top                            ) : {(X,Y,Z) => TResult | true }
-                         /\ forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult, context: top, argCount: {number | v = 4}) : {(X,Y,Z,W) => TResult | true } */
+    /*@ lookupIterator : /\ forall X       TResult . (f: (X) => TResult,       context: top, argCount: {number | v = 1}) :  (X)=>TResult
+                         /\ forall X Y     TResult . (f: (X,Y) => TResult,     context: top, argCount: {number | v = 2}) :  (X,Y)=>TResult
+                         /\ forall X Y Z   TResult . (f: (X,Y,Z) => TResult,   context: top, argCount: {number | v = 3}) :  (X,Y,Z)=>TResult
+                         /\ forall X Y Z   TResult . (f: (X,Y,Z) => TResult,   context: top                            ) : {(X,Y,Z)=>TResult | true}
+                         /\ forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult, context: top, argCount: {number | v = 4}) :  (X,Y,Z,W)=>TResult
+                         /\ forall X               . () : {(arg:X)=>{X | v = arg} | true} */
     private static lookupIterator(f, context, argCount?) {
-      if (f === null) return UImpl.identity;
+      if (arguments.length === 0) return function(x) 
+        /*@ <anonymous> forall X . (arg:X)=>{X | v = arg} */
+        { return x }; //NOTE: we would just return UImpl.Identity, but we can't extract methods like that (TODO?)
       if (arguments.length < 3) argCount = 3; //TODO: should be unnecessary
       return UImpl.createCallback(f, context, <number>argCount);
     }
 
-    // TODO: possible version that actually uses identity:
-    //                       /\ forall X Y Z . () : {(X,Y,Z) => X | true} */
-    // private static lookupIterator3(f?, context?) {
-    //   if (!f) return UImpl.identity;
-    //   return UImpl.createCallback3(f, context);
-    // }
-
     // Internal function: creates a callback bound to its context if supplied
-    /*@ createCallback : /\ forall X Y Z W TResult . (f: (X) => TResult,       context: top, argCount: {number | v = 1}) : {(X) => TResult | true}
-                         /\ forall X Y Z W TResult . (f: (X,Y) => TResult,     context: top, argCount: {number | v = 2}) : {(X,Y) => TResult | true}
-                         /\ forall X Y Z W TResult . (f: (X,Y,Z) => TResult,   context: top, argCount: {number | v = 3}) : {(X,Y,Z) => TResult | true}
-                         /\ forall X Y Z W TResult . (f: (X,Y,Z) => TResult,   context: top                            ) : {(X,Y,Z) => TResult | true}
-                         /\ forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult, context: top, argCount: {number | v = 4}) : {(X,Y,Z,W) => TResult | true}
+    /*@ createCallback : /\ forall X Y Z W TResult . (f: (X) => TResult,       context: top, argCount: {number | v = 1}) :  (X)=>TResult
+                         /\ forall X Y Z W TResult . (f: (X,Y) => TResult,     context: top, argCount: {number | v = 2}) :  (X,Y)=>TResult
+                         /\ forall X Y Z W TResult . (f: (X,Y,Z) => TResult,   context: top, argCount: {number | v = 3}) :  (X,Y,Z)=>TResult
+                         /\ forall X Y Z W TResult . (f: (X,Y,Z) => TResult,   context: top                            ) : {(X,Y,Z)=>TResult | true}
+                         /\ forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult, context: top, argCount: {number | v = 4}) :  (X,Y,Z,W)=>TResult
                          /\ forall X Y Z W TResult . (f: X) : {X | (v = f)} */
     private static createCallback(f, context?, argCount?) {
       if (arguments.length === 1) return f;
@@ -625,22 +621,22 @@
                     //       return this.group<T, number>((result, value, key) => { if (this.has(result, key)) result[key]++; else result[key] = 1; })(list, iterator, context);
                     //     }
 
-                    //     // TODO: formerly not restricted to comparing numbers; needs Comparable interface?
-                    //     // TODO: does this match the .d.ts file? if not, why is it compiling?
-                    //     // Use a comparator function to figure out the smallest index at which
-                    //     // an object should be inserted so as to maintain order. Uses binary search.
-                    //     public sortedIndex(list: _.List<number>, value: number, iterator?: (x: number) => number, context?: any): number;
-                    //     public sortedIndex<T>(list: _.List<T>, value: T, iterator: (x: T) => number, context?: any): number;
-                    //     public sortedIndex(list: _.List<any>, value: any, iterator?: (x: any) => number, context?: any): number {
-                    //       iterator = this.lookupIterator1(iterator, context);
-                    //       var processedValue = iterator(value);
-                    //       var low = 0, high = list.length;
-                    //       while (low < high) {
-                    //         var mid = (low + high) >>> 1;
-                    //         if (iterator(list[mid]) < processedValue) low = mid + 1; else high = mid;
-                    //       }
-                    //       return low;
-                    //     }
+    // TODO: formerly not restricted to comparing numbers; needs Comparable interface?
+    // TODO: does this match the .d.ts file? if not, why is it compiling?
+    // Use a comparator function to figure out the smallest index at which
+    // an object should be inserted so as to maintain order. Uses binary search.
+    /*@ sortedIndex : forall T . (list: IArray<T>, value: T, iterator: (T)=>number, context: top) : {number | true} */
+    public static sortedIndex(list, value, iterator?, context?) {
+      iterator = UImpl.lookupIterator(iterator, context, 1);
+      var processedValue = iterator(value);
+      var low = 0, high = list.length;
+      while (low < high) {
+        var mid = (low + high) >>> 1;
+        assume(low <= mid && mid < high); //TODO:remove
+        if (iterator(list[mid]) < processedValue) low = mid + 1; else high = mid;
+      }
+      return low;
+    }
 
                     //     // Safely create a real, live array from anything iterable.
                     //     public toArray<T>(list: _.List<T>): T[] {
