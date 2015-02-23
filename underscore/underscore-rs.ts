@@ -6,6 +6,7 @@
 
                     // ///<reference path='.\underscore-rs.d.ts' />
 
+                    // //ORIG: many of my "undefined" were "void 0"
                     // //TODO: restore 'guard' internal params to several functions
                     // //TODO: Functions are currently duplicated instead of overloaded. Ones that are identical up to renaming are marked with //=
                     // //        Many of these stem from each/eachD and the dictionary dupes (and some other duplicates) are named with a trailing D
@@ -1120,15 +1121,17 @@
                     //     // Object Functions
                     //     // ----------------
 
-                    //     // Retrieve the names of an object's properties.
-                    //     // Delegates to **ECMAScript 5**'s native `Object.keys`
-                    //     public keys(obj: any): string[] {
-                    //       if (!this.isObject(obj)) return [];
-                    //       if (nativeKeys) return nativeKeys(obj);
-                    //       var keys:string[] = [];
-                    //       for (var key in obj) if (this.has(obj, key)) keys.push(key);
-                    //       return keys;
-                    //     }
+                    // // Retrieve the names of an object's properties.
+                    // // Delegates to **ECMAScript 5**'s native `Object.keys`
+                    // /*@ keys : (ob: {}) : {MArray<string> | true} */
+                    // public static keys(ob) {
+                    //   //ORIG:
+                    //   // if (!this.isObject(ob)) return [];
+                    //   // if (nativeKeys) return nativeKeys(ob);
+                    //   var keys = [];
+                    //   for (var key in ob) if (UImpl.has(ob, key)) keys.push(key);
+                    //   return keys;
+                    // }
 
                     //     // Retrieve the values of an object's properties.
                     //     public values(obj: any): any[] {
@@ -1409,21 +1412,24 @@
     // }
 
     // Is a given value equal to null?
-    /*@ isNull : (ob:top) : {boolean | true} */
-    public static isNull(ob: any): boolean {
+    /*@ isNull : forall T . (ob:T) : {boolean | true} */ //TODO: (Prop v) <=> (v ~~ null)} */
+    public static isNull(ob) {
       return ob === null;
     }
 
-                    //     // Is a given variable undefined?
-                    //     public isUndefined(obj: any): boolean {
-                    //       return obj === void 0;
-                    //     }
+    // Is a given variable undefined?
+    /*@ isUndefined : forall T . (ob:T) : {boolean | true} */ //TODO: (Prop v) <=> (v ~~ undefined)} */
+    public static isUndefined(ob) {
+      return ob === undefined;
+    }
 
-                    //     // Shortcut function for checking if an object has a given property directly
-                    //     // on itself (in other words, not on a prototype).
-                    //     public has(obj: any, key: string): boolean {
-                    //       return obj != null && hasOwnProperty.call(obj, key);
-                    //     }
+                    // // Shortcut function for checking if an object has a given property directly
+                    // // on itself (in other words, not on a prototype).
+                    // /*@ has : (ob: {}, key: string) : { boolean | Prop(v) <=> hasDirectProperty(key, ob) } */
+                    // public static has(ob, key) {
+                    //   return ob.hasOwnProperty(key);
+                    //   // return (<boolean>(ob != null)) && (<boolean>Object.prototype.hasOwnProperty.call(ob, key));
+                    // }
 
                     //                     //   // Utility Functions
                     //                     //   // -----------------
@@ -1442,7 +1448,7 @@
     }
 
     /*@ constant : forall T . (value:T) : {()=>T | true} */
-    public static constant<T>(value: T): () => T {
+    public static constant(value) {
       var rvalue /*@ readonly */ = value;
       return function() 
       /*@ <anonymous> () => {T | true} */
@@ -1452,7 +1458,7 @@
     }
 
     /*@ noop : () : {void | true} */
-    public static noop(): void {}
+    public static noop() {}
 
     /*@ property : (key: string) : {(ob: {{} | (hasProperty key ob)}) => top | true} */
     public static property(key) {
