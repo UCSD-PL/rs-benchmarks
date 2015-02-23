@@ -172,6 +172,8 @@
       return ob;
     }
 
+    public static forEach(a,b,c) { return UImpl.each(a,b,c) }
+
                     //     /*@ eachD : forall T . (ob: {[s:string]:T}, iterator: (element: T, key: string, list: {[s:string]:T}) => TResult, context: top?): {{[s:string]:T} | true} */
                     //     public eachD<T>(ob, iterator, context?) {
                     //       if (ob == null) return ob;
@@ -184,8 +186,6 @@
                     //       }
                     //       return ob;
                     //     }
-
-                    //     public forEach = this.each;
 
                     //     public forEachD = this.eachD;
 
@@ -204,6 +204,8 @@
       return results;
     }
 
+    public static collect(a,b,c) { return UImpl.map(a,b,c) }
+
                     //     public mapD<T, TResult>(obj: _.Dictionary<T>, iterator: _.ObjectIterator<T, TResult>, context?: any): TResult[] { //=
                     //       var results:TResult[] = [];
                     //       if (obj == null) return results;
@@ -214,8 +216,6 @@
                     //       return results;
                     //     }
 
-                    //     public collect = this.map;
-
                     //     public collectD = this.mapD;
 
     private static reduceError = 'Reduce of empty array with no initial value';
@@ -225,7 +225,7 @@
     /*@ reduce : /\ forall T TResult . (ob: IArray<T>, iterator: MemoIter<T,TResult>, memo: TResult, context: top) : {TResult | true}
                  /\ forall T TResult . (ob: IArray<T>, iterator: MemoIter<T,TResult>, memo: TResult) : {TResult | true}
                  /\ forall T TResult . (ob: {IArray<TResult> | (len v) > 0}, iterator: MemoIter<TResult,TResult>) : TResult */
-    public static reduce<TResult>(ob, iterator, memo, context?) {
+    public static reduce(ob, iterator, memo?, context?) {
       if (arguments.length < 3) {
         return UImpl.reduce1(ob, iterator);
       } else {
@@ -235,68 +235,78 @@
 
     /*@ reduce0 : /\ forall T TResult . (ob: IArray<T>, iterator: MemoIter<T,TResult>, memo: TResult, context: top) : {TResult | true}
                   /\ forall T TResult . (ob: IArray<T>, iterator: MemoIter<T,TResult>, memo: TResult) : {TResult | true} */
-    private static reduce0<TResult>(ob, iterator, memo, context?) {
+    private static reduce0(ob, iterator, memo, context?) {
       if (ob === null) ob = [];
-      var riter /*@ readonly */ = UImpl.createCallback(iterator, context, 4);
-      var retVal = memo;
-      var index = 0, length = ob.length;
-      for (true; index < length; index++) {
-        retVal = iterator(retVal, ob[index], index, ob);
+      iterator = UImpl.createCallback(iterator, context, 4);
+      var length = ob.length;
+      for (var index = 0; index < length; index++) {
+        memo = iterator(memo, ob[index], index, ob);
       }
-      return retVal;
+      return memo;
     }
 
     /*@ reduce1 : forall T TResult . (ob: {IArray<TResult> | (len v) > 0}, iterator: MemoIter<TResult,TResult>) : TResult */
-    private static reduce1<TResult>(ob, iterator) {
+    private static reduce1(ob, iterator) {
       if (ob === null) ob = [];
-      var riter /*@ readonly */ = iterator;
       var index = 0, length = ob.length;
       if (!length) throw Error(UImpl.reduceError); // NOTE: unnecessary given (len v) > 0 refinement
-      var retVal = ob[index++];
+      var memo = ob[index++];
       for (true; index < length; index++) {
+        memo = iterator(memo, ob[index], index, ob);
+      }
+      return memo;
+    }
+
+    public static inject(a,b,c,d) { return UImpl.reduce(a,b,c,d) }
+    public static foldl(a,b,c,d)  { return UImpl.reduce(a,b,c,d) }
+
+    // TODO: reduceRight (and pretty much everything else too) for Dictionaries
+    // The right-associative version of reduce, also known as `foldr`.
+    /*@ reduceRight : /\ forall T TResult . (ob: IArray<T>, iterator: MemoIter<T,TResult>, memo: TResult, context: top) : {TResult | true}
+                      /\ forall T TResult . (ob: IArray<T>, iterator: MemoIter<T,TResult>, memo: TResult) : {TResult | true}
+                      /\ forall T TResult . (ob: {IArray<TResult> | (len v) > 0}, iterator: MemoIter<TResult,TResult>) : TResult */
+    public static reduceRight(ob, iterator, memo?, context?) {
+      if (arguments.length < 3) {
+        return UImpl.reduceRight1(ob, iterator);
+      } else {
+        return UImpl.reduceRight0(ob, iterator, memo, context);      
+      }
+    }
+
+    /*@ reduceRight0 : /\ forall T TResult . (ob: IArray<T>, iterator: MemoIter<T,TResult>, memo: TResult, context: top) : {TResult | true}
+                       /\ forall T TResult . (ob: IArray<T>, iterator: MemoIter<T,TResult>, memo: TResult) : {TResult | true} */
+    private static reduceRight0(ob, iterator, memo, context?) {
+      if (ob === null) ob = [];
+      iterator = UImpl.createCallback(iterator, context, 4);
+      var index = ob.length;
+      while (index) {
+        index--;
+        memo = iterator(memo, ob[index], index, ob);
+      }
+      return memo;
+    }
+
+    /*@ reduceRight1 : forall T TResult . (ob: {IArray<TResult> | (len v) > 0}, iterator: MemoIter<TResult,TResult>) : TResult */
+    private static reduceRight1(ob, iterator) {
+      if (ob === null) ob = [];
+      var index = ob.length;
+      if (!index) throw Error(UImpl.reduceError);
+      var retVal = ob[--index];
+      while (index) {
+        index--;
         retVal = iterator(retVal, ob[index], index, ob);
       }
       return retVal;
     }
 
-                    //     public inject = this.reduce;
-
-                    //     public foldl = this.reduce;
-
-                    //     // The right-associative version of reduce, also known as `foldr`.
-                    //     public reduceRight<T, TResult>(obj: _.List<T>, iterator: _.MemoIterator<T, TResult>, memo: TResult, context?: any): TResult;
-                    //     public reduceRight<T>(obj: _.List<T>, iterator: _.MemoIterator<T, T>, memo?: T, context?: any): T;
-                    //     public reduceRight<T>(obj: _.List<T>, iterator: any, memo?: any, context?: any): any {
-                    //       var initial = arguments.length > 2;
-                    //       if (obj == null) obj = [];
-                    //       var length = obj.length;
-                    //       iterator = this.createCallback4(iterator, context);
-                    //       // if (length !== +length) {
-                    //       //   var keys = this.keys(obj);
-                    //       //   length = keys.length;
-                    //       // }
-                    //       this.each(obj, function(value, index, list) {
-                    //         //index = keys ? keys[--length] : --length;
-                    //         index = --length;
-                    //         if (!initial) {
-                    //           memo = obj[index];
-                    //           initial = true;
-                    //         } else {
-                    //           memo = iterator(memo, obj[index], index, list);
-                    //         }
-                    //       });
-                    //       if (!initial) throw TypeError(this.reduceError);
-                    //       return memo;
-                    //     }
-
-                    //     public foldr = this.reduceRight;
+    public static foldr(a,b,c,d) { return UImpl.reduceRight(a,b,c,d) }
 
     // Return the first value which passes a truth test. Aliased as `detect`.
     /*@ find : /\ forall T . (list: IArray<T>, predicate: ArrIter<T, boolean>, context: top) : {T + undefined | true}
                /\ forall T . (list: IArray<T>, predicate: ArrIter<T, boolean>              ) : {T + undefined | true} */
-    public static find<T>(list, predicate, context?) {
+    public static find(list, predicate, context?) {
       /*@ result :: T + undefined */
-      var result:T;
+      var result;
       var rpred /*@ readonly */ = UImpl.lookupIterator(predicate, context);
       UImpl.some(list, function(value, index, list) 
         /*@ <anonymous> (T,number,IArray<T>) => {boolean | true} */
@@ -310,6 +320,8 @@
       return result;
     }
 
+    public static detect(a,b,c) { return UImpl.find(a,b,c) }
+
                     //     public findD<T>(obj: _.Dictionary<T>, predicate: _.ObjectIterator<T, boolean>, context?: any): T { //=
                     //       var result:T;
                     //       predicate = this.lookupIterator3(predicate, context);
@@ -321,8 +333,6 @@
                     //       });
                     //       return result;
                     //     }
-
-                    //     public detect = this.find;
 
                     //     public detectD = this.findD
 
@@ -342,6 +352,8 @@
       return results;
     }
 
+    public static select(a,b,c) { return UImpl.filter(a,b,c) }
+
                     //     public filterD<T>(obj: _.Dictionary<T>, predicate: _.ObjectIterator<T, boolean>, context?: any): T[] { //=
                     //       var results:T[] = [];
                     //       if (obj == null) return results;
@@ -351,8 +363,6 @@
                     //       });
                     //       return results;
                     //     }
-
-                    //     public select = this.filter;
 
                     //     public selectD = this.filterD;
 
@@ -385,6 +395,8 @@
       return !!result;
     }
 
+    public static all(a,b,c) { return UImpl.every(a,b,c) }
+
                     //     public everyD<T>(obj: _.Dictionary<T>, predicate?: _.ObjectIterator<T, boolean>, context?: any): boolean {
                     //       var result = true;
                     //       if (obj == null) return result;
@@ -395,8 +407,6 @@
                     //       });
                     //       return !!result;
                     //     }
-
-                    //     public all = this.every;
 
                     //     public allD = this.everyD;
 
@@ -419,6 +429,8 @@
       return !!result;
     }
 
+    public static any(a,b,c) { return UImpl.some(a,b,c) }
+
                     //     public someD<T>(obj: _.Dictionary<T>, predicate?: _.ObjectIterator<T, boolean>, context?: any): boolean { //=
                     //       var result = false;
                     //       if (obj == null) return result;
@@ -429,8 +441,6 @@
                     //       });
                     //       return !!result;
                     //     }
-
-                    //     public any = this.some;
 
                     //     public anyD = this.someD;
 
