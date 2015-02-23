@@ -218,39 +218,46 @@
 
                     //     public collectD = this.mapD;
 
-                    //     private reduceError = 'Reduce of empty array with no initial value';
+    private static reduceError = 'Reduce of empty array with no initial value';
 
     // **Reduce** builds up a single result from a list of values, aka `inject`,
     // or `foldl`.
     /*@ reduce : /\ forall T TResult . (ob: IArray<T>, iterator: MemoIter<T,TResult>, memo: TResult, context: top) : {TResult | true}
-                 /\ forall T TResult . (ob: IArray<T>, iterator: MemoIter<T,TResult>, memo: TResult              ) : {TResult | true} */
+                 /\ forall T TResult . (ob: IArray<T>, iterator: MemoIter<T,TResult>, memo: TResult) : {TResult | true}
+                 /\ forall T TResult . (ob: {IArray<TResult> | (len v) > 0}, iterator: MemoIter<TResult,TResult>) : TResult */
     public static reduce<TResult>(ob, iterator, memo, context?) {
-      /*@ retVal :: TResult */
-      var retVal = memo;
+      if (arguments.length < 3) {
+        return UImpl.reduce1(ob, iterator);
+      } else {
+        return UImpl.reduce0(ob, iterator, memo, context);      
+      }
+    }
+
+    /*@ reduce0 : /\ forall T TResult . (ob: IArray<T>, iterator: MemoIter<T,TResult>, memo: TResult, context: top) : {TResult | true}
+                  /\ forall T TResult . (ob: IArray<T>, iterator: MemoIter<T,TResult>, memo: TResult) : {TResult | true} */
+    private static reduce0<TResult>(ob, iterator, memo, context?) {
       if (ob === null) ob = [];
       var riter /*@ readonly */ = UImpl.createCallback(iterator, context, 4);
-      UImpl.each(ob, function(value, index, list) 
-        /*@ <anonymous> (T,number,IArray<T>) => {void | true} */
-        {
-          retVal = riter(retVal, value, index, list);
-        });
+      var retVal = memo;
+      var index = 0, length = ob.length;
+      for (true; index < length; index++) {
+        retVal = iterator(retVal, ob[index], index, ob);
+      }
       return retVal;
     }
 
-                    //     // A version of reduce where you do not give an initial value; must be called with a non-empty list.
-                    //     public reduceD<T>(obj: _.List<T>, iterator: _.MemoIterator<T, T>): T {
-                    //       var initial = false, memo:T;
-                    //       if (obj == null || obj.length == 0) throw TypeError(this.reduceError);
-                    //       this.each(obj, function(value:T, index:number, list:_.List<T>) {
-                    //         if (!initial) {
-                    //           memo = value;
-                    //           initial = true;
-                    //         } else {
-                    //           memo = iterator(memo, value, index, list);
-                    //         }
-                    //       });
-                    //       return memo;
-                    //     }
+    /*@ reduce1 : forall T TResult . (ob: {IArray<TResult> | (len v) > 0}, iterator: MemoIter<TResult,TResult>) : TResult */
+    private static reduce1<TResult>(ob, iterator) {
+      if (ob === null) ob = [];
+      var riter /*@ readonly */ = iterator;
+      var index = 0, length = ob.length;
+      if (!length) throw Error(UImpl.reduceError); // NOTE: unnecessary given (len v) > 0 refinement
+      var retVal = ob[index++];
+      for (true; index < length; index++) {
+        retVal = iterator(retVal, ob[index], index, ob);
+      }
+      return retVal;
+    }
 
                     //     public inject = this.reduce;
 
