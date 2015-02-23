@@ -95,31 +95,17 @@
                     //     // Internal Functions
                     //     // --------------------
                         
-    // Generates lookup iterators.
-    /*@ lookupIterator : /\ forall X       TResult . (f: (X) => TResult,       context: top, argCount: {number | v = 1}) :  (X)=>TResult
-                         /\ forall X Y     TResult . (f: (X,Y) => TResult,     context: top, argCount: {number | v = 2}) :  (X,Y)=>TResult
-                         /\ forall X Y Z   TResult . (f: (X,Y,Z) => TResult,   context: top, argCount: {number | v = 3}) :  (X,Y,Z)=>TResult
-                         /\ forall X Y Z   TResult . (f: (X,Y,Z) => TResult,   context: top                            ) : {(X,Y,Z)=>TResult | true}
-                         /\ forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult, context: top, argCount: {number | v = 4}) :  (X,Y,Z,W)=>TResult
-                         /\ forall X               . () : {(arg:X)=>{X | v = arg} | true} */
-    private static lookupIterator(f, context, argCount?) {
-      if (arguments.length === 0) return function(x) 
-        /*@ <anonymous> forall X . (arg:X)=>{X | v = arg} */
-        { return x }; //NOTE: we would just return UImpl.Identity, but we can't extract methods like that (TODO?)
-      if (arguments.length < 3) argCount = 3; //TODO: should be unnecessary
-      return UImpl.createCallback(f, context, <number>argCount);
-    }
-
     // Internal function: creates a callback bound to its context if supplied
     /*@ createCallback : /\ forall X Y Z W TResult . (f: (X) => TResult,       context: top, argCount: {number | v = 1}) :  (X)=>TResult
                          /\ forall X Y Z W TResult . (f: (X,Y) => TResult,     context: top, argCount: {number | v = 2}) :  (X,Y)=>TResult
                          /\ forall X Y Z W TResult . (f: (X,Y,Z) => TResult,   context: top, argCount: {number | v = 3}) :  (X,Y,Z)=>TResult
                          /\ forall X Y Z W TResult . (f: (X,Y,Z) => TResult,   context: top                            ) : {(X,Y,Z)=>TResult | true}
+                         /\ forall X Y Z W TResult . (f: (X,Y,Z) => TResult,   context: top, argCount: undefined       ) : {(X,Y,Z)=>TResult | true}
                          /\ forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult, context: top, argCount: {number | v = 4}) :  (X,Y,Z,W)=>TResult
-                         /\ forall X Y Z W TResult . (f: X) : {X | (v = f)} */
+                         /\ forall X Y Z W TResult . (f: X) : {X | (v = f)} */ //TODO: this last one is never actually called...
     private static createCallback(f, context?, argCount?) {
       if (arguments.length === 1) return f;
-      if (arguments.length === 2) argCount = 3;
+      if (!argCount) argCount = 3;
       var ff /*@ readonly */ = f;
       var cc /*@ readonly */ = context;
       if (<number>argCount === 1) return function(value)
@@ -147,6 +133,21 @@
       //   return ff.apply(cc, arguments);
       // };
       throw new Error("can't reach here");
+    }
+
+    // Generates lookup iterators.
+    /*@ lookupIterator : /\ forall X       TResult . (f: (X) => TResult,       context: top, argCount: {number | v = 1}) :  (X)=>TResult
+                         /\ forall X Y     TResult . (f: (X,Y) => TResult,     context: top, argCount: {number | v = 2}) :  (X,Y)=>TResult
+                         /\ forall X Y Z   TResult . (f: (X,Y,Z) => TResult,   context: top, argCount: {number | v = 3}) :  (X,Y,Z)=>TResult
+                         /\ forall X Y Z   TResult . (f: (X,Y,Z) => TResult,   context: top                            ) : {(X,Y,Z)=>TResult | true}
+                         /\ forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult, context: top, argCount: {number | v = 4}) :  (X,Y,Z,W)=>TResult
+                         /\ forall X               . (f: undefined, top)         : {(arg:X)=>{X | v = arg} | true}
+                         /\ forall X               . (f: undefined, top, number) : {(arg:X)=>{X | v = arg} | true} */
+    private static lookupIterator(f, context, argCount?) {
+      if (!f) return function(x) 
+        /*@ <anonymous> forall X . (arg:X)=>{X | v = arg} */
+        { return x }; //ORIG: just returned UImpl.Identity, but we can't extract methods like that
+      return UImpl.createCallback(f, context, argCount);
     }
 
     // Collection Functions
@@ -625,7 +626,9 @@
     // TODO: does this match the .d.ts file? if not, why is it compiling?
     // Use a comparator function to figure out the smallest index at which
     // an object should be inserted so as to maintain order. Uses binary search.
-    /*@ sortedIndex : forall T . (list: IArray<T>, value: T, iterator: (T)=>number, context: top) : {number | true} */
+    /*@ sortedIndex : /\ forall T . (list: IArray<T>, value: T, iterator: (T)=>number, context: top) : {number | true}
+                      /\ forall T . (list: IArray<T>, value: T, iterator: (T)=>number              ) : {number | true}
+                      /\ forall T . (list: IArray<T>, value: T                                     ) : {number | true} */
     public static sortedIndex(list, value, iterator?, context?) {
       iterator = UImpl.lookupIterator(iterator, context, 1);
       var processedValue = iterator(value);
