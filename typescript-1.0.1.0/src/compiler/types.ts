@@ -10,11 +10,108 @@ module ts {
 //  RefScript 
 
 
-/*@ alias INode   = Node<Immutable> */
-/*@ alias ISymbol = ts.Symbol<Immutable> */
-/*@ alias IType   = Type<Immutable> */
+/*@ alias INode       = Node<Immutable> */
+/*@ alias ISymbol     = ts.Symbol<Immutable> */
+/*@ alias IType       = Type<Immutable> */
+/*@ alias ISignature  = Signature<Immutable> */
 
-/*@  predicate non_zero(b) = (b /= (lit "#x00000000" (BitVec (Size32 obj)))) */
+/*@ predicate non_zero                      (b) = (b /= lit "#x00000000" (BitVec (Size32 obj))) */
+
+/*@ predicate typeflags_any                      (v) = (v = lit "#x00000001" (BitVec (Size32 obj))) */
+/*@ predicate typeflags_string                   (v) = (v = lit "#x00000002" (BitVec (Size32 obj))) */
+/*@ predicate typeflags_number                   (v) = (v = lit "#x00000004" (BitVec (Size32 obj))) */
+/*@ predicate typeflags_boolean                  (v) = (v = lit "#x00000008" (BitVec (Size32 obj))) */
+/*@ predicate typeflags_void                     (v) = (v = lit "#x00000010" (BitVec (Size32 obj))) */
+/*@ predicate typeflags_undefined                (v) = (v = lit "#x00000020" (BitVec (Size32 obj))) */
+/*@ predicate typeflags_null                     (v) = (v = lit "#x00000040" (BitVec (Size32 obj))) */
+/*@ predicate typeflags_enum                     (v) = (v = lit "#x00000080" (BitVec (Size32 obj))) */
+/*@ predicate typeflags_stringliteral            (v) = (v = lit "#x00000100" (BitVec (Size32 obj))) */
+/*@ predicate typeflags_typeparameter            (v) = (v = lit "#x00000200" (BitVec (Size32 obj))) */
+/*@ predicate typeflags_class                    (v) = (v = lit "#x00000400" (BitVec (Size32 obj))) */
+/*@ predicate typeflags_interface                (v) = (v = lit "#x00000800" (BitVec (Size32 obj))) */
+/*@ predicate typeflags_reference                (v) = (v = lit "#x00001000" (BitVec (Size32 obj))) */
+/*@ predicate typeflags_anonymous                (v) = (v = lit "#x00002000" (BitVec (Size32 obj))) */
+/*@ predicate typeflags_fromsignature            (v) = (v = lit "#x00004000" (BitVec (Size32 obj))) */
+/*@ predicate typeflags_objecttype               (v) = (v = lit "#x00003C00" (BitVec (Size32 obj))) */
+
+/*@ predicate symbolflags_variable               (v) = (v = lit "#x00000001" (BitVec (Size32 obj))) */
+/*@ predicate symbolflags_property               (v) = (v = lit "#x00000002" (BitVec (Size32 obj))) */
+/*@ predicate symbolflags_enummember             (v) = (v = lit "#x00000004" (BitVec (Size32 obj))) */
+/*@ predicate symbolflags_function               (v) = (v = lit "#x00000008" (BitVec (Size32 obj))) */
+/*@ predicate symbolflags_class                  (v) = (v = lit "#x00000010" (BitVec (Size32 obj))) */
+/*@ predicate symbolflags_interface              (v) = (v = lit "#x00000020" (BitVec (Size32 obj))) */
+/*@ predicate symbolflags_enum                   (v) = (v = lit "#x00000040" (BitVec (Size32 obj))) */
+/*@ predicate symbolflags_valuemodule            (v) = (v = lit "#x00000080" (BitVec (Size32 obj))) */
+/*@ predicate symbolflags_namespacemodule        (v) = (v = lit "#x00000100" (BitVec (Size32 obj))) */
+/*@ predicate symbolflags_typeliteral            (v) = (v = lit "#x00000200" (BitVec (Size32 obj))) */
+/*@ predicate symbolflags_objectliteral          (v) = (v = lit "#x00000400" (BitVec (Size32 obj))) */
+/*@ predicate symbolflags_method                 (v) = (v = lit "#x00000800" (BitVec (Size32 obj))) */
+/*@ predicate symbolflags_constructor            (v) = (v = lit "#x00001000" (BitVec (Size32 obj))) */
+/*@ predicate symbolflags_getaccessor            (v) = (v = lit "#x00002000" (BitVec (Size32 obj))) */
+/*@ predicate symbolflags_setaccessor            (v) = (v = lit "#x00004000" (BitVec (Size32 obj))) */
+/*@ predicate symbolflags_callsignature          (v) = (v = lit "#x00008000" (BitVec (Size32 obj))) */
+/*@ predicate symbolflags_constructsignature     (v) = (v = lit "#x00010000" (BitVec (Size32 obj))) */
+/*@ predicate symbolflags_indexsignature         (v) = (v = lit "#x00020000" (BitVec (Size32 obj))) */
+/*@ predicate symbolflags_typeparameter          (v) = (v = lit "#x00040000" (BitVec (Size32 obj))) */
+/*@ predicate symbolflags_exportvalue            (v) = (v = lit "#x00080000" (BitVec (Size32 obj))) */
+/*@ predicate symbolflags_exporttype             (v) = (v = lit "#x00100000" (BitVec (Size32 obj))) */
+/*@ predicate symbolflags_exportnamespace        (v) = (v = lit "#x00200000" (BitVec (Size32 obj))) */
+/*@ predicate symbolflags_import                 (v) = (v = lit "#x00400000" (BitVec (Size32 obj))) */
+/*@ predicate symbolflags_instantiated           (v) = (v = lit "#x00800000" (BitVec (Size32 obj))) */
+/*@ predicate symbolflags_merged                 (v) = (v = lit "#x01000000" (BitVec (Size32 obj))) */
+/*@ predicate symbolflags_transient              (v) = (v = lit "#x02000000" (BitVec (Size32 obj))) */
+/*@ predicate symbolflags_prototype              (v) = (v = lit "#x04000000" (BitVec (Size32 obj))) */
+
+/*@ predicate mask_typeflags_any                 (v) = (non_zero(bvand v (lit "#x00000001" (BitVec (Size32 obj))))) */
+/*@ predicate mask_typeflags_string              (v) = (non_zero(bvand v (lit "#x00000002" (BitVec (Size32 obj))))) */
+/*@ predicate mask_typeflags_number              (v) = (non_zero(bvand v (lit "#x00000004" (BitVec (Size32 obj))))) */
+/*@ predicate mask_typeflags_boolean             (v) = (non_zero(bvand v (lit "#x00000008" (BitVec (Size32 obj))))) */
+/*@ predicate mask_typeflags_void                (v) = (non_zero(bvand v (lit "#x00000010" (BitVec (Size32 obj))))) */
+/*@ predicate mask_typeflags_undefined           (v) = (non_zero(bvand v (lit "#x00000020" (BitVec (Size32 obj))))) */
+/*@ predicate mask_typeflags_null                (v) = (non_zero(bvand v (lit "#x00000040" (BitVec (Size32 obj))))) */
+/*@ predicate mask_typeflags_enum                (v) = (non_zero(bvand v (lit "#x00000080" (BitVec (Size32 obj))))) */
+/*@ predicate mask_typeflags_stringliteral       (v) = (non_zero(bvand v (lit "#x00000100" (BitVec (Size32 obj))))) */
+/*@ predicate mask_typeflags_typeparameter       (v) = (non_zero(bvand v (lit "#x00000200" (BitVec (Size32 obj))))) */
+/*@ predicate mask_typeflags_class               (v) = (non_zero(bvand v (lit "#x00000400" (BitVec (Size32 obj))))) */
+/*@ predicate mask_typeflags_interface           (v) = (non_zero(bvand v (lit "#x00000800" (BitVec (Size32 obj))))) */
+/*@ predicate mask_typeflags_reference           (v) = (non_zero(bvand v (lit "#x00001000" (BitVec (Size32 obj))))) */
+/*@ predicate mask_typeflags_anonymous           (v) = (non_zero(bvand v (lit "#x00002000" (BitVec (Size32 obj))))) */
+/*@ predicate mask_typeflags_fromsignature       (v) = (non_zero(bvand v (lit "#x00004000" (BitVec (Size32 obj))))) */
+/*@ predicate mask_typeflags_objecttype          (v) = (non_zero(bvand v (lit "#x00003C00" (BitVec (Size32 obj))))) */
+
+/*@ predicate mask_symbolflags_variable          (v) = (non_zero(bvand v (lit "#x00000001" (BitVec (Size32 obj))))) */
+/*@ predicate mask_symbolflags_property          (v) = (non_zero(bvand v (lit "#x00000002" (BitVec (Size32 obj))))) */
+/*@ predicate mask_symbolflags_enummember        (v) = (non_zero(bvand v (lit "#x00000004" (BitVec (Size32 obj))))) */
+/*@ predicate mask_symbolflags_function          (v) = (non_zero(bvand v (lit "#x00000008" (BitVec (Size32 obj))))) */
+/*@ predicate mask_symbolflags_class             (v) = (non_zero(bvand v (lit "#x00000010" (BitVec (Size32 obj))))) */
+/*@ predicate mask_symbolflags_interface         (v) = (non_zero(bvand v (lit "#x00000020" (BitVec (Size32 obj))))) */
+/*@ predicate mask_symbolflags_enum              (v) = (non_zero(bvand v (lit "#x00000040" (BitVec (Size32 obj))))) */
+/*@ predicate mask_symbolflags_valuemodule       (v) = (non_zero(bvand v (lit "#x00000080" (BitVec (Size32 obj))))) */
+/*@ predicate mask_symbolflags_namespacemodule   (v) = (non_zero(bvand v (lit "#x00000100" (BitVec (Size32 obj))))) */
+/*@ predicate mask_symbolflags_typeliteral       (v) = (non_zero(bvand v (lit "#x00000200" (BitVec (Size32 obj))))) */
+/*@ predicate mask_symbolflags_objectliteral     (v) = (non_zero(bvand v (lit "#x00000400" (BitVec (Size32 obj))))) */
+/*@ predicate mask_symbolflags_method            (v) = (non_zero(bvand v (lit "#x00000800" (BitVec (Size32 obj))))) */
+/*@ predicate mask_symbolflags_constructor       (v) = (non_zero(bvand v (lit "#x00001000" (BitVec (Size32 obj))))) */
+/*@ predicate mask_symbolflags_getaccessor       (v) = (non_zero(bvand v (lit "#x00002000" (BitVec (Size32 obj))))) */
+/*@ predicate mask_symbolflags_setaccessor       (v) = (non_zero(bvand v (lit "#x00004000" (BitVec (Size32 obj))))) */
+/*@ predicate mask_symbolflags_callsignature     (v) = (non_zero(bvand v (lit "#x00008000" (BitVec (Size32 obj))))) */
+/*@ predicate mask_symbolflags_constructsignature(v) = (non_zero(bvand v (lit "#x00010000" (BitVec (Size32 obj))))) */
+/*@ predicate mask_symbolflags_indexsignature    (v) = (non_zero(bvand v (lit "#x00020000" (BitVec (Size32 obj))))) */
+/*@ predicate mask_symbolflags_typeparameter     (v) = (non_zero(bvand v (lit "#x00040000" (BitVec (Size32 obj))))) */
+/*@ predicate mask_symbolflags_exportvalue       (v) = (non_zero(bvand v (lit "#x00080000" (BitVec (Size32 obj))))) */
+/*@ predicate mask_symbolflags_exporttype        (v) = (non_zero(bvand v (lit "#x00100000" (BitVec (Size32 obj))))) */
+/*@ predicate mask_symbolflags_exportnamespace   (v) = (non_zero(bvand v (lit "#x00200000" (BitVec (Size32 obj))))) */
+/*@ predicate mask_symbolflags_import            (v) = (non_zero(bvand v (lit "#x00400000" (BitVec (Size32 obj))))) */
+/*@ predicate mask_symbolflags_instantiated      (v) = (non_zero(bvand v (lit "#x00800000" (BitVec (Size32 obj))))) */
+/*@ predicate mask_symbolflags_merged            (v) = (non_zero(bvand v (lit "#x01000000" (BitVec (Size32 obj))))) */
+/*@ predicate mask_symbolflags_transient         (v) = (non_zero(bvand v (lit "#x02000000" (BitVec (Size32 obj))))) */
+/*@ predicate mask_symbolflags_prototype         (v) = (non_zero(bvand v (lit "#x04000000" (BitVec (Size32 obj))))) */
+ 
+/*@ predicate type_flags(v,o) = (mask_typeflags_objecttype(v) =>  extends_interface(o,"ObjectType"))         &&
+                                (mask_typeflags_anonymous (v) =>  extends_interface(o,"ResolvedObjectType")) &&
+                                (mask_typeflags_reference (v) =>  extends_interface(o,"TypeReference"))
+ */ 
+
 
 //
 ///////////////////////////////////////////////////////////////////////// 
@@ -262,7 +359,6 @@ module ts {
         /*@ kind : [Immutable] SyntaxKind<Immutable> */
         kind: SyntaxKind;
 
-        /*  flags : [Immutable] NodeFlags<Immutable> */
         /*@ flags : [Immutable] bitvector32 */
         flags: NodeFlags;
 
@@ -774,7 +870,7 @@ module ts {
 
     export interface Symbol {
     
-        /*@ flags : [Immutable] { v: bitvector32 | [(bv_truthy(bvand(v, lit "#x02000000" (BitVec (Size32 obj))))) <=>  extends_interface(this,"TransientSymbol")] } */
+        /*@ flags : [Immutable] { v: bitvector32 | [(mask_symbolflags_transient(v)) <=>  extends_interface(this,"TransientSymbol")] } */
         flags: SymbolFlags;            // Symbol flags
 
         name: string;                  // Name of symbol
@@ -860,11 +956,7 @@ module ts {
         // PV : hardcoding the result here         
         ObjectType         = 0x00003C00,
     }
-    
-/*@ predicate type_flags(v,o) = ((non_zero(bvand(v, lit "#x00003C00" (BitVec (Size32 obj))))) =>  extends_interface(o,"ObjectType"))         &&
-                                ((non_zero(bvand(v, lit "#x00002000" (BitVec (Size32 obj))))) =>  extends_interface(o,"ResolvedObjectType"))
- */ 
-
+   
     // Properties common to all types
     export interface Type {
 
@@ -873,6 +965,7 @@ module ts {
 
         id: number;        // Unique ID
         
+        /*@ symbol? : [Immutable] ISymbol */
         symbol?: Symbol;   // Symbol associated with type (if any)
     }
 
@@ -909,25 +1002,36 @@ module ts {
     // Type references (TypeFlags.Reference)
     export interface TypeReference extends ObjectType {
         target: GenericType;    // Type reference target
+
+        /*@ typeArguments : [Immutable] IArray<IType> */
         typeArguments: Type[];  // Type reference type arguments
     }
 
     // Generic class and interface types
     export interface GenericType extends InterfaceType, TypeReference {
+
+        // TODO : make the Map<...> work as well
+        /*@ instantiations : [Mutable] { [x:string]: TypeReference<Immutable> } */
         instantiations: Map<TypeReference>;   // Generic instantiation cache
+
         openReferenceTargets: GenericType[];  // Open type reference targets
         openReferenceChecks: Map<boolean>;    // Open type reference check cache
     }
 
     // Resolved object type
     export interface ResolvedObjectType extends ObjectType {
+        /*@ members : [InheritedMut] SymbolTable<Immutable> */
         members: SymbolTable;              // Properties by name
 
         /*@ properties  : [InheritedMut] IArray<ISymbol> */
         properties: Symbol[];              // Properties
 
+        /*@ callSignatures : [InheritedMut] IArray<ISignature> */ 
         callSignatures: Signature[];       // Call signatures of type
+
+        /*@ constructSignatures : [InheritedMut] IArray<ISignature> */ 
         constructSignatures: Signature[];  // Construct signatures of type
+
         stringIndexType: Type;             // String index type
         numberIndexType: Type;             // Numeric index type
     }
@@ -964,6 +1068,7 @@ module ts {
     }
 
     export interface TypeMapper {
+        /*@ forall M . (t: Type<M>) => Type<M> */
         (t: Type): Type;
     }
 

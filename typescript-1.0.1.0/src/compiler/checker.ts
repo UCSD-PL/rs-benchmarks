@@ -66,9 +66,7 @@ module ts {
 
         var compilerOptions = program.getCompilerOptions();
 
-
-
-        var checker: TypeChecker = {
+        var checker /*@ readonly */: TypeChecker = {
 //             getProgram: () => program,
 //             getDiagnostics: getDiagnostics,
 //             getGlobalDiagnostics: getGlobalDiagnostics,
@@ -164,8 +162,8 @@ module ts {
          */
         declare function createSymbol(flags: SymbolFlags, name: string): Symbol
 
-        //// PV: Making this an ambient function
-        //{
+        //// TODO 
+        //function createSymbol(flags: SymbolFlags, name: string): Symbol {
         //    return new Symbol(flags, name);
         //}
 
@@ -318,9 +316,7 @@ module ts {
 //         }
 // 
 // 
-//         /*@ getSourceFile :: (node: INode + undefined)
-//                           => undefined + { SourceFile<Immutable> | true } 
-//          */
+//         /*@ getSourceFile :: (node: INode + undefined) => undefined + { SourceFile<Immutable> | true } */
 //         function getSourceFile(node: Node): SourceFile {
 //             var ancestor = getAncestor(node, SyntaxKind.SourceFile);
 //             if (ancestor) {
@@ -330,8 +326,7 @@ module ts {
 //             }
 //         }
 // 
-//         /*@ isGlobalSourceFile :: (node: INode) => { boolean | true } 
-//          */
+//         /*@ isGlobalSourceFile :: (node: INode) => { boolean | true } */
 //         function isGlobalSourceFile(node: Node) {
 //             // return node.kind === SyntaxKind.SourceFile && !isExternalModule(<SourceFile>node);
 //             if (node.kind === SyntaxKind.SourceFile) {
@@ -340,9 +335,7 @@ module ts {
 //             return false;
 //         }
 // 
-//         /*@ getSymbol :: (symbols: SymbolTable<Immutable>, name: string, meaning: SymbolFlags) 
-//                       => { ISymbol | true } + undefined 
-//          */ 
+//         /*@ getSymbol :: (symbols: SymbolTable<Immutable>, name: string, meaning: SymbolFlags) => { ISymbol | true } + undefined */ 
 //         function getSymbol(symbols: SymbolTable, name: string, meaning: SymbolFlags): Symbol {
 //             if (builtin_bv_truthy(meaning) && hasProperty(symbols, name)) {
 //                 var symbol = symbols[name];
@@ -710,30 +703,18 @@ module ts {
 //         }
 // 
 
+        /*@ createType :: (flags: bitvector32) => { Type<UniqueMutable> | type_flags(flags,v) } */
+        function createType(flags: TypeFlags): Type {
+            /*@ result :: Type<UniqueMutable> */
+            var result = newType(checker, flags);       // ORIGINAL: new Type ... 
+            result.id = typeCount++;
+            return result;
+        }
 
-        // 
-        // PV:  This will not be supported any time soon ... 
-        //      The 'id' field is considered immutable.
-        // 
-        //      Using a "declare" function instead.
-        //
-
-        // TODO : more precise type ???
-
-        /*@ createType :: (flags: bitvector32) => { IType | true } */
-        declare function createType(flags: TypeFlags): Type;
-
-        // TODO 
-        //function createType(flags: TypeFlags): Type {
-        //    var result = new Type(checker, flags);
-        //    result.id = typeCount++;
-        //    return result;
-        //}
-
-        /*@ createIntrinsicType :: (kind: TypeFlags, intrinsicName: string) => IntrinsicType<Immutable> */
+        /*@ createIntrinsicType :: (kind: bitvector32, intrinsicName: string) => { IntrinsicType<Immutable> | true } */
         declare function createIntrinsicType(kind: TypeFlags, intrinsicName: string): IntrinsicType;
 
-        // TODO 
+        //// TODO
         //function createIntrinsicType(kind: TypeFlags, intrinsicName: string): IntrinsicType {
         //    var type = <IntrinsicType>createType(kind);
         //    type.intrinsicName = intrinsicName;
@@ -745,15 +726,22 @@ module ts {
         // PV : Need to use the 'type_flags' predicate cause we don't have keyVal anymore 
         //
 
-        /*@ createObjectType :: forall M . (kind: bitvector32, symbol: ISymbol + undefined) => { ObjectType<M> | type_flags(kind,v) } */
-        declare function createObjectType(kind: TypeFlags, symbol?: Symbol): ObjectType;
+        /*  createObjectType :: forall M . (kind: bitvector32, symbol: ISymbol + undefined) => { ObjectType<M> | type_flags(kind,v) } */
 
-        // TODO
-        //function createObjectType(kind: TypeFlags, symbol?: Symbol): ObjectType {
-        //    var type = <ObjectType>createType(kind);
-        //    type.symbol = symbol;
-        //    return type;
-        //}
+        // TODO : 
+        //          
+        //  * symbol could be undefined         
+        //
+        //  * refinements here should be infered
+
+        // declare function createObjectType(kind: TypeFlags, symbol?: Symbol): ObjectType;
+
+        /*@ createObjectType :: forall M . (kind: { bitvector32 | mask_typeflags_anonymous(v) || mask_typeflags_reference(v) }, symbol: ISymbol) => { ObjectType<M> | type_flags(kind,v) } */
+        function createObjectType(kind: TypeFlags, symbol?: Symbol): ObjectType {
+            var type = <ObjectType>createType(kind);
+            type.symbol = symbol;
+            return type;
+        }
 
 //         // A reserved member name starts with two underscores followed by a non-underscore
 //         function isReservedMemberName(name: string) {
@@ -1869,15 +1857,20 @@ module ts {
 //             return unknownType;
 //         }
 // 
-//         function createSymbolTable(symbols: Symbol[]): SymbolTable {
-//             var result: SymbolTable = {};
-//             for (var i = 0; i < symbols.length; i++) {
-//                 var symbol = symbols[i];
-//                 result[symbol.name] = symbol;
-//             }
-//             return result;
-//         }
-// 
+
+        /*@ createSymbolTable :: (symbols: IArray<ISymbol>) => { SymbolTable<Immutable> | true } */
+        declare function createSymbolTable(symbols: Symbol[]): SymbolTable;
+
+        //// TODO 
+        //function createSymbolTable(symbols: Symbol[]): SymbolTable {
+        //    var result: SymbolTable = {};
+        //    for (var i = 0; i < symbols.length; i++) {
+        //        var symbol = symbols[i];
+        //        result[symbol.name] = symbol;
+        //    }
+        //    return result;
+        //}
+
 //         function createInstantiatedSymbolTable(symbols: Symbol[], mapper: TypeMapper): SymbolTable {
 //             var result: SymbolTable = {};
 //             for (var i = 0; i < symbols.length; i++) {
@@ -2073,22 +2066,32 @@ module ts {
 //                 return getPropertyOfType(globalObjectType, name);
 //             }
 //         }
-// 
-//         function getSignaturesOfType(type: Type, kind: SignatureKind): Signature[] {
-//             if (type.flags & TypeFlags.ObjectType) {
-//                 var resolved = resolveObjectTypeMembers(<ObjectType>type);
-//                 return kind === SignatureKind.Call ? resolved.callSignatures : resolved.constructSignatures;
-//             }
-//             return emptyArray;
-//         }
-// 
-//         function getIndexTypeOfType(type: Type, kind: IndexKind): Type {
-//             if (type.flags & TypeFlags.ObjectType) {
-//                 var resolved = resolveObjectTypeMembers(<ObjectType>type);
-//                 return kind === IndexKind.String ? resolved.stringIndexType : resolved.numberIndexType;
-//             }
-//         }
-// 
+ 
+
+        /*@ getSignaturesOfType :: (type: IType, kind: SignatureKind) => { IArray<ISignature> | true } */
+        declare function getSignaturesOfType(type: Type, kind: SignatureKind): Signature[];
+
+        //// TODO
+        //function getSignaturesOfType(type: Type, kind: SignatureKind): Signature[] {
+        //    if (type.flags & TypeFlags.ObjectType) {
+        //        var resolved = resolveObjectTypeMembers(<ObjectType>type);
+        //        return kind === SignatureKind.Call ? resolved.callSignatures : resolved.constructSignatures;
+        //    }
+        //    return emptyArray;
+        //}
+
+
+        /*@ getIndexTypeOfType :: (type: IType, kind: IndexKind) => IType + undefined */
+        declare function getIndexTypeOfType(type: Type, kind: IndexKind): Type;
+
+        //// TODO 
+        //function getIndexTypeOfType(type: Type, kind: IndexKind): Type {
+        //    if (type.flags & TypeFlags.ObjectType) {
+        //        var resolved = resolveObjectTypeMembers(<ObjectType>type);
+        //        return kind === IndexKind.String ? resolved.stringIndexType : resolved.numberIndexType;
+        //    }
+        //}
+
 //         // Return list of type parameters with duplicates removed (duplicate identifier errors are generated in the actual
 //         // type checking functions).
 //         function getTypeParametersFromDeclaration(typeParameterDeclarations: TypeParameterDeclaration[]): TypeParameter[] {
@@ -2300,34 +2303,52 @@ module ts {
 //             }
 //             return type.constraint === noConstraintType ? undefined : type.constraint;
 //         }
-// 
-//         function getTypeListId(types: Type[]) {
-//             switch (types.length) {
-//                 case 1:
-//                     return "" + types[0].id;
-//                 case 2:
-//                     return types[0].id + "," + types[1].id;
-//                 default:
-//                     var result = "";
-//                     for (var i = 0; i < types.length; i++) {
-//                         if (i > 0) result += ",";
-//                         result += types[i].id;
-//                     }
-//                     return result;
-//             }
-//         }
-// 
-//         function createTypeReference(target: GenericType, typeArguments: Type[]): TypeReference {
-//             var id = getTypeListId(typeArguments);
-//             var type = target.instantiations[id];
-//             if (!type) {
-//                 type = target.instantiations[id] = <TypeReference>createObjectType(TypeFlags.Reference, target.symbol);
-//                 type.target = target;
-//                 type.typeArguments = typeArguments;
-//             }
-//             return type;
-//         }
-// 
+
+
+        /*@ getTypeListId :: (types: IArray<IType>) => { number | true } */
+        declare function getTypeListId(types: Type[]);
+
+        //// TODO 
+        //function getTypeListId(types: Type[]) {
+        //    switch (types.length) {
+        //        case 1:
+        //            return "" + types[0].id;
+        //        case 2:
+        //            return types[0].id + "," + types[1].id;
+        //        default:
+        //            var result = "";
+        //            for (var i = 0; i < types.length; i++) {
+        //                if (i > 0) result += ",";
+        //                result += types[i].id;
+        //            }
+        //            return result;
+        //    }
+        //}
+ 
+        // declare function createTypeReference(target: GenericType, typeArguments: Type[]): TypeReference;
+
+        // TODO 
+        /*@ createTypeReference :: (target: GenericType<Immutable>, typeArguments: IArray<IType>) => { TypeReference<Immutable> | true } */
+        function createTypeReference(target: GenericType, typeArguments: Type[]): TypeReference {
+            var id = getTypeListId(typeArguments);
+            var type = target.instantiations[id.toString()];        // ORIGINAL: target.instantiations[id];
+
+            if (!type) {
+                assume(target.symbol);          // PV: Adding this assumption
+                // ORIGINAL : type = target.instantiations[id] = <TypeReference>createObjectType(TypeFlags.Reference, target.symbol);
+
+                /*@ type1 :: TypeReference<UniqueMutable> */
+                var type1 = <TypeReference>createObjectType(TypeFlags.Reference, target.symbol);
+
+// HEREHERE
+
+                // type.target = target;
+                //type.typeArguments = typeArguments;
+                return type1;
+            }
+            return type;
+        }
+
 //         function isTypeParameterReferenceIllegalInConstraint(typeReferenceNode: TypeReferenceNode, typeParameterSymbol: Symbol): boolean {
 //             var links = getNodeLinks(typeReferenceNode);
 //             if (links.isIllegalTypeReferenceInConstraint !== undefined) {
@@ -2538,9 +2559,9 @@ module ts {
 //             }
 //         }
 
-        /*@ instantiateList :: forall T . (items: IArray<T>, 
-                                           mapper: TypeMapper<Immutable>, 
-                                           instantiator: (item: T, mapper: TypeMapper<Immutable>) => T) => IArray<T> 
+        /*@ instantiateList :: forall M T . (items: IArray<T>, 
+                                             mapper: TypeMapper<Immutable>, 
+                                             instantiator: (item: T, mapper: TypeMapper<Immutable>) => T) => Array<M,T> 
          */
         declare function instantiateList<T>(items: T[], mapper: TypeMapper, instantiator: (item: T, mapper: TypeMapper) => T): T[];
 
@@ -2630,20 +2651,25 @@ module ts {
 //             return result;
 //         }
 // 
-//         function instantiateSignature(signature: Signature, mapper: TypeMapper, eraseTypeParameters?: boolean): Signature {
-//             if (signature.typeParameters && !eraseTypeParameters) {
-//                 var freshTypeParameters = instantiateList(signature.typeParameters, mapper, instantiateTypeParameter);
-//                 mapper = combineTypeMappers(createTypeMapper(signature.typeParameters, freshTypeParameters), mapper);
-//             }
-//             var result = createSignature(signature.declaration, freshTypeParameters,
-//                 instantiateList(signature.parameters, mapper, instantiateSymbol),
-//                 signature.resolvedReturnType ? instantiateType(signature.resolvedReturnType, mapper) : undefined,
-//                 signature.minArgumentCount, signature.hasRestParameter, signature.hasStringLiterals);
-//             result.target = signature;
-//             result.mapper = mapper;
-//             return result;
-//         }
-// 
+        /*@ instantiateSignature :: /\ (signature: ISignature, mapper: TypeMapper<Immutable>) => { ISignature | true } 
+                                    /\ (signature: ISignature, mapper: TypeMapper<Immutable>, eraseTypeParameters: boolean) => { ISignature | true } */
+        declare function instantiateSignature(signature: Signature, mapper: TypeMapper, eraseTypeParameters?: boolean): Signature;
+
+        //// TODO
+        //function instantiateSignature(signature: Signature, mapper: TypeMapper, eraseTypeParameters?: boolean): Signature {
+        //    if (signature.typeParameters && !eraseTypeParameters) {
+        //        var freshTypeParameters = instantiateList(signature.typeParameters, mapper, instantiateTypeParameter);
+        //        mapper = combineTypeMappers(createTypeMapper(signature.typeParameters, freshTypeParameters), mapper);
+        //    }
+        //    var result = createSignature(signature.declaration, freshTypeParameters,
+        //        instantiateList(signature.parameters, mapper, instantiateSymbol),
+        //        signature.resolvedReturnType ? instantiateType(signature.resolvedReturnType, mapper) : undefined,
+        //        signature.minArgumentCount, signature.hasRestParameter, signature.hasStringLiterals);
+        //    result.target = signature;
+        //    result.mapper = mapper;
+        //    return result;
+        //}
+
 
         /*@ instantiateSymbol :: (symbol: ISymbol, mapper: TypeMapper<Immutable>) => { ISymbol | true } */
         declare function instantiateSymbol(symbol: Symbol, mapper: TypeMapper): Symbol;
@@ -2674,51 +2700,50 @@ module ts {
 //         }
 // 
 
+        /*@ instantiateAnonymousType :: (type: ObjectType<Immutable>, mapper: TypeMapper<Immutable>) => { ObjectType<Mutable> | true } */
+        declare function instantiateAnonymousType(type: ObjectType, mapper: TypeMapper): ObjectType;
 
-
-// HEREHERE
-
-        /*@ instantiateAnonymousType :: (type: ObjectType<Mutable>, mapper: TypeMapper<Immutable>) => { ObjectType<Immutable> | true } */
-        function instantiateAnonymousType(type: ObjectType, mapper: TypeMapper): ObjectType {
-            var result = <ResolvedObjectType>createObjectType(TypeFlags.Anonymous, type.symbol);
-            result.properties = instantiateList(getPropertiesOfType(type), mapper, instantiateSymbol);
-//             result.members = createSymbolTable(result.properties);
-//             result.callSignatures = instantiateList(getSignaturesOfType(type, SignatureKind.Call), mapper, instantiateSignature);
-//             result.constructSignatures = instantiateList(getSignaturesOfType(type, SignatureKind.Construct), mapper, instantiateSignature);
-//             var stringIndexType = getIndexTypeOfType(type, IndexKind.String);
-//             var numberIndexType = getIndexTypeOfType(type, IndexKind.Number);
-//             if (stringIndexType) result.stringIndexType = instantiateType(stringIndexType, mapper);
-//             if (numberIndexType) result.numberIndexType = instantiateType(numberIndexType, mapper);
-            return result;
-        }
+        //// DONE 
+        //function instantiateAnonymousType(type: ObjectType, mapper: TypeMapper): ObjectType {
+        //    var result = <ResolvedObjectType>createObjectType(TypeFlags.Anonymous, type.symbol);
+        //    result.properties = instantiateList(getPropertiesOfType(type), mapper, instantiateSymbol);
+        //    result.members = createSymbolTable(result.properties);
+        //    result.callSignatures = instantiateList(getSignaturesOfType(type, SignatureKind.Call), mapper, instantiateSignature);
+        //    result.constructSignatures = instantiateList(getSignaturesOfType(type, SignatureKind.Construct), mapper, instantiateSignature);
+        //    var stringIndexType = getIndexTypeOfType(type, IndexKind.String);
+        //    var numberIndexType = getIndexTypeOfType(type, IndexKind.Number);
+        //    if (stringIndexType) result.stringIndexType = instantiateType(stringIndexType, mapper);
+        //    if (numberIndexType) result.numberIndexType = instantiateType(numberIndexType, mapper);
+        //    return result;
+        //}
 
         /*@ instantiateType :: (type: IType, mapper: TypeMapper<Immutable>) => { IType | true } */
-        function instantiateType(type: Type, mapper: TypeMapper): Type {
-            if (mapper !== identityMapper) {
 
-                if (type.flags & TypeFlags.TypeParameter) {
-                    return mapper(type);
-                }
-                if (type.flags & TypeFlags.Anonymous) {
-                    // ORIG:
-                    //return type.symbol && type.symbol.flags & (SymbolFlags.Function | SymbolFlags.Method | SymbolFlags.TypeLiteral | SymbolFlags.ObjectLiteral) ?
-                    //    instantiateAnonymousType(<ObjectType>type, mapper) : type;
+        declare function instantiateType(type: Type, mapper: TypeMapper): Type;
 
-                    if (type.symbol) {
-                        if (type.symbol.flags & (SymbolFlags.Function | SymbolFlags.Method | SymbolFlags.TypeLiteral | SymbolFlags.ObjectLiteral)) {
-                            //return instantiateAnonymousType(<ObjectType>type, mapper);
-                            return <ObjectType>type;
-                        }
-                    }
-                    return type;
-
-                }
-                //if (type.flags & TypeFlags.Reference) {
-                //    return createTypeReference((<TypeReference>type).target, instantiateList((<TypeReference>type).typeArguments, mapper, instantiateType));
-                //}
-            }
-            return type;
-        }
+        //// TODO 
+        //function instantiateType(type: Type, mapper: TypeMapper): Type {
+        //    if (mapper !== identityMapper) {
+        //        if (type.flags & TypeFlags.TypeParameter) {
+        //            return mapper(type);
+        //        }
+        //        if (type.flags & TypeFlags.Anonymous) {
+        //            // ORIG:
+        //            //return type.symbol && type.symbol.flags & (SymbolFlags.Function | SymbolFlags.Method | SymbolFlags.TypeLiteral | SymbolFlags.ObjectLiteral) ?
+        //            //    instantiateAnonymousType(<ObjectType>type, mapper) : type;
+        //            if (type.symbol) {
+        //                if (type.symbol.flags & (SymbolFlags.Function | SymbolFlags.Method | SymbolFlags.TypeLiteral | SymbolFlags.ObjectLiteral)) {
+        //                    return instantiateAnonymousType(<ObjectType>type, mapper);
+        //                }
+        //            }
+        //            return type;
+        //        }
+        //        if (type.flags & TypeFlags.Reference) {
+        //            return createTypeReference((<TypeReference>type).target, instantiateList((<TypeReference>type).typeArguments, mapper, instantiateType));
+        //        }
+        //    }
+        //    return type;
+        //}
 
 //         // Returns true if the given expression contains (at any level of nesting) a function or arrow expression
 //         // that is subject to contextual typing.

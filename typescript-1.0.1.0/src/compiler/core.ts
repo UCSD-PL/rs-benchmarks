@@ -10,19 +10,19 @@ module ts {
 
 // // <<<< DONE >>>>
 
-    /*@  forEach :: forall T U . (array: IArray<T>, callback: (element: T) => U) => { U | true } + undefined */
-    export function forEach<T, U>(array: T[], callback: (element: T) => U): U {
-        /*@ result :: U */
-        var result: U;
-        if (array) {
-            var cnt = false;
-            for (var i = 0, len = array.length; i < len && cnt; i++) {
-                if (result = callback(array[i])) 
-                    cnt = false;
-            }
-        }
-        return result;
-    }
+//     /*@ forEach :: forall T U . (array: IArray<T>, callback: (element: T) => U) => { U | true } + undefined */
+//     export function forEach<T, U>(array: T[], callback: (element: T) => U): U {
+//         /*@ result :: U */
+//         var result: U;
+//         if (array) {
+//             var cnt = false;
+//             for (var i = 0, len = array.length; i < len && cnt; i++) {
+//                 if (result = callback(array[i])) 
+//                     cnt = false;
+//             }
+//         }
+//         return result;
+//     }
 
 //     /*@  contains :: forall T . (array: IArray<T>, value: T) => { boolean | true } */
 //     export function contains<T>(array: T[], value: T): boolean {
@@ -157,17 +157,17 @@ module ts {
 //
 //    var hasOwnProperty = Object.prototype.hasOwnProperty;
 // 
-
-    /*@ hasProperty :: forall T M . (map: Map<M,T>, key: string)
-                    => { boolean | Prop(v) <=> (hasDirectProperty(key,map) && hasProperty(key,map)) }
-     */
-    export function hasProperty<T>(map_: Map<T>, key: string): boolean {
-        // return hasOwnProperty.call(map_, key);
-        // TODO 
-        // return map_.hasOwnProperty(key);
-        return hasProperty(map_,key);
-    }
-
+// 
+//     /*@ hasProperty :: forall T M . (map: Map<M,T>, key: string)
+//                     => { boolean | Prop(v) <=> (hasDirectProperty(key,map) && hasProperty(key,map)) }
+//      */
+//     export function hasProperty<T>(map_: Map<T>, key: string): boolean {
+//         // return hasOwnProperty.call(map_, key);
+//         // TODO 
+//         // return map_.hasOwnProperty(key);
+//         return hasProperty(map_,key);
+//     }
+// 
 //     // TODO 
 //     //export function getProperty<T>(map: Map<T>, key: string): T {
 //     //    return hasOwnProperty.call(map, key) ? map[key] : undefined;
@@ -175,8 +175,8 @@ module ts {
 // 
 // 
 // 
-    /*@ qualif Bot(v:a,s:string): hasProperty(v,s) */
-    /*@ qualif Bot(v:a,s:string): enumProp(v,s) */
+//     /*@ qualif HSqualif(v:a,s:string): hasProperty(s,v) */
+//     /*@ qualif EPqualif(v:a,s:string): enumProp(s,v) */
 // 
 //     /*@ isEmpty :: forall T . (map: Map<Immutable,T>) => { boolean | true } */
 //     export function isEmpty<T>(map: Map<T>) {
@@ -627,45 +627,25 @@ module ts {
         getSignatureConstructor(): { new (checker: TypeChecker): Signature };
     }
 
-    //// ORIGINAL >>>>
+    // 
+    // PV: This kind of constructor is not supported in RefScript
+    //
     //function Symbol(flags: SymbolFlags, name: string) {
     //    this.flags = flags;
     //    this.name = name;
     //    this.declarations = undefined;
     //}
-    //// ORIGINAL <<<<
-
  
-    //// ORIGINAL >>>>
-    // function Type(checker: TypeChecker, flags: TypeFlags) {
-    //    this.flags = flags;
-    // }
-    //// <<<< ORIGINAL
-
-    // NEW >>>>
-    export class TypeC {
-        
-        public flags: TypeFlags;  // Flags
-        public id: number;        // Unique ID
-        // public symbol?: Symbol;   // Symbol associated with type (if any)
-
-        constructor(checker: TypeChecker, flags: TypeFlags) {
-            this.flags = flags;
-            this.id    = -1;      // PV: adding this myself cause it's required
-        }
-
-    }
-    // <<<< NEW
+    //function Type(checker: TypeChecker, flags: TypeFlags) {
+    //   this.flags = flags;
+    //}
+      
+    /*@ newType :: forall M . (checker: TypeChecker<Immutable>, flags: bitvector32) => { Type<M> | type_flags(flags,v) } */
+    export declare function newType(checker: TypeChecker, flags: TypeFlags): Type;
 
 
-//     function Signature(checker: TypeChecker) {
-//     }
-
-    export class SignatureC {
-    
-      constructor() {}
-    
-    }
+    //function Signature(checker: TypeChecker) {
+    //}
     
 // 
 //     export var objectAllocator: ObjectAllocator = {
