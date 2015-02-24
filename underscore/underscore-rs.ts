@@ -68,8 +68,10 @@
 /*@ alias ArrIter<T,TResult> = (value: T, index: number, list: IArray<T>) => {TResult | true} */
 /*@ alias MemoIter<T,TResult> = (prev: TResult, curr: T, index: number, list: IArray<T>) => {TResult | true} */
 
+/*@ qualif Bot(v:a,s:string): hasProperty(v,s) */
+/*@ qualif Bot(v:a,s:string): enumProp(v,s) */
 
-  class UImpl {// implements UnderscoreStatic {
+  class UImpl {// TODO: implements UnderscoreStatic {
     constructor() {}
 
     // Current version.
@@ -1121,17 +1123,18 @@
                     //     // Object Functions
                     //     // ----------------
 
-                    // // Retrieve the names of an object's properties.
-                    // // Delegates to **ECMAScript 5**'s native `Object.keys`
-                    // /*@ keys : (ob: {}) : {MArray<string> | true} */
-                    // public static keys(ob) {
-                    //   //ORIG:
-                    //   // if (!this.isObject(ob)) return [];
-                    //   // if (nativeKeys) return nativeKeys(ob);
-                    //   var keys = [];
-                    //   for (var key in ob) if (UImpl.has(ob, key)) keys.push(key);
-                    //   return keys;
-                    // }
+    // Retrieve the names of an object's properties.
+    // Delegates to **ECMAScript 5**'s native `Object.keys`
+    /*@ keys : /\ forall T . (ob: [Immutable]{[s:string]:T}) : {MArray<{string | hasDirectProperty(v, ob)}> | true}
+               /\            (ob: [Immutable]{})             : {MArray<{string | hasDirectProperty(v, ob)}> | true} */
+    public static keys(ob) {
+      //ORIG:
+      // if (!this.isObject(ob)) return [];
+      // if (nativeKeys) return nativeKeys(ob);
+      var keys = [];
+      for (var key in ob) if (UImpl.has(ob, key)) keys.push(key);
+      return keys;
+    }
 
                     //     // Retrieve the values of an object's properties.
                     //     public values(obj: any): any[] {
@@ -1423,13 +1426,13 @@
       return ob === undefined;
     }
 
-                    // // Shortcut function for checking if an object has a given property directly
-                    // // on itself (in other words, not on a prototype).
-                    // /*@ has : (ob: {}, key: string) : { boolean | Prop(v) <=> hasDirectProperty(key, ob) } */
-                    // public static has(ob, key) {
-                    //   return ob.hasOwnProperty(key);
-                    //   // return (<boolean>(ob != null)) && (<boolean>Object.prototype.hasOwnProperty.call(ob, key));
-                    // }
+    // Shortcut function for checking if an object has a given property directly
+    // on itself (in other words, not on a prototype).
+    /*@ has : /\ forall T . (ob: [Immutable]{[s:string]:T}, key: string) : { boolean | Prop(v) <=> hasDirectProperty(key, ob) }
+              /\            (ob: [Immutable]{},             key: string) : { boolean | Prop(v) <=> hasDirectProperty(key, ob) } */
+    public static has(ob, key) {
+      return ob != null && ob.hasOwnProperty(key); //ORIG: hasOwnProperty.call(obj, key);
+    }
 
                     //                     //   // Utility Functions
                     //                     //   // -----------------
