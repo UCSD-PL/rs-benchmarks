@@ -6,6 +6,7 @@
 
                     // ///<reference path='.\underscore-rs.d.ts' />
 
+                    // //ORIG: many of my "undefined" were "void 0"
                     // //TODO: restore 'guard' internal params to several functions
                     // //TODO: Functions are currently duplicated instead of overloaded. Ones that are identical up to renaming are marked with //=
                     // //        Many of these stem from each/eachD and the dictionary dupes (and some other duplicates) are named with a trailing D
@@ -67,8 +68,10 @@
 /*@ alias ArrIter<T,TResult> = (value: T, index: number, list: IArray<T>) => {TResult | true} */
 /*@ alias MemoIter<T,TResult> = (prev: TResult, curr: T, index: number, list: IArray<T>) => {TResult | true} */
 
+/*@ qualif Bot(v:a,s:string): hasProperty(v,s) */
+/*@ qualif Bot(v:a,s:string): enumProp(v,s) */
 
-  class UImpl {// implements UnderscoreStatic {
+  class UImpl {// TODO: implements UnderscoreStatic {
     constructor() {}
 
     // Current version.
@@ -95,35 +98,17 @@
                     //     // Internal Functions
                     //     // --------------------
                         
-    // Generates lookup iterators.
-    /*@ lookupIterator : /\ forall X Y Z W TResult . (f: (X) => TResult,       context: top, argCount: {number | v = 1}) : {(X) => TResult | true }
-                         /\ forall X Y Z W TResult . (f: (X,Y) => TResult,     context: top, argCount: {number | v = 2}) : {(X,Y) => TResult | true }
-                         /\ forall X Y Z W TResult . (f: (X,Y,Z) => TResult,   context: top, argCount: {number | v = 3}) : {(X,Y,Z) => TResult | true }
-                         /\ forall X Y Z W TResult . (f: (X,Y,Z) => TResult,   context: top                            ) : {(X,Y,Z) => TResult | true }
-                         /\ forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult, context: top, argCount: {number | v = 4}) : {(X,Y,Z,W) => TResult | true } */
-    private static lookupIterator(f, context, argCount?) {
-      if (f === null) return UImpl.identity;
-      if (arguments.length < 3) argCount = 3; //TODO: should be unnecessary
-      return UImpl.createCallback(f, context, <number>argCount);
-    }
-
-    // TODO: possible version that actually uses identity:
-    //                       /\ forall X Y Z . () : {(X,Y,Z) => X | true} */
-    // private static lookupIterator3(f?, context?) {
-    //   if (!f) return UImpl.identity;
-    //   return UImpl.createCallback3(f, context);
-    // }
-
     // Internal function: creates a callback bound to its context if supplied
-    /*@ createCallback : /\ forall X Y Z W TResult . (f: (X) => TResult,       context: top, argCount: {number | v = 1}) : {(X) => TResult | true}
-                         /\ forall X Y Z W TResult . (f: (X,Y) => TResult,     context: top, argCount: {number | v = 2}) : {(X,Y) => TResult | true}
-                         /\ forall X Y Z W TResult . (f: (X,Y,Z) => TResult,   context: top, argCount: {number | v = 3}) : {(X,Y,Z) => TResult | true}
-                         /\ forall X Y Z W TResult . (f: (X,Y,Z) => TResult,   context: top                            ) : {(X,Y,Z) => TResult | true}
-                         /\ forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult, context: top, argCount: {number | v = 4}) : {(X,Y,Z,W) => TResult | true}
-                         /\ forall X Y Z W TResult . (f: X) : {X | (v = f)} */
+    /*@ createCallback : /\ forall X Y Z W TResult . (f: (X) => TResult,       context: top, argCount: {number | v = 1}) :  (X)=>TResult
+                         /\ forall X Y Z W TResult . (f: (X,Y) => TResult,     context: top, argCount: {number | v = 2}) :  (X,Y)=>TResult
+                         /\ forall X Y Z W TResult . (f: (X,Y,Z) => TResult,   context: top, argCount: {number | v = 3}) :  (X,Y,Z)=>TResult
+                         /\ forall X Y Z W TResult . (f: (X,Y,Z) => TResult,   context: top                            ) : {(X,Y,Z)=>TResult | true}
+                         /\ forall X Y Z W TResult . (f: (X,Y,Z) => TResult,   context: top, argCount: undefined       ) : {(X,Y,Z)=>TResult | true}
+                         /\ forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult, context: top, argCount: {number | v = 4}) :  (X,Y,Z,W)=>TResult
+                         /\ forall X Y Z W TResult . (f: X) : {X | (v = f)} */ //TODO: this last one is never actually called...
     private static createCallback(f, context?, argCount?) {
       if (arguments.length === 1) return f;
-      if (arguments.length === 2) argCount = 3;
+      if (!argCount) argCount = 3;
       var ff /*@ readonly */ = f;
       var cc /*@ readonly */ = context;
       if (<number>argCount === 1) return function(value)
@@ -153,6 +138,21 @@
       throw new Error("can't reach here");
     }
 
+    // Generates lookup iterators.
+    /*@ lookupIterator : /\ forall X       TResult . (f: (X) => TResult,       context: top, argCount: {number | v = 1}) :  (X)=>TResult
+                         /\ forall X Y     TResult . (f: (X,Y) => TResult,     context: top, argCount: {number | v = 2}) :  (X,Y)=>TResult
+                         /\ forall X Y Z   TResult . (f: (X,Y,Z) => TResult,   context: top, argCount: {number | v = 3}) :  (X,Y,Z)=>TResult
+                         /\ forall X Y Z   TResult . (f: (X,Y,Z) => TResult,   context: top                            ) : {(X,Y,Z)=>TResult | true}
+                         /\ forall X Y Z W TResult . (f: (X,Y,Z,W) => TResult, context: top, argCount: {number | v = 4}) :  (X,Y,Z,W)=>TResult
+                         /\ forall X               . (f: undefined, top)         : {(arg:X)=>{X | v = arg} | true}
+                         /\ forall X               . (f: undefined, top, number) : {(arg:X)=>{X | v = arg} | true} */
+    private static lookupIterator(f, context, argCount?) {
+      if (!f) return function(x) 
+        /*@ <anonymous> forall X . (arg:X)=>{X | v = arg} */
+        { return x }; //ORIG: just returned UImpl.Identity, but we can't extract methods like that
+      return UImpl.createCallback(f, context, argCount);
+    }
+
     // Collection Functions
     // --------------------
 
@@ -172,6 +172,8 @@
       return ob;
     }
 
+    public static forEach(a,b,c) { return UImpl.each(a,b,c) }
+
                     //     /*@ eachD : forall T . (ob: {[s:string]:T}, iterator: (element: T, key: string, list: {[s:string]:T}) => TResult, context: top?): {{[s:string]:T} | true} */
                     //     public eachD<T>(ob, iterator, context?) {
                     //       if (ob == null) return ob;
@@ -184,8 +186,6 @@
                     //       }
                     //       return ob;
                     //     }
-
-                    //     public forEach = this.each;
 
                     //     public forEachD = this.eachD;
 
@@ -204,6 +204,8 @@
       return results;
     }
 
+    public static collect(a,b,c) { return UImpl.map(a,b,c) }
+
                     //     public mapD<T, TResult>(obj: _.Dictionary<T>, iterator: _.ObjectIterator<T, TResult>, context?: any): TResult[] { //=
                     //       var results:TResult[] = [];
                     //       if (obj == null) return results;
@@ -214,82 +216,97 @@
                     //       return results;
                     //     }
 
-                    //     public collect = this.map;
-
                     //     public collectD = this.mapD;
 
-                    //     private reduceError = 'Reduce of empty array with no initial value';
+    private static reduceError = 'Reduce of empty array with no initial value';
 
     // **Reduce** builds up a single result from a list of values, aka `inject`,
     // or `foldl`.
     /*@ reduce : /\ forall T TResult . (ob: IArray<T>, iterator: MemoIter<T,TResult>, memo: TResult, context: top) : {TResult | true}
-                 /\ forall T TResult . (ob: IArray<T>, iterator: MemoIter<T,TResult>, memo: TResult              ) : {TResult | true} */
-    public static reduce<TResult>(ob, iterator, memo, context?) {
-      /*@ retVal :: TResult */
-      var retVal = memo;
+                 /\ forall T TResult . (ob: IArray<T>, iterator: MemoIter<T,TResult>, memo: TResult) : {TResult | true}
+                 /\ forall T TResult . (ob: {IArray<TResult> | (len v) > 0}, iterator: MemoIter<TResult,TResult>) : TResult */
+    public static reduce(ob, iterator, memo?, context?) {
+      if (arguments.length < 3) {
+        return UImpl.reduce1(ob, iterator);
+      } else {
+        return UImpl.reduce0(ob, iterator, memo, context);      
+      }
+    }
+
+    /*@ reduce0 : /\ forall T TResult . (ob: IArray<T>, iterator: MemoIter<T,TResult>, memo: TResult, context: top) : {TResult | true}
+                  /\ forall T TResult . (ob: IArray<T>, iterator: MemoIter<T,TResult>, memo: TResult) : {TResult | true} */
+    private static reduce0(ob, iterator, memo, context?) {
       if (ob === null) ob = [];
-      var riter /*@ readonly */ = UImpl.createCallback(iterator, context, 4);
-      UImpl.each(ob, function(value, index, list) 
-        /*@ <anonymous> (T,number,IArray<T>) => {void | true} */
-        {
-          retVal = riter(retVal, value, index, list);
-        });
+      iterator = UImpl.createCallback(iterator, context, 4);
+      var length = ob.length;
+      for (var index = 0; index < length; index++) {
+        memo = iterator(memo, ob[index], index, ob);
+      }
+      return memo;
+    }
+
+    /*@ reduce1 : forall T TResult . (ob: {IArray<TResult> | (len v) > 0}, iterator: MemoIter<TResult,TResult>) : TResult */
+    private static reduce1(ob, iterator) {
+      if (ob === null) ob = [];
+      var index = 0, length = ob.length;
+      if (!length) throw Error(UImpl.reduceError); // NOTE: unnecessary given (len v) > 0 refinement
+      var memo = ob[index++];
+      for (true; index < length; index++) {
+        memo = iterator(memo, ob[index], index, ob);
+      }
+      return memo;
+    }
+
+    public static inject(a,b,c,d) { return UImpl.reduce(a,b,c,d) }
+    public static foldl(a,b,c,d)  { return UImpl.reduce(a,b,c,d) }
+
+    // TODO: reduceRight (and pretty much everything else too) for Dictionaries
+    // The right-associative version of reduce, also known as `foldr`.
+    /*@ reduceRight : /\ forall T TResult . (ob: IArray<T>, iterator: MemoIter<T,TResult>, memo: TResult, context: top) : {TResult | true}
+                      /\ forall T TResult . (ob: IArray<T>, iterator: MemoIter<T,TResult>, memo: TResult) : {TResult | true}
+                      /\ forall T TResult . (ob: {IArray<TResult> | (len v) > 0}, iterator: MemoIter<TResult,TResult>) : TResult */
+    public static reduceRight(ob, iterator, memo?, context?) {
+      if (arguments.length < 3) {
+        return UImpl.reduceRight1(ob, iterator);
+      } else {
+        return UImpl.reduceRight0(ob, iterator, memo, context);      
+      }
+    }
+
+    /*@ reduceRight0 : /\ forall T TResult . (ob: IArray<T>, iterator: MemoIter<T,TResult>, memo: TResult, context: top) : {TResult | true}
+                       /\ forall T TResult . (ob: IArray<T>, iterator: MemoIter<T,TResult>, memo: TResult) : {TResult | true} */
+    private static reduceRight0(ob, iterator, memo, context?) {
+      if (ob === null) ob = [];
+      iterator = UImpl.createCallback(iterator, context, 4);
+      var index = ob.length;
+      while (index) {
+        index--;
+        memo = iterator(memo, ob[index], index, ob);
+      }
+      return memo;
+    }
+
+    /*@ reduceRight1 : forall T TResult . (ob: {IArray<TResult> | (len v) > 0}, iterator: MemoIter<TResult,TResult>) : TResult */
+    private static reduceRight1(ob, iterator) {
+      if (ob === null) ob = [];
+      var index = ob.length;
+      if (!index) throw Error(UImpl.reduceError);
+      var retVal = ob[--index];
+      while (index) {
+        index--;
+        retVal = iterator(retVal, ob[index], index, ob);
+      }
       return retVal;
     }
 
-                    //     // A version of reduce where you do not give an initial value; must be called with a non-empty list.
-                    //     public reduceD<T>(obj: _.List<T>, iterator: _.MemoIterator<T, T>): T {
-                    //       var initial = false, memo:T;
-                    //       if (obj == null || obj.length == 0) throw TypeError(this.reduceError);
-                    //       this.each(obj, function(value:T, index:number, list:_.List<T>) {
-                    //         if (!initial) {
-                    //           memo = value;
-                    //           initial = true;
-                    //         } else {
-                    //           memo = iterator(memo, value, index, list);
-                    //         }
-                    //       });
-                    //       return memo;
-                    //     }
-
-                    //     public inject = this.reduce;
-
-                    //     public foldl = this.reduce;
-
-                    //     // The right-associative version of reduce, also known as `foldr`.
-                    //     public reduceRight<T, TResult>(obj: _.List<T>, iterator: _.MemoIterator<T, TResult>, memo: TResult, context?: any): TResult;
-                    //     public reduceRight<T>(obj: _.List<T>, iterator: _.MemoIterator<T, T>, memo?: T, context?: any): T;
-                    //     public reduceRight<T>(obj: _.List<T>, iterator: any, memo?: any, context?: any): any {
-                    //       var initial = arguments.length > 2;
-                    //       if (obj == null) obj = [];
-                    //       var length = obj.length;
-                    //       iterator = this.createCallback4(iterator, context);
-                    //       // if (length !== +length) {
-                    //       //   var keys = this.keys(obj);
-                    //       //   length = keys.length;
-                    //       // }
-                    //       this.each(obj, function(value, index, list) {
-                    //         //index = keys ? keys[--length] : --length;
-                    //         index = --length;
-                    //         if (!initial) {
-                    //           memo = obj[index];
-                    //           initial = true;
-                    //         } else {
-                    //           memo = iterator(memo, obj[index], index, list);
-                    //         }
-                    //       });
-                    //       if (!initial) throw TypeError(this.reduceError);
-                    //       return memo;
-                    //     }
-
-                    //     public foldr = this.reduceRight;
+    public static foldr(a,b,c,d) { return UImpl.reduceRight(a,b,c,d) }
 
     // Return the first value which passes a truth test. Aliased as `detect`.
     /*@ find : /\ forall T . (list: IArray<T>, predicate: ArrIter<T, boolean>, context: top) : {T + undefined | true}
                /\ forall T . (list: IArray<T>, predicate: ArrIter<T, boolean>              ) : {T + undefined | true} */
-    public static find<T>(list, predicate, context?) {
+    public static find(list, predicate, context?) {
       /*@ result :: T + undefined */
-      var result:T;
+      var result;
       var rpred /*@ readonly */ = UImpl.lookupIterator(predicate, context);
       UImpl.some(list, function(value, index, list) 
         /*@ <anonymous> (T,number,IArray<T>) => {boolean | true} */
@@ -303,6 +320,8 @@
       return result;
     }
 
+    public static detect(a,b,c) { return UImpl.find(a,b,c) }
+
                     //     public findD<T>(obj: _.Dictionary<T>, predicate: _.ObjectIterator<T, boolean>, context?: any): T { //=
                     //       var result:T;
                     //       predicate = this.lookupIterator3(predicate, context);
@@ -314,8 +333,6 @@
                     //       });
                     //       return result;
                     //     }
-
-                    //     public detect = this.find;
 
                     //     public detectD = this.findD
 
@@ -335,6 +352,8 @@
       return results;
     }
 
+    public static select(a,b,c) { return UImpl.filter(a,b,c) }
+
                     //     public filterD<T>(obj: _.Dictionary<T>, predicate: _.ObjectIterator<T, boolean>, context?: any): T[] { //=
                     //       var results:T[] = [];
                     //       if (obj == null) return results;
@@ -344,8 +363,6 @@
                     //       });
                     //       return results;
                     //     }
-
-                    //     public select = this.filter;
 
                     //     public selectD = this.filterD;
 
@@ -378,6 +395,8 @@
       return !!result;
     }
 
+    public static all(a,b,c) { return UImpl.every(a,b,c) }
+
                     //     public everyD<T>(obj: _.Dictionary<T>, predicate?: _.ObjectIterator<T, boolean>, context?: any): boolean {
                     //       var result = true;
                     //       if (obj == null) return result;
@@ -388,8 +407,6 @@
                     //       });
                     //       return !!result;
                     //     }
-
-                    //     public all = this.every;
 
                     //     public allD = this.everyD;
 
@@ -412,6 +429,8 @@
       return !!result;
     }
 
+    public static any(a,b,c) { return UImpl.some(a,b,c) }
+
                     //     public someD<T>(obj: _.Dictionary<T>, predicate?: _.ObjectIterator<T, boolean>, context?: any): boolean { //=
                     //       var result = false;
                     //       if (obj == null) return result;
@@ -422,8 +441,6 @@
                     //       });
                     //       return !!result;
                     //     }
-
-                    //     public any = this.some;
 
                     //     public anyD = this.someD;
 
@@ -608,22 +625,24 @@
                     //       return this.group<T, number>((result, value, key) => { if (this.has(result, key)) result[key]++; else result[key] = 1; })(list, iterator, context);
                     //     }
 
-                    //     // TODO: formerly not restricted to comparing numbers; needs Comparable interface?
-                    //     // TODO: does this match the .d.ts file? if not, why is it compiling?
-                    //     // Use a comparator function to figure out the smallest index at which
-                    //     // an object should be inserted so as to maintain order. Uses binary search.
-                    //     public sortedIndex(list: _.List<number>, value: number, iterator?: (x: number) => number, context?: any): number;
-                    //     public sortedIndex<T>(list: _.List<T>, value: T, iterator: (x: T) => number, context?: any): number;
-                    //     public sortedIndex(list: _.List<any>, value: any, iterator?: (x: any) => number, context?: any): number {
-                    //       iterator = this.lookupIterator1(iterator, context);
-                    //       var processedValue = iterator(value);
-                    //       var low = 0, high = list.length;
-                    //       while (low < high) {
-                    //         var mid = (low + high) >>> 1;
-                    //         if (iterator(list[mid]) < processedValue) low = mid + 1; else high = mid;
-                    //       }
-                    //       return low;
-                    //     }
+    // TODO: formerly not restricted to comparing numbers; needs Comparable interface?
+    // TODO: does this match the .d.ts file? if not, why is it compiling?
+    // Use a comparator function to figure out the smallest index at which
+    // an object should be inserted so as to maintain order. Uses binary search.
+    /*@ sortedIndex : /\ forall T . (list: IArray<T>, value: T, iterator: (T)=>number, context: top) : {number | 0 <= v && v <= (len list)}
+                      /\ forall T . (list: IArray<T>, value: T, iterator: (T)=>number              ) : {number | 0 <= v && v <= (len list)}
+                      /\ forall T . (list: IArray<T>, value: T                                     ) : {number | 0 <= v && v <= (len list)} */
+    public static sortedIndex(list, value, iterator?, context?) {
+      iterator = UImpl.lookupIterator(iterator, context, 1);
+      var processedValue = iterator(value);
+      var low = 0, high = list.length;
+      while (low < high) {
+        var mid = (low + high) >>> 1;
+        assume(low <= mid && mid < high); //TODO:remove
+        if (iterator(list[mid]) < processedValue) low = mid + 1; else high = mid;
+      }
+      return low;
+    }
 
                     //     // Safely create a real, live array from anything iterable.
                     //     public toArray<T>(list: _.List<T>): T[] {
@@ -839,33 +858,44 @@
                     //       return result;
                     //     }
 
-                    //     // Return the position of the first occurrence of an item in an array,
-                    //     // or -1 if the item is not included in the array.
-                    //     // If the array is large and already in sort order, pass `true`
-                    //     // for **isSorted** to use binary search.
-                    //     public indexOf(array: _.List<number>, value: number, isSorted?: boolean): number;
-                    //     public indexOf<T>(array: _.List<T>, value: T, startFrom?: number): number;
-                    //     public indexOf(array: any, value: any, arg?: any): number {
-                    //       if (array == null) return -1;
-                    //       var i = 0, length = array.length;
-                    //       if (arg) {
-                    //         if (typeof arg == 'number') {
-                    //           i = arg < 0 ? Math.max(0, length + arg) : arg;
-                    //         } else {
-                    //           i = this.sortedIndex(array, value);
-                    //           return array[i] === value ? i : -1;
-                    //         }
-                    //       }
-                    //       for (; i < length; i++) if (array[i] === value) return i;
-                    //       return -1;
-                    //     }
+    // Return the position of the first occurrence of an item in an array,
+    // or -1 if the item is not included in the array.
+    // If the array is large and already in sort order, pass `true`
+    // for **isSorted** to use binary search.
+    /*@ indexOf : /\ forall T . (array: IArray<T>, item: T                   ) : {number | (0-1) <= v && v < (len array)}
+                  /\ forall T . (array: IArray<T>, item: T, isSorted: boolean) : {number | (0-1) <= v && v < (len array)}
+                  /\ forall T . (array: IArray<T>, item: T, startFrom: number) : {number | (0-1) <= v && v < (len array)} */
+    public static indexOf(array, item, arg?) {
+      if (array === null) return -1;
+      var i = 0, length = array.length;
+      if (arg) {
+        if (typeof arg === 'number') {
+          i = arg < 0 ? Math.max(0, length + arg) : arg;
+        } else {
+          i = UImpl.sortedIndex(array, item);
+          if (i === array.length) return -1; //ORIG: unneeded
+          return array[i] === item ? i : -1;
+        }
+      }
+      for (true; i < length; i++) if (array[i] === item) return i;
+      return -1;
+    }
 
-                    //     public lastIndexOf<T>(array: _.List<T>, value: T, from?: number): number {
-                    //       if (array == null) return -1;
-                    //       var i = from == null ? array.length : from;
-                    //       while (i--) if (array[i] === value) return i;
-                    //       return -1;
-                    //     }
+    /*@ lastIndexOf : /\ forall T . (array: IArray<T>, item: T                   ) : {number | (0-1) <= v && v < (len array)}
+                      /\ forall T . (array: IArray<T>, item: T, startFrom: number) : {number | (0-1) <= v && v < (len array)} */
+    public static lastIndexOf(array, item, from?) {
+      if (array === null) return -1;
+      var idx = array.length;
+      if (typeof from === 'number') {
+        idx = from < 0 ? idx + from + 1 : Math.min(idx, from + 1);
+      }
+      idx--;
+      while (idx >= 0) {
+        if (array[idx] === item) return idx;
+        idx--;
+      }
+      return -1;
+    }
 
                     //     // Generate an integer Array containing an arithmetic progression. A port of
                     //     // the native Python `range()` function. See
@@ -1093,15 +1123,18 @@
                     //     // Object Functions
                     //     // ----------------
 
-                    //     // Retrieve the names of an object's properties.
-                    //     // Delegates to **ECMAScript 5**'s native `Object.keys`
-                    //     public keys(obj: any): string[] {
-                    //       if (!this.isObject(obj)) return [];
-                    //       if (nativeKeys) return nativeKeys(obj);
-                    //       var keys:string[] = [];
-                    //       for (var key in obj) if (this.has(obj, key)) keys.push(key);
-                    //       return keys;
-                    //     }
+    // Retrieve the names of an object's properties.
+    // Delegates to **ECMAScript 5**'s native `Object.keys`
+    /*@ keys : /\ forall T . (ob: [Immutable]{[s:string]:T}) : {MArray<{string | hasDirectProperty(v, ob)}> | true}
+               /\            (ob: [Immutable]{})             : {MArray<{string | hasDirectProperty(v, ob)}> | true} */
+    public static keys(ob) {
+      //ORIG:
+      // if (!this.isObject(ob)) return [];
+      // if (nativeKeys) return nativeKeys(ob);
+      var keys = [];
+      for (var key in ob) if (UImpl.has(ob, key)) keys.push(key);
+      return keys;
+    }
 
                     //     // Retrieve the values of an object's properties.
                     //     public values(obj: any): any[] {
@@ -1382,21 +1415,24 @@
     // }
 
     // Is a given value equal to null?
-    /*@ isNull : (ob:top) : {boolean | true} */
-    public static isNull(ob: any): boolean {
+    /*@ isNull : forall T . (ob:T) : {boolean | true} */ //TODO: (Prop v) <=> (v ~~ null)} */
+    public static isNull(ob) {
       return ob === null;
     }
 
-                    //     // Is a given variable undefined?
-                    //     public isUndefined(obj: any): boolean {
-                    //       return obj === void 0;
-                    //     }
+    // Is a given variable undefined?
+    /*@ isUndefined : forall T . (ob:T) : {boolean | true} */ //TODO: (Prop v) <=> (v ~~ undefined)} */
+    public static isUndefined(ob) {
+      return ob === undefined;
+    }
 
-                    //     // Shortcut function for checking if an object has a given property directly
-                    //     // on itself (in other words, not on a prototype).
-                    //     public has(obj: any, key: string): boolean {
-                    //       return obj != null && hasOwnProperty.call(obj, key);
-                    //     }
+    // Shortcut function for checking if an object has a given property directly
+    // on itself (in other words, not on a prototype).
+    /*@ has : /\ forall T . (ob: [Immutable]{[s:string]:T}, key: string) : { boolean | Prop(v) <=> hasDirectProperty(key, ob) }
+              /\            (ob: [Immutable]{},             key: string) : { boolean | Prop(v) <=> hasDirectProperty(key, ob) } */
+    public static has(ob, key) {
+      return ob != null && ob.hasOwnProperty(key); //ORIG: hasOwnProperty.call(obj, key);
+    }
 
                     //                     //   // Utility Functions
                     //                     //   // -----------------
@@ -1415,7 +1451,7 @@
     }
 
     /*@ constant : forall T . (value:T) : {()=>T | true} */
-    public static constant<T>(value: T): () => T {
+    public static constant(value) {
       var rvalue /*@ readonly */ = value;
       return function() 
       /*@ <anonymous> () => {T | true} */
@@ -1425,7 +1461,7 @@
     }
 
     /*@ noop : () : {void | true} */
-    public static noop(): void {}
+    public static noop() {}
 
     /*@ property : (key: string) : {(ob: {{} | (hasProperty key ob)}) => top | true} */
     public static property(key) {

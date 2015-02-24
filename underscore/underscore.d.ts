@@ -1,8 +1,8 @@
-// Ben Cosman's modified version of:
-//// Type definitions for Underscore 1.6.0
-//// Project: http://underscorejs.org/
-//// Definitions by: Boris Yankov <https://github.com/borisyankov/>, Josh Baldwin <https://github.com/jbaldwin/>
-//// Definitions: https://github.com/borisyankov/DefinitelyTyped
+// (RefScript project's modified version of:)
+// Type definitions for Underscore 1.6.0
+// Project: http://underscorejs.org/
+// Definitions by: Boris Yankov <https://github.com/borisyankov/>, Josh Baldwin <https://github.com/jbaldwin/>
+// Definitions: https://github.com/borisyankov/DefinitelyTyped
 
 //TODO: revert some signatures to Collection?
 
