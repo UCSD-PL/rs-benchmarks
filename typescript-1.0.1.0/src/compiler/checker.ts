@@ -265,102 +265,91 @@ module ts {
 //             }
 //         }
 
-// // <<<< DONE >>>>
+
+
 
         /*@ getSymbolLinks :: (symbol: ISymbol) => { SymbolLinks<Immutable> | true } */
         declare function getSymbolLinks(symbol: Symbol): SymbolLinks;
+        //// DONE
+        //function getSymbolLinks(symbol: Symbol): SymbolLinks {
+        //    if (symbol.flags & SymbolFlags.Transient) return <TransientSymbol>symbol;            
+        //    if (!symbol.id) symbol.id = nextSymbolId++;
+        //    var s = symbolLinks[symbol.id];
+        //    if(s) { return s; } 
+        //    else { var o = {}; symbolLinks[symbol.id] = o; return o; }
+        //    // ORIGINAL: return symbolLinks[symbol.id] || (symbolLinks[symbol.id] = {});
+        //}
+
 
         /*@ getNodeLinks :: (node: INode) => { NodeLinks<Immutable> | true } */
         declare function getNodeLinks(node: Node): NodeLinks;
+        //// DONE
+        //function getNodeLinks(node: Node): NodeLinks {
+        //    var node_id = node.id;
+        //    if (!node_id) {
+        //        node_id = nextNodeId++;
+        //        node.id = node_id;
+        //    }
+        //    // ORIGINAL: if (!node.id) node.id = nextNodeId++;
+        //    var n = nodeLinks[node_id];
+        //    if(n) { return n; }
+        //    else { var o = {}; nodeLinks[node_id] = o; return o; }
+        //    // ORIGINAL: return nodeLinks[node.id] || (nodeLinks[node.id] = {});
+        //}
+
 
         /*@ getSourceFile :: (node: INode + undefined) => undefined + { SourceFile<Immutable> | true } */
         declare function getSourceFile(node: Node): SourceFile;
+        //// DONE
+        //function getSourceFile(node: Node): SourceFile {
+        //    var ancestor = getAncestor(node, SyntaxKind.SourceFile);
+        //    if (ancestor) {
+        //        return <SourceFile> (<Node>ancestor);
+        //    } else {
+        //        return undefined;
+        //    }
+        //}
+
 
         /*@ isGlobalSourceFile :: (node: INode) => { boolean | true } */
         declare function isGlobalSourceFile(node: Node);
+        //// DONE
+        //function isGlobalSourceFile(node: Node) {
+        //    // return node.kind === SyntaxKind.SourceFile && !isExternalModule(<SourceFile>node);
+        //    if (node.kind === SyntaxKind.SourceFile) {
+        //        return !isExternalModule(<SourceFile>node);
+        //    }
+        //    return false;
+        //}
+
 
         /*@ getSymbol :: (symbols: SymbolTable<Immutable>, name: string, meaning: SymbolFlags) => { ISymbol | true } + undefined */ 
         declare function getSymbol(symbols: SymbolTable, name: string, meaning: SymbolFlags): Symbol;
+        //// DONE
+        //function getSymbol(symbols: SymbolTable, name: string, meaning: SymbolFlags): Symbol {
+        //    if (builtin_bv_truthy(meaning) && hasProperty(symbols, name)) {
+        //        var symbol = symbols[name];
+        //        // Debug.assert((symbol.flags & SymbolFlags.Instantiated) === 0, "Should never get an instantiated symbol here.");
+        //        if (symbol.flags & meaning) {
+        //            return symbol;
+        //        }
 
+        //        // TODO 
+        //        //if (symbol.flags & SymbolFlags.Import) {
+        //        //    var target = resolveImport(symbol);
+        //        //    // unknown symbol will mean that there were reported error during import resolution
+        //        //    // treat it as positive answer to avoid cascading errors
+        //        //    if (target === unknownSymbol || target.flags & meaning) {
+        //        //        return symbol;
+        //        //    }
+        //        //}
 
-//  TOGGLE HERE
+        //    }
+        //    return undefined;
 
+        //    // return undefined if we can't find a symbol.
+        //}
 
-//         /*@ getSymbolLinks :: (symbol: ISymbol) => { SymbolLinks<Immutable> | true } */
-//         function getSymbolLinks(symbol: Symbol): SymbolLinks {
-//             if (symbol.flags & SymbolFlags.Transient) return <TransientSymbol>symbol;            
-//             if (!symbol.id) symbol.id = nextSymbolId++;
-// 
-//             var s = symbolLinks[symbol.id];
-//             if(s) { return s; } 
-//             else { var o = {}; symbolLinks[symbol.id] = o; return o; }
-// 
-//             // ORIG: return symbolLinks[symbol.id] || (symbolLinks[symbol.id] = {});
-//  
-//         }
-// 
-// 
-//         /*@ getNodeLinks :: (node: INode) => { NodeLinks<Immutable> | true } */
-//         function getNodeLinks(node: Node): NodeLinks {
-//             var node_id = node.id;
-//             if (!node_id) {
-//                 node_id = nextNodeId++;
-//                 node.id = node_id;
-//             }
-//             // ORIG: if (!node.id) node.id = nextNodeId++;
-// 
-//             var n = nodeLinks[node_id];
-//             if(n) { return n; }
-//             else { var o = {}; nodeLinks[node_id] = o; return o; }
-//             // ORIG: return nodeLinks[node.id] || (nodeLinks[node.id] = {});
-//         }
-// 
-// 
-//         /*@ getSourceFile :: (node: INode + undefined) => undefined + { SourceFile<Immutable> | true } */
-//         function getSourceFile(node: Node): SourceFile {
-//             var ancestor = getAncestor(node, SyntaxKind.SourceFile);
-//             if (ancestor) {
-//                 return <SourceFile> (<Node>ancestor);
-//             } else {
-//                 return undefined;
-//             }
-//         }
-// 
-//         /*@ isGlobalSourceFile :: (node: INode) => { boolean | true } */
-//         function isGlobalSourceFile(node: Node) {
-//             // return node.kind === SyntaxKind.SourceFile && !isExternalModule(<SourceFile>node);
-//             if (node.kind === SyntaxKind.SourceFile) {
-//                 return !isExternalModule(<SourceFile>node);
-//             }
-//             return false;
-//         }
-// 
-//         /*@ getSymbol :: (symbols: SymbolTable<Immutable>, name: string, meaning: SymbolFlags) => { ISymbol | true } + undefined */ 
-//         function getSymbol(symbols: SymbolTable, name: string, meaning: SymbolFlags): Symbol {
-//             if (builtin_bv_truthy(meaning) && hasProperty(symbols, name)) {
-//                 var symbol = symbols[name];
-//                 // Debug.assert((symbol.flags & SymbolFlags.Instantiated) === 0, "Should never get an instantiated symbol here.");
-//                 if (symbol.flags & meaning) {
-//                     return symbol;
-//                 }
-// 
-//                 // TODO 
-//                 //if (symbol.flags & SymbolFlags.Import) {
-//                 //    var target = resolveImport(symbol);
-//                 //    // unknown symbol will mean that there were reported error during import resolution
-//                 //    // treat it as positive answer to avoid cascading errors
-//                 //    if (target === unknownSymbol || target.flags & meaning) {
-//                 //        return symbol;
-//                 //    }
-//                 //}
-// 
-//             }
-//             return undefined;
-// 
-//             // return undefined if we can't find a symbol.
-//         }
-// 
-// // >>>> DONE <<<<
 
 //         function resolveName(location: Node, name: string, meaning: SymbolFlags, nameNotFoundMessage: DiagnosticMessage, nameArg: string): Symbol {
 //             var errorLocation = location;
@@ -732,7 +721,9 @@ module ts {
         //          
         //  * symbol could be undefined         
         //
-        //  * refinements here should be infered
+        //  * refinements here should be infered -- right now they're NOT because 
+        //    of Z3 type mismatches between int and bitvector
+        //
 
         // declare function createObjectType(kind: TypeFlags, symbol?: Symbol): ObjectType;
 
@@ -2325,47 +2316,60 @@ module ts {
         //    }
         //}
  
-        // declare function createTypeReference(target: GenericType, typeArguments: Type[]): TypeReference;
 
-        // TODO 
+
         /*@ createTypeReference :: (target: GenericType<Immutable>, typeArguments: IArray<IType>) => { TypeReference<Immutable> | true } */
-        function createTypeReference(target: GenericType, typeArguments: Type[]): TypeReference {
-            var id = getTypeListId(typeArguments);
-            var type = target.instantiations[id.toString()];        // ORIGINAL: target.instantiations[id];
+        declare function createTypeReference(target: GenericType, typeArguments: Type[]): TypeReference;
+        //// DONE
+        //function createTypeReference(target: GenericType, typeArguments: Type[]): TypeReference {
+        //    var id = getTypeListId(typeArguments);
+        //    var type = target.instantiations[id.toString()];        // ORIGINAL: target.instantiations[id];
 
-            if (!type) {
-                assume(target.symbol);          // PV: Adding this assumption
-                // ORIGINAL : type = target.instantiations[id] = <TypeReference>createObjectType(TypeFlags.Reference, target.symbol);
+        //    if (!type) {
+        //        assume(target.symbol);         // TODO: Remove this assumption
+        //        // ORIGINAL : type = target.instantiations[id] = <TypeReference>createObjectType(TypeFlags.Reference, target.symbol);
 
-                /*@ type1 :: TypeReference<UniqueMutable> */
-                var type1 = <TypeReference>createObjectType(TypeFlags.Reference, target.symbol);
+        //        /*@ type1 :: TypeReference<UniqueMutable> */
+        //        var type1 = <TypeReference>createObjectType(TypeFlags.Reference, target.symbol);
 
-// HEREHERE
+        //        var tmp = target.instantiations;
+        //        // tmp[id] = type1;            // TODO: Cannot assign a UniqueMutable variable
+        //        type1.target = target;
+        //        type1.typeArguments = typeArguments;
+        //        return type1;
+        //    }
+        //    return type;
+        //}
 
-                // type.target = target;
-                //type.typeArguments = typeArguments;
-                return type1;
+        /*@ isTypeParameterReferenceIllegalInConstraint :: (typeReferenceNode: TypeReferenceNode<Immutable>, typeParameterSymbol: ISymbol) => { boolean | true } */
+        //declare function isTypeParameterReferenceIllegalInConstraint(typeReferenceNode: TypeReferenceNode, typeParameterSymbol: Symbol): boolean;
+
+        function isTypeParameterReferenceIllegalInConstraint(typeReferenceNode: TypeReferenceNode, typeParameterSymbol: Symbol): boolean {
+            var links = getNodeLinks(typeReferenceNode);
+            // if (links.isIllegalTypeReferenceInConstraint !== undefined) {
+            if (typeof links.isIllegalTypeReferenceInConstraint !== "undefined") {
+                return links.isIllegalTypeReferenceInConstraint;
             }
-            return type;
-        }
 
-//         function isTypeParameterReferenceIllegalInConstraint(typeReferenceNode: TypeReferenceNode, typeParameterSymbol: Symbol): boolean {
-//             var links = getNodeLinks(typeReferenceNode);
-//             if (links.isIllegalTypeReferenceInConstraint !== undefined) {
-//                 return links.isIllegalTypeReferenceInConstraint;
-//             }
-// 
-//             // bubble up to the declaration
-//             var currentNode: Node = typeReferenceNode;
-//             // forEach === exists
-//             while (!forEach(typeParameterSymbol.declarations, d => d.parent === currentNode.parent)) {
-//                 currentNode = currentNode.parent;
-//             }
-//             // if last step was made from the type parameter this means that path has started somewhere in constraint which is illegal
-//             links.isIllegalTypeReferenceInConstraint = currentNode.kind === SyntaxKind.TypeParameter;
-//             return links.isIllegalTypeReferenceInConstraint;
-//         }
-// 
+            // bubble up to the declaration
+            /*@ currentNode :: INode */
+            var currentNode: Node = typeReferenceNode;
+            // forEach === exists
+
+            // ORIGINAL: while (!forEach(typeParameterSymbol.declarations, d => d.parent === currentNode.parent)) {
+            /*@ _check :: (d: Declaration<Immutable>) => boolean */
+            function _check(d: Declaration): boolean { return d.parent === currentNode.parent }
+
+            var cnt = true;     // PV: adding explicit check  
+            while (cnt && !forEach(typeParameterSymbol.declarations, _check)) {
+                var cp = currentNode.parent;
+                if (cp) { currentNode = cp; } else { cnt = false; }
+            }
+            // if last step was made from the type parameter this means that path has started somewhere in constraint which is illegal
+            links.isIllegalTypeReferenceInConstraint = currentNode.kind === SyntaxKind.TypeParameter;
+            return true; // links.isIllegalTypeReferenceInConstraint;
+        }
+ 
 //         function checkTypeParameterHasIllegalReferencesInConstraint(typeParameter: TypeParameterDeclaration): void {
 //             var typeParameterSymbol: Symbol;
 //             function check(n: Node): void {

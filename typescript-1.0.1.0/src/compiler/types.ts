@@ -875,10 +875,10 @@ module ts {
 
         name: string;                  // Name of symbol
 
-        /*@ id : [#Mutable] number */
+        /*@ id : [Mutable] number */
         id?: number;                   // Unique id (used to look up SymbolLinks)
 
-        /*@ mergeId : [#Mutable] number */
+        /*@ mergeId : [Mutable] number */
         mergeId?: number;              // Merge id (used to look up merged symbol)
 
         /*@ declarations : IArray<Declaration<Immutable>> */
@@ -1011,7 +1011,8 @@ module ts {
     export interface GenericType extends InterfaceType, TypeReference {
 
         // TODO : make the Map<...> work as well
-        /*@ instantiations : [Mutable] { [x:string]: TypeReference<Immutable> } */
+
+        /*@ instantiations: [Immutable] { [x:string]: TypeReference<Immutable> } */
         instantiations: Map<TypeReference>;   // Generic instantiation cache
 
         openReferenceTargets: GenericType[];  // Open type reference targets
