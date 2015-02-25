@@ -1428,10 +1428,11 @@
 
     // Shortcut function for checking if an object has a given property directly
     // on itself (in other words, not on a prototype).
-    /*@ has : /\ forall T . (ob: [Immutable]{[s:string]:T}, key: string) : { boolean | Prop(v) <=> hasDirectProperty(key, ob) }
-              /\            (ob: [Immutable]{},             key: string) : { boolean | Prop(v) <=> hasDirectProperty(key, ob) } */
+    /*@ has : /\ forall T . (ob: [Immutable]{[s:string]:T}, key: string) : { boolean | Prop(v) <=> (hasDirectProperty(key, ob) && hasProperty(key, ob)) }
+              /\            (ob: [Immutable]{},             key: string) : { boolean | Prop(v) <=> (hasDirectProperty(key, ob) && hasProperty(key, ob)) } */
     public static has(ob, key) {
-      return ob != null && ob.hasOwnProperty(key); //ORIG: hasOwnProperty.call(obj, key);
+      assume(false); //TODO
+      return ob !== null && ob.hasOwnProperty(key); //ORIG: hasOwnProperty.call(obj, key);
     }
 
                     //                     //   // Utility Functions
