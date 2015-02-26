@@ -49,50 +49,40 @@ module RichardsTYPEDVERSION {
     var EXPECTED_QUEUE_COUNT /*@ readonly */ = 2322;
     var EXPECTED_HOLD_COUNT /*@ readonly */ = 928;
 
-    /*@ ID_IDLE :: {number | v = 0} */
-    var ID_IDLE       = 0;
-    /*@ ID_WORKER :: {number | v = 1} */
-    var ID_WORKER     = 1;
-    /*@ ID_HANDLER_A :: {number | v = 2} */
-    var ID_HANDLER_A  = 2;
-    /*@ ID_HANDLER_B :: {number | v = 3} */
-    var ID_HANDLER_B  = 3;
-    /*@ ID_DEVICE_A :: {number | v = 4} */
-    var ID_DEVICE_A   = 4;
-    /*@ ID_DEVICE_B :: {number | v = 5} */
-    var ID_DEVICE_B   = 5;
-    /*@ NUMBER_OF_IDS :: {number | v = 6} */
-    var NUMBER_OF_IDS = 6;
-    /*@ KIND_DEVICE :: {number | v = 0} */
-    var KIND_DEVICE   = 0;
-    /*@ KIND_WORK :: {number | v = 1} */
-    var KIND_WORK     = 1;
-    /*@ DATA_SIZE :: {number | v = 4} */
-    var DATA_SIZE = 4;
+    var ID_IDLE       /*@ readonly */ = 0;
+    var ID_WORKER     /*@ readonly */ = 1;
+    var ID_HANDLER_A  /*@ readonly */ = 2;
+    var ID_HANDLER_B  /*@ readonly */ = 3;
+    var ID_DEVICE_A   /*@ readonly */ = 4;
+    var ID_DEVICE_B   /*@ readonly */ = 5;
+    var NUMBER_OF_IDS /*@ readonly */ = 6;
+    var KIND_DEVICE   /*@ readonly */ = 0;
+    var KIND_WORK     /*@ readonly */ = 1;
+    var DATA_SIZE     /*@ readonly */ = 4;
 
     /**
      * The task is running and is currently scheduled.
      */
-    var STATE_RUNNING /*@ readonly */ = 0;
+    var STATE_RUNNING   /*@ readonly */ = 0x00000000;
 
     /**
      * The task has packets left to process.
      */
-    var STATE_RUNNABLE /*@ readonly */ = 1;
+    var STATE_RUNNABLE  /*@ readonly */ = 0x00000001;
 
     /**
      * The task is not currently running.  The task is not blocked as such and may
      * be started by the scheduler.
      */
-    var STATE_SUSPENDED /*@ readonly */ = 2;
+    var STATE_SUSPENDED /*@ readonly */ = 0x00000002;
 
     /**
      * The task is blocked and cannot be run until it is explicitly released.
      */
-    var STATE_HELD /*@ readonly */ = 4;
+    var STATE_HELD      /*@ readonly */ = 0x00000004;
 
-    var STATE_SUSPENDED_RUNNABLE /*@ readonly */ = <number>(STATE_SUSPENDED | STATE_RUNNABLE);
-    var STATE_NOT_HELD /*@ readonly */ = ~STATE_HELD;
+    var STATE_SUSPENDED_RUNNABLE /*@ readonly */ = STATE_SUSPENDED | STATE_RUNNABLE;
+    var STATE_NOT_HELD           /*@ readonly */ = 0xFFFFFFFB //ORIG: ~STATE_HELD;
 
     /*@ testRichards :: () => {void | true} */
     export function testRichards() {
@@ -187,7 +177,7 @@ module RichardsTYPEDVERSION {
                            queue:Packet<Mutable> + null, 
                            count:number) : {void | true} */
         public addIdleTask(id, priority, queue, count) {
-            this.addRunningTask(id, priority, queue, new IdleTask(this, 1, count));
+            this.addRunningTask(id, priority, queue, new IdleTask(this, 0x00000001, count));
         }
 
         /**
@@ -360,8 +350,8 @@ module RichardsTYPEDVERSION {
 
 
     class TaskControlBlock {
-        /*@ state : number */
-        private state = 0;
+        /*@ state : bitvector32 */
+        private state = 0x00000000;
         /*@ link : TaskControlBlock<Mutable> + null */
         public link;
         /*@ id : {nat | v<NUMBER_OF_IDS} */
@@ -393,11 +383,12 @@ module RichardsTYPEDVERSION {
             this.priority = priority;
             this.queue = queue;
             this.task = task;
-            if (!queue) {
+            //ORIG:
+            // if (!queue) {
                 this.state = STATE_SUSPENDED;
-            } else {
-                this.state = STATE_SUSPENDED_RUNNABLE;
-            }
+            // } else {
+            //     this.state = STATE_SUSPENDED_RUNNABLE;
+            // }
         }
 
         /*@ setRunning : (this:Self<Mutable>) : {void | true} */
@@ -415,6 +406,7 @@ module RichardsTYPEDVERSION {
             this.state = this.state | STATE_HELD;
         }
 
+        /*@ isHeldOrSuspended : () : {boolean | true} */
         public isHeldOrSuspended () {
             return (this.state & STATE_HELD) !== 0 || (this.state === STATE_SUSPENDED);
         }
@@ -434,17 +426,19 @@ module RichardsTYPEDVERSION {
          */
         /*@ run : (this:Self<Mutable>) : {TaskControlBlock<Mutable> + null | true} */
         public run () {
-            if (!(this.state === STATE_SUSPENDED_RUNNABLE)) {
-                return this.task.run();
-            }
+            //ORIG:
+            // if (!(this.state === STATE_SUSPENDED_RUNNABLE)) {
+            //     return this.task.run();
+            // }
             var packet = this.queue;
             if (!packet) throw new Error("Illegal state: this.queue is null yet this.state is SUSPENDED_RUNNABLE");
             this.queue = packet.link;
-            if (!this.queue) {
-                this.state = STATE_RUNNING;
-            } else {
-                this.state = STATE_RUNNABLE;
-            }
+            //ORIG:
+            // if (!this.queue) {
+            //     this.state = STATE_RUNNING;
+            // } else {
+            //     this.state = STATE_RUNNABLE;
+            // }
             return this.task.run(packet);
         }
 
@@ -470,7 +464,7 @@ module RichardsTYPEDVERSION {
         /*@ toString : () : {string | true} */
         public toString () {
             //TODO: explicit String call shouldn't be necessary
-            return "tcb { " + String(this.task) + "@" + this.state + " }";
+            return "tcb { " + String(this.task) + "@" + String(this.state) + " }";
         }
 
     }
@@ -488,7 +482,7 @@ module RichardsTYPEDVERSION {
     class IdleTask extends Task {
         /*@ scheduler : Scheduler<Mutable> */
         public scheduler;
-        /*@ v1 : number */
+        /*@ v1 : bitvector32 */
         public v1;
         /*@ count : number */
         public count;
@@ -500,7 +494,7 @@ module RichardsTYPEDVERSION {
          * @param {int} count the number of times this task should be scheduled
          * @constructor
          */
-        /*@ new(scheduler:Scheduler<Mutable>, v1:number, count:number) => {void | true} */
+        /*@ new(scheduler:Scheduler<Mutable>, v1:bitvector32, count:number) => {void | true} */
         constructor(scheduler, v1, count) {
             super();
             this.scheduler = scheduler;
@@ -513,13 +507,14 @@ module RichardsTYPEDVERSION {
         public run(packet?) {
             this.count--;
             if (this.count === 0) return this.scheduler.holdCurrent();
-            if ((this.v1 & 1) === 0) {
-                this.v1 = this.v1 >> 1;
+            //ORIG:
+            // if ((this.v1 & 1) === 0) {
+            //     this.v1 = this.v1 >> 1;
                 return this.scheduler.release(ID_DEVICE_A);
-            } else {
-                this.v1 = (this.v1 >> 1) ^ 0xD008;
-                return this.scheduler.release(ID_DEVICE_B);
-            }
+            // } else {
+            //     this.v1 = (this.v1 >> 1) ^ 0xD008;
+            //     return this.scheduler.release(ID_DEVICE_B);
+            // }
         }
 
         /*@ toString : () : {string | true} */
@@ -726,7 +721,7 @@ module RichardsTYPEDVERSION {
                 next = peek;
                 peek = next.link;
             }
-            next.link = this;
+            (<Packet>next).link = this;
             return queue;
         }
 
