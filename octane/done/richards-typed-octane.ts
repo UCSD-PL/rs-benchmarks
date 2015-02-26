@@ -37,7 +37,7 @@
 /*@ alias nat = {number | 0 <= v} */
 
 module RichardsTYPEDVERSION {
-    var COUNT = 1000;
+    var COUNT /*@ readonly */ = 1000;
 
     /**
      * These two constants specify how many times a packet is queued and
@@ -46,8 +46,8 @@ module RichardsTYPEDVERSION {
      * correct run so if the actual queue or hold count is different from
      * the expected there must be a bug in the implementation.
      **/
-    var EXPECTED_QUEUE_COUNT = 2322;
-    var EXPECTED_HOLD_COUNT = 928;
+    var EXPECTED_QUEUE_COUNT /*@ readonly */ = 2322;
+    var EXPECTED_HOLD_COUNT /*@ readonly */ = 928;
 
     /*@ ID_IDLE :: {number | v = 0} */
     var ID_IDLE       = 0;
@@ -73,26 +73,26 @@ module RichardsTYPEDVERSION {
     /**
      * The task is running and is currently scheduled.
      */
-    var STATE_RUNNING = 0;
+    var STATE_RUNNING /*@ readonly */ = 0;
 
     /**
      * The task has packets left to process.
      */
-    var STATE_RUNNABLE = 1;
+    var STATE_RUNNABLE /*@ readonly */ = 1;
 
     /**
      * The task is not currently running.  The task is not blocked as such and may
      * be started by the scheduler.
      */
-    var STATE_SUSPENDED = 2;
+    var STATE_SUSPENDED /*@ readonly */ = 2;
 
     /**
      * The task is blocked and cannot be run until it is explicitly released.
      */
-    var STATE_HELD = 4;
+    var STATE_HELD /*@ readonly */ = 4;
 
-    var STATE_SUSPENDED_RUNNABLE = STATE_SUSPENDED | STATE_RUNNABLE;
-    var STATE_NOT_HELD = ~STATE_HELD;
+    var STATE_SUSPENDED_RUNNABLE /*@ readonly */ = <number>(STATE_SUSPENDED | STATE_RUNNABLE);
+    var STATE_NOT_HELD /*@ readonly */ = ~STATE_HELD;
 
     /*@ testRichards :: () => {void | true} */
     export function testRichards() {
@@ -129,8 +129,8 @@ module RichardsTYPEDVERSION {
 
         scheduler.schedule();
 
-        if (scheduler.queueCount != EXPECTED_QUEUE_COUNT ||
-            scheduler.holdCount != EXPECTED_HOLD_COUNT) {
+        if (scheduler.queueCount !== EXPECTED_QUEUE_COUNT ||
+            scheduler.holdCount !== EXPECTED_HOLD_COUNT) {
             var msg =
                 "Error during execution: queueCount = " + scheduler.queueCount +
                 ", holdCount = " + scheduler.holdCount + ".";
@@ -416,7 +416,7 @@ module RichardsTYPEDVERSION {
         }
 
         public isHeldOrSuspended () {
-            return (this.state & STATE_HELD) != 0 || (this.state === STATE_SUSPENDED);
+            return (this.state & STATE_HELD) !== 0 || (this.state === STATE_SUSPENDED);
         }
 
         /*@ markAsSuspended : (this:Self<Mutable>) : {void | true} */

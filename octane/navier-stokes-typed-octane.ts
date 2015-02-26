@@ -25,109 +25,111 @@
  */
 
 // Known Size Number Array
-/*@ alias KSNArray[s] = {IArray<number> | (len v) = s} */
-/*@ alias nat = {number | 0 <= v} */
+/*@ alias KSNArray[s] = {v:IArray<number> | (len v) = s} */
+/*@ alias nat = {v:number | 0 <= v} */
+/*@ alias pos = {v:number | 0 <  v} */
 
 module NavierStokes {
-    /*@ solver :: FluidField<Immutable> + null */
-    var solver:FluidField = null;
-    /*@ nsFrameCounter :: number */
-    var nsFrameCounter = 0;
+    //TODO:
+    // /*@ solver :: FluidField<Immutable> + null */
+    // var solver:FluidField = null;
+    // /*@ nsFrameCounter :: number */
+    // var nsFrameCounter = 0;
 
-    export function runNavierStokes()
-    {
-        solver.update();
-        nsFrameCounter++;
+    // export function runNavierStokes()
+    // {
+    //     solver.update();
+    //     nsFrameCounter++;
 
-        if(nsFrameCounter===15)
-            checkResult(solver.getDens());
-    }
+    //     if(nsFrameCounter===15)
+    //         checkResult(solver.getDens());
+    // }
 
-    function checkResult(dens) {
+    // function checkResult(dens) {
     
-        var result = 0;
-        for (var i=7000;i<7100;i++) {
-            result+=~~((dens[i]*10));
-        }
+    //     var result = 0;
+    //     for (var i=7000;i<7100;i++) {
+    //         result+=~~((dens[i]*10));
+    //     }
 
-        if (result!=74) {
-            console.log("checksum failed: " + result);
-        }
-    }
+    //     if (result!=74) {
+    //         console.log("checksum failed: " + result);
+    //     }
+    // }
 
-    export function setupNavierStokes()
-    {
-        solver = new FluidField(null, 128, 128);
-        solver.setIterations(20);
-        // solver.setDisplayFunction(function(f:Field){});
-        // solver.setUICallback(prepareFrame);
-        solver.reset();
-    }
+    // export function setupNavierStokes()
+    // {
+    //     solver = new FluidField(null, 128, 128);
+    //     solver.setIterations(20);
+    //     // solver.setDisplayFunction(function(f:Field){});
+    //     // solver.setUICallback(prepareFrame);
+    //     solver.reset();
+    // }
 
-    export function tearDownNavierStokes()
-    {
-        solver = null;
-    }
+    // export function tearDownNavierStokes()
+    // {
+    //     solver = null;
+    // }
 
-    function addPoints(field:Field) {
-        var n = 64;
-        for (var i = 1; i <= n; i++) {
-            field.setVelocity(i, i, n, n);
-            field.setDensity(i, i, 5);
-            field.setVelocity(i, n - i, -n, -n);
-            field.setDensity(i, n - i, 20);
-            field.setVelocity(128 - i, n + i, -n, -n);
-            field.setDensity(128 - i, n + i, 30);
-        }
-    }
+    // function addPoints(field:Field) {
+    //     var n = 64;
+    //     for (var i = 1; i <= n; i++) {
+    //         field.setVelocity(i, i, n, n);
+    //         field.setDensity(i, i, 5);
+    //         field.setVelocity(i, n - i, -n, -n);
+    //         field.setDensity(i, n - i, 20);
+    //         field.setVelocity(128 - i, n + i, -n, -n);
+    //         field.setDensity(128 - i, n + i, 30);
+    //     }
+    // }
 
-    /*@ framesTillAddingPoints :: number */
-    var framesTillAddingPoints = 0;
-    /*@ framesBetweenAddingPoints :: number */
-    var framesBetweenAddingPoints = 5;
+    // /*@ framesTillAddingPoints :: number */
+    // var framesTillAddingPoints = 0;
+    // /*@ framesBetweenAddingPoints :: number */
+    // var framesBetweenAddingPoints = 5;
 
-    function prepareFrame(field:Field)
-    {
-        if (framesTillAddingPoints === 0) {
-            addPoints(field);
-            framesTillAddingPoints = framesBetweenAddingPoints;
-            framesBetweenAddingPoints++;
-        } else {
-            framesTillAddingPoints--;
-        }
-    }
+    // function prepareFrame(field:Field)
+    // {
+    //     if (framesTillAddingPoints === 0) {
+    //         addPoints(field);
+    //         framesTillAddingPoints = framesBetweenAddingPoints;
+    //         framesBetweenAddingPoints++;
+    //     } else {
+    //         framesTillAddingPoints--;
+    //     }
+    // }
 
     // Code from Oliver Hunt (http://nerget.com/fluidSim/pressure.js) starts here.
     export class FluidField {
-        /*@ width : [Immutable] {number | width > 0} */
+        /*@ width : [Immutable] pos */
         private width;
-        /*@ height : [Immutable] {number | height > 0} */
+        /*@ height : [Immutable] pos */
         private height;
-        /*@ rowSize : {number | rowSize = width + 2} */
+        /*@ rowSize : [Immutable] {v:number | v = width + 2} */
         private rowSize;
-        /*@ size : {number | size = (width+2) * (height+2)} */
+        /*@ size : [Immutable] {v:number | v = (width+2) * (height+2)} */
         private size;
-        /*@ dens :      {IArray<number> | (len dens) = (width+2) * (height+2)} */
+        /*@ dens :      [Immutable] KSNArray[(width+2) * (height+2)] */
         private dens;
-        /*@ dens_prev : {IArray<number> | (len dens_prev) = (width+2) * (height+2)} */
+        /*@ dens_prev : [Immutable] KSNArray[(width+2) * (height+2)] */
         private dens_prev;
-        /*@ u :         {IArray<number> | (len u) = (width+2) * (height+2)} */
+        /*@ u :         [Immutable] KSNArray[(width+2) * (height+2)] */
         private u;
-        /*@ u_prev :    {IArray<number> | (len u_prev) = (width+2) * (height+2)} */
+        /*@ u_prev :    [Immutable] KSNArray[(width+2) * (height+2)] */
         private u_prev;
-        /*@ v :         {IArray<number> | (len v) = (width+2) * (height+2)} */
+        /*@ v :         [Immutable] KSNArray[(width+2) * (height+2)] */
         private v;
-        /*@ v_prev :    {IArray<number> | (len v_prev) = (width+2) * (height+2)} */
+        /*@ v_prev :    [Immutable] KSNArray[(width+2) * (height+2)] */
         private v_prev;
-        private iters;
-        private visc;
-        private dt;
-        private displayFunc: (f:Field) => void;
+        private iters:number;
+        private visc:number;
+        private dt:number;
+        // private displayFunc: (f:Field) => void;
 
         // /*@ uiCallback : (field:Field) => void */
         // private uiCallback = function(field:Field) {};
 
-        /*@ new (canvas:top, hRes:{number | v > 0}, wRes:{number | v > 0}) => {void | true} */
+        /*@ new (canvas:top, hRes:pos, wRes:pos) => {void | true} */
         constructor(canvas, hRes, wRes) {
             // TODO: formerly didn't allow hRes*wRes to be >= 1000000
             var width = wRes;
@@ -219,6 +221,7 @@ module NavierStokes {
                 x[(width+1)+maxEdge] = 1/2 * (x[width + maxEdge] + x[(width + 1) + height * rowSize]);//.
             }
 
+            /*@ lin_solve : (b:number, x:KSNArray[size], x0:KSNArray[size], a:number, c:number) : void */
             lin_solve(b:number, x:number[], x0:number[], a:number, c:number)
             {
                 var width = this.width;
@@ -254,14 +257,14 @@ module NavierStokes {
                 }
             }
 
-            /* diffuse : (b:number, x:KSNArray[size], x0:KSNArray[size], dt:number) : void */
+            /*@ diffuse : (b:number, x:KSNArray[size], x0:KSNArray[size], dt:number) : void */
             diffuse(b:number, x:number[], x0:number[], dt:number)
             {
                 var a = 0;
                 this.lin_solve(b, x, x0, a, 1 + 4*a);
             }
 
-            /* lin_solve2 : (x:KSNArray[size], x0:KSNArray[size], y:KSNArray[size], y0:KSNArray[size], a:number, c:number) : void */
+            /*@ lin_solve2 : (x:KSNArray[size], x0:KSNArray[size], y:KSNArray[size], y0:KSNArray[size], a:number, c:number) : void */
             lin_solve2(x:number[], x0:number[], y:number[], y0:number[], a:number, c:number)
             {
                 var width = this.width;
@@ -303,14 +306,14 @@ module NavierStokes {
                 }
             }
 
-            /* diffuse2 : (x:KSNArray[size], x0:KSNArray[size], y:KSNArray[size], y0:KSNArray[size], dt:number) : void */
+            /*@ diffuse2 : (x:KSNArray[size], x0:KSNArray[size], y:KSNArray[size], y0:KSNArray[size], dt:number) : void */
             diffuse2(x:number[], x0:number[], y:number[], y0:number[], dt:number)
             {
                 var a = 0;
                 this.lin_solve2(x, x0, y, y0, a, 1 + 4 * a);
             }
 
-            /* advect : (b:number, d:KSNArray[size], d0:KSNArray[size], u:KSNArray[size], v:KSNArray[size], dt:number) : void */
+            /*@ advect : (b:number, d:KSNArray[size], d0:KSNArray[size], u:KSNArray[size], v:KSNArray[size], dt:number) : void */
             advect(b:number, d:number[], d0:number[], u:number[], v:number[], dt:number)
             {
                 var width = this.width;
@@ -350,7 +353,7 @@ module NavierStokes {
                 this.set_bnd(b, d);
             }
 
-            /* project : (u:KSNArray[size], v:KSNArray[size], p:KSNArray[size], div:KSNArray[size]) : void */
+            /*@ project : (u:KSNArray[size], v:KSNArray[size], p:KSNArray[size], div:KSNArray[size]) : void */
             project(u:number[], v:number[], p:number[], div:number[])
             {
                 var width = this.width;
@@ -393,7 +396,7 @@ module NavierStokes {
                 this.set_bnd(2, v);
             }
 
-            /* dens_step : (x:KSNArray[size], x0:KSNArray[size], u:KSNArray[size], v:KSNArray[size], dt:number) : void */
+            /*@ dens_step : (x:KSNArray[size], x0:KSNArray[size], u:KSNArray[size], v:KSNArray[size], dt:number) : void */
             dens_step(x:number[], x0:number[], u:number[], v:number[], dt:number)
             {
                 this.addFields(x, x0, dt);
@@ -401,7 +404,7 @@ module NavierStokes {
                 this.advect(0, x, x0, u, v, dt );
             }
 
-            /* vel_step : (u:KSNArray[size], v:KSNArray[size], u0:KSNArray[size], v0:KSNArray[size], dt:number) : void */
+            /*@ vel_step : (u:KSNArray[size], v:KSNArray[size], u0:KSNArray[size], v0:KSNArray[size], dt:number) : void */
             vel_step(u:number[], v:number[], u0:number[], v0:number[], dt:number)
             {
                 this.addFields(u, u0, dt );
@@ -420,6 +423,7 @@ module NavierStokes {
                 this.project(u, v, u0, v0 );
             }
 
+            /*@ queryUI : (d:KSNArray[size], u:KSNArray[size], v:KSNArray[size]) : void */
             queryUI(d:number[], u:number[], v:number[])
             {
                 for (var i = 0; i < this.size; i++)
@@ -433,7 +437,7 @@ module NavierStokes {
                 this.queryUI(this.dens_prev, this.u_prev, this.v_prev);
                 this.vel_step(this.u, this.v, this.u_prev, this.v_prev, this.dt);
                 this.dens_step(this.dens, this.dens_prev, this.u, this.v, this.dt);
-                this.displayFunc(new Field(this.rowSize, this.width, this.height, this.dens, this.u, this.v));
+                // this.displayFunc(new Field(this.rowSize, this.width, this.height, this.dens, this.u, this.v));
             }
             // public setDisplayFunction(func:(f:Field) => void) {
             //     this.displayFunc = func;
@@ -441,7 +445,7 @@ module NavierStokes {
             
             /*@ iterations : () : {number | true} */
             public iterations() { return this.iters; }
-            /*@ setIterations : (number) : {void | true} */
+            /*@ setIterations : (this:FluidField<Mutable>, iters:number) : {void | true} */
             public setIterations(iters:number) 
             {
                 if (iters > 0 && iters <= 100)
@@ -470,19 +474,25 @@ module NavierStokes {
     }
 
     export class Field {
+        /*@ rowSize : [Immutable] {v:number | v = w+2} */
         private rowSize;
+        /*@ w : [Immutable] pos */
         private w;
+        /*@ h : [Immutable] pos */
         private h;
+        /*@ dens : [Immutable] KSNArray[(w+2) * (h+2)] */
         private dens;
+        /*@ u    : [Immutable] KSNArray[(w+2) * (h+2)] */
         private u;
+        /*@ v    : [Immutable] KSNArray[(w+2) * (h+2)] */
         private v;
 
-        /*@ new (rowSize:{number | v = w+2}, 
-                 w:      {number | 0 < v}, 
-                 h:      {number | 0 < v}, 
-                 dens:   {IArray<number> | (len v) = (w+2)*(h+2)}, 
-                 u:      {IArray<number> | (len v) = (len dens)}, 
-                 v:      {IArray<number> | (len v) = (len dens)}) => {Field<Immutable> | FieldValid(v)} */
+        /*@ new (rowSize: {v:number | v = w+2}, 
+                 w:       pos, 
+                 h:       pos, 
+                 dens:    KSNArray[(w+2) * (h+2)], 
+                 u:       KSNArray[(w+2) * (h+2)], 
+                 v:       KSNArray[(w+2) * (h+2)]) => void */
         constructor(rowSize:number, w:number, h:number, dens:number[], u:number[], v:number[]) {
             this.rowSize = rowSize;
             this.w = w;
@@ -492,24 +502,24 @@ module NavierStokes {
             this.v = v;
         }
 
-            /*@ setDensity : (x:{nat | v < keyVal(this,"w")}, y:{nat | v < keyVal(this,"h")}, d:number) : void */
+            /*@ setDensity : (x:{v:nat | v < w}, y:{v:nat | v < h}, d:number) : void */
             public setDensity(x:number,y:number,d:number):void {
                 this.dens[(x + 1) + (y + 1) * this.rowSize] = d;
             }
-            /*@ getDensity : (x:{nat | v < keyVal(this,"w")}, y:{nat | v < keyVal(this,"h")}) : number */
+            /*@ getDensity : (x:{v:nat | v < w}, y:{v:nat | v < h}) : number */
             public getDensity(x:number, y:number):number {
                 return this.dens[(x + 1) + (y + 1) * this.rowSize];
             }
-            /*@ setVelocity : (x:{nat | v < keyVal(this,"w")}, y:{nat | v < keyVal(this,"h")}, xv:number, yv:number) : void */
+            /*@ setVelocity : (x:{v:nat | v < w}, y:{v:nat | v < h}, xv:number, yv:number) : void */
             public setVelocity(x:number, y:number, xv:number, yv:number):void {
                 this.u[(x + 1) + (y + 1) * this.rowSize] = xv;
                 this.v[(x + 1) + (y + 1) * this.rowSize] = yv;
             }
-            /*@ getXVelocity : (x:{nat | v < keyVal(this,"w")}, y:{nat | v < keyVal(this,"h")}) : number */
+            /*@ getXVelocity : (x:{v:nat | v < w}, y:{v:nat | v < h}) : number */
             public getXVelocity(x:number, y:number):number {
                 return this.u[(x + 1) + (y + 1) * this.rowSize];
             }
-            /*@ getYVelocity : (x:{nat | v < keyVal(this,"w")}, y:{nat | v < keyVal(this,"h")}) : number */
+            /*@ getYVelocity : (x:{v:nat | v < w}, y:{v:nat | v < h}) : number */
             public getYVelocity(x:number, y:number):number {
                 return this.v[(x + 1) + (y + 1) * this.rowSize];
             }
