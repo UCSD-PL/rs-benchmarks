@@ -4,7 +4,7 @@
 /* Infinity :: {number | v = numeric_positive_infinity} */
 declare var Infinity:number;
 
-/*@ d3_range :: /\ (number, number, {number | v != 0}) => { MArray<number> | true }
+/*@ d3_range :: /\ (number, number, {number | v != 0}) =>   MArray<number>
                 /\ (number, number                   ) => { MArray<number> | true }
                 /\ (number                           ) => { MArray<number> | true } */
 function d3_range(start:number, stop?:number, step?:number): number[] {

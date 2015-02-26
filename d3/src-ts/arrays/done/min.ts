@@ -16,7 +16,7 @@ function d3_min_1<T>(array: T[]) : any {
   var cnt = true;
   while (i < n && cnt) {
     a = array[i];
-    if (!(a != null && a <= a)) { a = undefined; i++; }
+    if (!(a !== null && a <= a)) { a = undefined; i++; }
     else { cnt = false; }
   }
 
@@ -25,7 +25,7 @@ function d3_min_1<T>(array: T[]) : any {
   cnt = true;
   while (i < n) {
     b = array[i];
-    if (!(b != null && a > b)) { a = b; i++; }
+    if (!(b !== null && a > b)) { a = b; i++; }
     else { cnt = false; }
   }
     
@@ -45,7 +45,7 @@ function d3_min_2 <T, U>(array:T[], f:(x:T, i:number) => U) : any {
   //ORIG: while (++i < n && !((a = f.call(array, array[i], i)) != null && a <= a)) a = undefined;
   while (i < n) {
     a = f.call(array, array[i], i);
-    if (!(a != null && a <= a)) a = undefined; 
+    if (!(a !== null && a <= a)) a = undefined; 
     i++;
   }
 
@@ -53,7 +53,7 @@ function d3_min_2 <T, U>(array:T[], f:(x:T, i:number) => U) : any {
   i++;
   while (i < n) {
     b = f.call(array, array[i], i);
-    if (!(b != null && a > b)) a = b;
+    if (!(b !== null && a > b)) a = b;
     i++;
   }
 

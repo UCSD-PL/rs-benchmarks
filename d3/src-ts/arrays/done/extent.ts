@@ -14,7 +14,7 @@ function d3_extent_1<T>(array: T[]): T[]{
 
   while (i < n) { 
       b = array[i];
-      if ( b != null) {
+      if ( b !== null) {
 	  if (a > b) a = b;
 	  if (c < b) c = b;
       }
@@ -34,7 +34,7 @@ function d3_extent_2<T, U>(array: T[], f:(T, number) => U): U[] {
 
   while (i < n) { 
       b = f.call(array, array[i], i);
-      if ( b != null) {
+      if ( b !== null) {
 	  if (a > b) a = b;
 	  if (c < b) c = b;
       }
