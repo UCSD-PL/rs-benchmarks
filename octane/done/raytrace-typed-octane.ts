@@ -161,7 +161,7 @@ module VERSION {
                 var r = Math.floor(this.red * 255);
                 var g = Math.floor(this.green * 255);
                 var b = Math.floor(this.blue * 255);
-                return (r * 77 + g * 150 + b * 29) >> 8;
+                return (r * 77 + g * 150 + b * 29) / 256 //ORIG: >> 8;
             }
 
             /* toString : () : {string | true} */
@@ -725,6 +725,7 @@ module VERSION {
             /*@ testIntersection : (ray:Ray<ReadOnly>, scene:Scene<ReadOnly>, exclude:Shape<ReadOnly>?) : {IntersectionInfo<Mutable> | true} */
             public testIntersection(ray:Ray, scene:Scene, exclude?:Shape) : IntersectionInfo {
                 var hits = 0;
+                /*@ best :: IntersectionInfo<Mutable> */
                 var best = new IntersectionInfo(false, 0, null, null, null, null, null);
                 best.distance = 2000;
 
@@ -732,7 +733,7 @@ module VERSION {
                 for (var i = 0; i < sceneShapes.length; i++) {
                     var shape = sceneShapes[i];
 
-                    if (shape != exclude) {
+                    if (shape !== exclude) {
                         var info = shape.intersect(ray);
                         if (info.isHit && info.distance >= 0 && info.distance < best.distance) {
                             best = info;
@@ -830,7 +831,7 @@ module VERSION {
                         var shadowRay = new Ray(infoPosition, v);
 
                         shadowInfo = this.testIntersection(shadowRay, scene, infoShape);
-                        if (shadowInfo.isHit && shadowInfo.shape != infoShape /*&& shadowInfo.shape.type != 'PLANE'*/) {
+                        if (shadowInfo.isHit && shadowInfo.shape !== infoShape /*&& shadowInfo.shape.type != 'PLANE'*/) {
                             var vA = Color.multiplyScalar(color, 1/2);
                             var shadowInfoShape = shadowInfo.shape;
                             if (!shadowInfoShape) throw new Error('This should probably never happen');
