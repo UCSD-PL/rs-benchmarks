@@ -37,9 +37,9 @@
 module SplayVERSION {
 
     // Configuration.
-    var kSplayTreeSize = 8000;
-    var kSplayTreeModifications = 80;
-    var kSplayTreePayloadDepth = 5;
+    var kSplayTreeSize /*@ readonly */ = 8000;
+    var kSplayTreeModifications /*@ readonly */ = 80;
+    var kSplayTreePayloadDepth /*@ readonly */ = 5;
 
     /*@ splayTree :: SplayTree<Mutable> + null */
     var splayTree:SplayTree = null;
@@ -69,7 +69,7 @@ module SplayVERSION {
         if (!tree) throw new Error('splayTree is null! did you forget to call SplaySetup?');
         // Insert new node with a unique key.
         var key = GenerateKey();
-        while (tree.find(key) != null) {
+        while (tree.find(key) !== null) {
             key = GenerateKey();
         }
         var payload = GeneratePayloadTree(kSplayTreePayloadDepth, String(key));
@@ -96,7 +96,7 @@ module SplayVERSION {
 
         // Verify that the splay tree has the right size.
         var length = keys.length;
-        if (length != kSplayTreeSize) {
+        if (length !== kSplayTreeSize) {
             throw new Error("Splay tree has wrong size");
         }
 
@@ -182,11 +182,11 @@ module SplayVERSION {
             if (key > root.key) {
                 node.left = root;
                 node.right = root.right;
-                root.right = null;
+                (<SplayTreeNode>root).right = null;
             } else {
                 node.right = root;
                 node.left = root.left;
-                root.left = null;
+                (<SplayTreeNode>root).left = null;
             }
             this.root_ = node;
         }
@@ -209,7 +209,7 @@ module SplayVERSION {
             this.splay_(key);
             root = this.root_;
             if (!root) throw new Error('This check should never fail'); 
-            if (root.key != key) {
+            if (root.key !== key) {
                 throw new Error('Key not found: ' + key);
             }
             var removed = root;
@@ -224,7 +224,7 @@ module SplayVERSION {
                 // root.
                 root = this.root_;
                 if (!root) throw new Error('This check should never fail'); 
-                root.right = right;
+                (<SplayTreeNode>root).right = right;
             }
             return removed;
         }
@@ -336,6 +336,7 @@ module SplayVERSION {
             // and right will always be nodes and we avoid special cases.
             var dummy:SplayTreeNode=new SplayTreeNode(-1, null);
             var left:SplayTreeNode=dummy;
+            /*@ right :: SplayTreeNode<Mutable> */
             var right:SplayTreeNode=dummy;
 //            dummy = left = right = new SplayTreeNode(null, null);
             var current = <SplayTreeNode>root;
