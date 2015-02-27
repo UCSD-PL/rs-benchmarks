@@ -152,7 +152,7 @@ function complement(f) {
 }
 
 class Wrap<IN, OUT> implements Transformer<IN, OUT, OUT> {
-    /*@ stepFn : (x:OUT, y:IN)=>QQ<Mutable, OUT> */
+    /*@ stepFn : (OUT, IN)=>QQ<Mutable, OUT> */
     public stepFn: (result:OUT, input:IN)=>QQ<OUT>;
     /*@ new(stepFn:(result:OUT, input:IN)=>QQ<Mutable, OUT>) => {void | true} */
     constructor(stepFn:(result:OUT, input:IN)=>QQ<OUT>) {
@@ -186,7 +186,7 @@ class Wrap<IN, OUT> implements Transformer<IN, OUT, OUT> {
  */
 /*@ wrap :: /\ forall IN OUT . (stepFn: (result:OUT, input:IN)=>OUT) => {Wrap<Immutable, IN, OUT> | true}
             /\ forall IN T OUT . (stepFn: ITransformer<IN, T, OUT>) => {ITransformer<IN, T, OUT> | true} */
-function wrap<IN, OUT>(stepFn:any):any {
+function wrap<IN, OUT>(stepFn:any) {
     if(typeof stepFn === "function") {
         return generalWrap(addQQ0(stepFn));
     } else {
@@ -194,17 +194,17 @@ function wrap<IN, OUT>(stepFn:any):any {
     }
 }
 
-/*@ addQQ0 :: forall M T U . (stepFn:(t:T, u:U)=>T) => {(t:T, u:U)=>QQ<M,T> | true} */
-function addQQ0<T, U>(stepFn:(t:T, u:U)=>T):(t:T, u:U)=>QQ<T> {
+/*@ addQQ0 :: forall M T U . (stepFn:(T,U)=>T) => {(T,U)=>QQ<M,T> | true} */
+function addQQ0<T, U>(stepFn:(T,U)=>T):(T,U)=>QQ<T> {
     var ff /*@ readonly */ = stepFn;
     return function(t:T, u:U) 
-    /*@ <anonymous> (t:T, u:U)=>QQ<M,T> */
+    /*@ <anonymous> (T,U)=>QQ<M,T> */
     { return new QQ(ff(t,u), 0) };
 }
 
 /*@ generalWrap :: /\ forall IN OUT . (stepFn: (result:OUT, input:IN)=>QQ<Mutable, OUT>) => {Wrap<Immutable, IN, OUT> | true}
                    /\ forall IN T OUT . (stepFn: ITransformer<IN, T, OUT>) => {ITransformer<IN, T, OUT> | true} */
-function generalWrap(stepFn:any):any {
+function generalWrap(stepFn:any) {
     if(typeof stepFn === "function") {
         return new Wrap(stepFn);
     } else {
@@ -311,10 +311,10 @@ function binaryComp(f, g) {
 }
 
 class Map<IN, INTER, OUT, T> implements Transformer<IN, INTER, OUT> {
-    public f: (x: IN) => T;
+    public f: (z:IN) => T;
     public xf: Transformer<T, INTER, OUT>;
-    /*@ new(f:(x: IN) => T, xf:ITransformer<T, INTER, OUT>) => {void | true} */
-    constructor(f:(x: IN) => T, xf:Transformer<T, INTER, OUT>) {
+    /*@ new(f:(IN) => T, xf:ITransformer<T, INTER, OUT>) => {void | true} */
+    constructor(f:(z:IN) => T, xf:Transformer<T, INTER, OUT>) {
         this.f = f;
         this.xf = xf;
     }
@@ -344,8 +344,8 @@ class Map<IN, INTER, OUT, T> implements Transformer<IN, INTER, OUT> {
  *     var xf = t.map(inc);
  *     t.into([], xf, [1,2,3]); // [2,3,4]
  */
-/*@ map :: forall IN INTER OUT T . (f: (z:IN)=>T) => {(xf: ITransformer<T, INTER, OUT>) => Map<Immutable, IN, INTER, OUT, T> | true} */
-function map<IN, INTER, OUT, T>(f: (z:IN)=>T): (xf: Transformer<T, INTER, OUT>) => Map<IN, INTER, OUT, T> {
+/*@ map :: forall IN INTER OUT T . (f: (IN)=>T) => {(xf: ITransformer<T, INTER, OUT>) => Map<Immutable, IN, INTER, OUT, T> | true} */
+function map<IN, INTER, OUT, T>(f: (IN)=>T): (xf: Transformer<T, INTER, OUT>) => Map<IN, INTER, OUT, T> {
     var ff /*@ readonly */ = f;
     if(TRANSDUCERS_DEV && (f === null)) {
         throw new Error("At least one argument must be supplied to map");
@@ -359,7 +359,7 @@ function map<IN, INTER, OUT, T>(f: (z:IN)=>T): (xf: Transformer<T, INTER, OUT>) 
 class Filter<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
     public pred: (z:IN) => boolean;
     public xf: Transformer<IN, INTER, OUT>;
-    /*@ new(pred:(z:IN) => boolean, xf:ITransformer<IN, INTER, OUT>) => {void | true} */
+    /*@ new(pred:(IN) => boolean, xf:ITransformer<IN, INTER, OUT>) => {void | true} */
     constructor(pred: (z:IN) => boolean, xf: Transformer<IN, INTER, OUT>) {
         this.pred = pred;
         this.xf = xf;
@@ -394,8 +394,8 @@ class Filter<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
  *     var xf = t.filter(isEven);
  *     t.into([], xf, [0,1,2,3,4]); // [0,2,4];
  */
-/*@ filter :: forall IN INTER OUT . (pred: (z:IN)=>boolean) => {(xf: ITransformer<IN, INTER, OUT>) => Filter<Immutable, IN, INTER, OUT> | true} */
-function filter<IN, INTER, OUT>(pred: (z:IN)=>boolean): (xf: Transformer<IN, INTER, OUT>) => Filter<IN, INTER, OUT> {
+/*@ filter :: forall IN INTER OUT . (pred: (IN)=>boolean) => {(xf: ITransformer<IN, INTER, OUT>) => Filter<Immutable, IN, INTER, OUT> | true} */
+function filter<IN, INTER, OUT>(pred: (IN)=>boolean): (xf: Transformer<IN, INTER, OUT>) => Filter<IN, INTER, OUT> {
     var ff /*@ readonly */ = pred;
     if(TRANSDUCERS_DEV && (typeof pred !== "function")) {
         throw new Error("filter must be given a function");
@@ -418,8 +418,8 @@ function filter<IN, INTER, OUT>(pred: (z:IN)=>boolean): (xf: Transformer<IN, INT
  *     var xf = t.remove(isEven);
  *     t.into([], xf, [0,1,2,3,4]); // [1,3];
  */
-/*@ remove :: forall IN INTER OUT . (pred: (z:IN)=>boolean) => {(xf: ITransformer<IN, INTER, OUT>) => Filter<Immutable, IN, INTER, OUT> | true} */
-function remove<IN, INTER, OUT>(pred: (z:IN)=>boolean): (xf: Transformer<IN, INTER, OUT>) => Filter<IN, INTER, OUT> {
+/*@ remove :: forall IN INTER OUT . (pred: (IN)=>boolean) => {(xf: ITransformer<IN, INTER, OUT>) => Filter<Immutable, IN, INTER, OUT> | true} */
+function remove<IN, INTER, OUT>(pred: (IN)=>boolean): (xf: Transformer<IN, INTER, OUT>) => Filter<IN, INTER, OUT> {
     if(TRANSDUCERS_DEV && (typeof pred !== "function")) {
         throw new Error("remove must be given a function");
     } else {
@@ -519,8 +519,8 @@ class TakeWhile<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
  *     var xf = t.takeWhile(function(n) { return n < 3; });
  *     t.into([], xf, [0,1,2,3,4,5]); // [0,1,2];
  */
-/*@ takeWhile :: forall IN INTER OUT . (pred: (z:IN)=>boolean) => {(xf: ITransformer<IN, INTER, OUT>) => TakeWhile<Immutable, IN, INTER, OUT> | true} */
-function takeWhile<IN, INTER, OUT>(pred: (z:IN)=>boolean): (xf: Transformer<IN, INTER, OUT>) => TakeWhile<IN, INTER, OUT> {
+/*@ takeWhile :: forall IN INTER OUT . (pred: (IN)=>boolean) => {(xf: ITransformer<IN, INTER, OUT>) => TakeWhile<Immutable, IN, INTER, OUT> | true} */
+function takeWhile<IN, INTER, OUT>(pred: (IN)=>boolean): (xf: Transformer<IN, INTER, OUT>) => TakeWhile<IN, INTER, OUT> {
     var ff /*@ readonly */ = pred;
     if(TRANSDUCERS_DEV && (typeof pred !== "function")) {
         throw new Error("takeWhile must given a function");
@@ -680,8 +680,8 @@ class DropWhile<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
  *     var xf = t.dropWhile(function(n) { return n < 3; });
  *     t.into([], xf, [0,1,2,3,4,5]); // [3,4,5];
  */
-/*@ dropWhile :: forall IN INTER OUT . (pred: (z:IN)=>boolean) => {(xf: ITransformer<IN, INTER, OUT>) => DropWhile<Immutable, IN, INTER, OUT> | true} */
-function dropWhile<IN, INTER, OUT>(pred: (z:IN)=>boolean): (xf: Transformer<IN, INTER, OUT>) => DropWhile<IN, INTER, OUT> {
+/*@ dropWhile :: forall IN INTER OUT . (pred: (IN)=>boolean) => {(xf: ITransformer<IN, INTER, OUT>) => DropWhile<Immutable, IN, INTER, OUT> | true} */
+function dropWhile<IN, INTER, OUT>(pred: (IN)=>boolean): (xf: Transformer<IN, INTER, OUT>) => DropWhile<IN, INTER, OUT> {
     var ff /*@ readonly */ = pred;
     if(TRANSDUCERS_DEV && (typeof pred !== "function")) {
         throw new Error("dropWhile must be given a function");
@@ -701,7 +701,7 @@ class PartitionBy<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
     public a: Array<IN>;
     /*@ pval : top */
     public pval: any;
-    /*@ new(f:(z:IN) => top, xf:ITransformer<MArray<IN>, INTER, OUT>) => {void | true} */
+    /*@ new(f:(IN) => top, xf:ITransformer<MArray<IN>, INTER, OUT>) => {void | true} */
     constructor(f: (z:IN) => any, xf: Transformer<Array<IN>, INTER, OUT>) {
         this.f = f;
         this.xf = xf;
@@ -760,8 +760,8 @@ class PartitionBy<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
  *     var xf = t.partitionBy(function(x) { return typeof x == "string"; });
  *     t.into([], xf, [0,1,"foo","bar",2,3,"bar","baz"]); // [[0,1],["foo","bar"],[2,3],["bar","baz"]];
  */
-/*@ partitionBy :: forall IN INTER OUT . (f: (z:IN)=>top) => {(xf: ITransformer<MArray<IN>, INTER, OUT>) => PartitionBy<Immutable, IN, INTER, OUT> | true} */
-function partitionBy<IN, INTER, OUT>(f: (z:IN)=>any): (xf: Transformer<Array<IN>, INTER, OUT>) => PartitionBy<IN, INTER, OUT> {
+/*@ partitionBy :: forall IN INTER OUT . (f: (IN)=>top) => {(xf: ITransformer<MArray<IN>, INTER, OUT>) => PartitionBy<Immutable, IN, INTER, OUT> | true} */
+function partitionBy<IN, INTER, OUT>(f: (IN)=>any): (xf: Transformer<Array<IN>, INTER, OUT>) => PartitionBy<IN, INTER, OUT> {
     var ff /*@ readonly */ = f;
     if(TRANSDUCERS_DEV && (typeof f !== "function")) {
         throw new Error("partitionBy must be given an function");
@@ -836,7 +836,7 @@ function partitionAll<IN, INTER, OUT>(n:number): (xf: Transformer<Array<IN>, INT
 class Keep<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
     public f: (z:IN) => any;
     public xf: Transformer<IN, INTER, OUT>;
-    /*@ new(f:(z:IN) => top, xf:ITransformer<IN, INTER, OUT>) => {void | true} */
+    /*@ new(f:(IN) => top, xf:ITransformer<IN, INTER, OUT>) => {void | true} */
     constructor(f: (z:IN) => any, xf: Transformer<IN, INTER, OUT>) {
         this.f = f;
         this.xf = xf;
@@ -872,8 +872,8 @@ class Keep<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
  *     var xf = t.keep(function(x) { if(typeof x == "string") return "cool"; });
  *     t.into([], xf, [0,1,"foo",3,4,"bar"]); // ["foo","bar"]
  */
-/*@ keep :: forall IN INTER OUT . (f: (z:IN)=>top) => {(xf: ITransformer<IN, INTER, OUT>) => Keep<Immutable, IN, INTER, OUT> | true} */
-function keep<IN, INTER, OUT>(f: (z:IN)=>any): (xf: Transformer<IN, INTER, OUT>) => Keep<IN, INTER, OUT> {
+/*@ keep :: forall IN INTER OUT . (f: (IN)=>top) => {(xf: ITransformer<IN, INTER, OUT>) => Keep<Immutable, IN, INTER, OUT> | true} */
+function keep<IN, INTER, OUT>(f: (IN)=>any): (xf: Transformer<IN, INTER, OUT>) => Keep<IN, INTER, OUT> {
     var ff /*@ readonly */ = f;
     if(TRANSDUCERS_DEV && (typeof f !== "function")) {
         throw new Error("keep must be given a function");
@@ -1070,14 +1070,14 @@ function arrayReduce<IN, INTER, OUT>(xf:Transformer<IN, INTER, OUT>, init:INTER,
     return xf.result(wrappedAcc);
 }
 
-/*@ objectReduce :: forall INTER OUT . (xf:ITransformer<{0:string; 1:top}, INTER, OUT>, init:INTER, ob:{ }) => {OUT | true} */
+/*@ objectReduce :: forall M INTER OUT . (xf:ITransformer<Pair<M,string,top>, INTER, OUT>, init:INTER, ob:{ }) => {OUT | true} */
 function objectReduce<INTER, OUT>(xf:Transformer<{}, INTER, OUT>, init:INTER, ob:{[key:string]:any}) {
     var acc = init;
     var wrappedAcc = new QQ(acc, 0);
     var shouldBreak = false;
     for(var p in ob) {
         if(!shouldBreak && ob.hasOwnProperty(p)) {
-            wrappedAcc = xf.step(acc, {0:p, 1:ob[p]});
+            wrappedAcc = xf.step(acc, {x:p, y:ob[p]}); //ORIG: [p, obj[p]]);
             if (isReduced(wrappedAcc)) {
                 wrappedAcc.__transducers_reduced__--;
                 shouldBreak = true;
@@ -1163,19 +1163,18 @@ function reduce(xf:any, init:any, coll:any):any {
  *     var xf = t.comp(t.map(inc),t.filter(isEven));
  *     t.transduce(xf, apush, [], [1,2,3,4]); // [2,4]
  */
-/*@ transduce :: /\ forall IN0 INTER0 OUT0 IN1 INTER1 OUT1 . (xf: (y:ITransformer<IN0, INTER0, OUT0>)=>ITransformer<IN1,    INTER1, OUT1>, f: ITransformer<IN0, INTER0, OUT0>, init:INTER1, coll:IArray<IN1>) => {OUT1 | true}
-                 /\ forall IN0 INTER0 OUT0     INTER1 OUT1 . (xf: (y:ITransformer<IN0, INTER0, OUT0>)=>ITransformer<string, INTER1, OUT1>, f: ITransformer<IN0, INTER0, OUT0>, init:INTER1, coll:string)      => {OUT1 | true}
-                 /\ forall IN0        OUT0 IN1 INTER1 OUT1 . (xf: (y:ITransformer<IN0, OUT0,   OUT0>)=>ITransformer<IN1,    INTER1, OUT1>, f: (result:OUT0, input:IN0)=>OUT0,  init:INTER1, coll:IArray<IN1>) => {OUT1 | true}
-                 /\ forall IN0        OUT0     INTER1 OUT1 . (xf: (y:ITransformer<IN0, OUT0,   OUT0>)=>ITransformer<string, INTER1, OUT1>, f: (result:OUT0, input:IN0)=>OUT0,  init:INTER1, coll:string)      => {OUT1 | true} */
+/*@ transduce :: /\ forall IN0 INTER0 OUT0 IN1 INTER1 OUT1 . (xf: (ITransformer<IN0, INTER0, OUT0>)=>ITransformer<IN1,    INTER1, OUT1>, f: ITransformer<IN0, INTER0, OUT0>, init:INTER1, coll:IArray<IN1>) => {OUT1 | true}
+                 /\ forall IN0 INTER0 OUT0     INTER1 OUT1 . (xf: (ITransformer<IN0, INTER0, OUT0>)=>ITransformer<string, INTER1, OUT1>, f: ITransformer<IN0, INTER0, OUT0>, init:INTER1, coll:string)      => {OUT1 | true}
+                 /\ forall IN0        OUT0 IN1 INTER1 OUT1 . (xf: (ITransformer<IN0, OUT0,   OUT0>)=>ITransformer<IN1,    INTER1, OUT1>, f: (result:OUT0, input:IN0)=>OUT0,  init:INTER1, coll:IArray<IN1>) => {OUT1 | true}
+                 /\ forall IN0        OUT0     INTER1 OUT1 . (xf: (ITransformer<IN0, OUT0,   OUT0>)=>ITransformer<string, INTER1, OUT1>, f: (result:OUT0, input:IN0)=>OUT0,  init:INTER1, coll:string)      => {OUT1 | true} */
 function transduce(xf:any, f:any, init:any, coll:any) {
     f = typeof f === "function" ? wrap(f) : f;
     xf = xf(f);
     return reduce(xf, init, coll);
 }
 
-/*@ stringAppend :: /\ (string, string)  => {string | true}
-                    /\ (string, number)  => {string | true}
-                    /\ (string, boolean) => {string | true} */
+// TODO: should be (string, string + number + boolean) => string
+/*@ stringAppend :: (string, string) => {string | true} */
 function stringAppend(s, x) {
     return s + x;
 }
@@ -1186,10 +1185,10 @@ function arrayPush<T>(arr:T[], x:T) {
     return arr;
 }
 
-/*@ addEntry :: forall T . (ob: [Mutable] { [x:string]: T }, entry: { 0: string; 1: T })
-             => { [Mutable] {[x: string]: T} | true } */
+/*@ addEntry :: forall M T . (ob: [Mutable] {[s:string]:T}, entry: Pair<M,string,T>)
+             => { [Mutable] {[s:string]:T} | true } */
 function addEntry(ob, entry) {
-    ob[entry[0]] = entry[1];
+    ob[entry.x] = entry.y; //ORIG: ob[entry[0]] = entry[1];
     return ob;
 }
 
@@ -1209,10 +1208,11 @@ function addEntry(ob, entry) {
  *     var xf = t.comp(t.map(inc),t.filter(isEven));
  *     t.into([], xf, [1,2,3,4]); // [2,4]
  */
-/*@ into :: /\ forall       OUT1 . (empty: string,    xf: (y:ITransformer<string + number + boolean, string, string>)=>ITransformer<string, string,    OUT1>, coll: string)      => {OUT1 | true}
-            /\ forall   IN1 OUT1 . (empty: string,    xf: (y:ITransformer<string + number + boolean, string, string>)=>ITransformer<IN1,    string,    OUT1>, coll: IArray<IN1>) => {OUT1 | true}
-            /\ forall T     OUT1 . (empty: MArray<T>, xf: (y:ITransformer<T, MArray<T>, MArray<T>>)                  =>ITransformer<string, MArray<T>, OUT1>, coll: string)      => {OUT1 | true}
-            /\ forall T IN1 OUT1 . (empty: MArray<T>, xf: (y:ITransformer<T, MArray<T>, MArray<T>>)                  =>ITransformer<IN1,    MArray<T>, OUT1>, coll: IArray<IN1>) => {OUT1 | true} */
+//TODO: when empty is a string, xf should actually be (ITransformer<string + number + boolean, string, string>) =>...
+/*@ into :: /\ forall       OUT1 . (empty: string,    xf: (ITransformer<string, string, string>) =>ITransformer<string, string,    OUT1>, coll: string)      => {OUT1 | true}
+            /\ forall   IN1 OUT1 . (empty: string,    xf: (ITransformer<string, string, string>) =>ITransformer<IN1,    string,    OUT1>, coll: IArray<IN1>) => {OUT1 | true}
+            /\ forall T     OUT1 . (empty: MArray<T>, xf: (ITransformer<T, MArray<T>, MArray<T>>)=>ITransformer<string, MArray<T>, OUT1>, coll: string)      => {OUT1 | true}
+            /\ forall T IN1 OUT1 . (empty: MArray<T>, xf: (ITransformer<T, MArray<T>, MArray<T>>)=>ITransformer<IN1,    MArray<T>, OUT1>, coll: IArray<IN1>) => {OUT1 | true} */
 function into(empty, xf, coll) {
     if(isString(empty)) {
         return transduce(xf, stringAppend, empty, coll);
@@ -1258,10 +1258,10 @@ class Completing<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
  * @return {Transducer} a transducer
  */
 // TODO: the ITransformers in this signature could be TruncatedTransformers instead...
-/*@ completing :: /\ forall IN INTER OUT M T . (xf: ITransformer<IN, INTER, T>,      cf: (z:QQ<Mutable,INTER>) => OUT) => {Completing<M, IN, INTER, OUT               > | true}
-                  /\ forall IN INTER OUT M   . (xf: (result:INTER, input:IN)=>INTER, cf: (z:QQ<Mutable,INTER>) => OUT) => {Completing<M, IN, INTER, OUT               > | true}
-                  /\ forall IN INTER OUT M T . (xf: ITransformer<IN, INTER, T>,      cf: null                        ) => {Completing<M, IN, INTER, QQ<Mutable, INTER>> | true}
-                  /\ forall IN INTER OUT M   . (xf: (result:INTER, input:IN)=>INTER, cf: null                        ) => {Completing<M, IN, INTER, QQ<Mutable, INTER>> | true} */
+/*@ completing :: /\ forall IN INTER OUT M T . (xf: ITransformer<IN, INTER, T>,      cf: (QQ<Mutable,INTER>) => OUT) => {Completing<M, IN, INTER, OUT               > | true}
+                  /\ forall IN INTER OUT M   . (xf: (result:INTER, input:IN)=>INTER, cf: (QQ<Mutable,INTER>) => OUT) => {Completing<M, IN, INTER, OUT               > | true}
+                  /\ forall IN INTER OUT M T . (xf: ITransformer<IN, INTER, T>,      cf: null                      ) => {Completing<M, IN, INTER, QQ<Mutable, INTER>> | true}
+                  /\ forall IN INTER OUT M   . (xf: (result:INTER, input:IN)=>INTER, cf: null                      ) => {Completing<M, IN, INTER, QQ<Mutable, INTER>> | true} */
 function completing<IN, INTER, OUT>(xf: any, cf: (z:QQ<INTER>) => OUT):any {
     var wxf:TruncatedTransformer<IN, INTER> = typeof xf === "function" ? wrap(xf) : xf;
     if(TRANSDUCERS_DEV && (wxf !== null) && !isObject(wxf)) {
@@ -1289,8 +1289,8 @@ function completing<IN, INTER, OUT>(xf: any, cf: (z:QQ<INTER>) => OUT):any {
  *     var xf = t.comp(t.map(inc),t.filter(isEven));
  *     arr.reduce(t.toFn(xf, apush), []); // [2,4,6]
  */
-/*@ toFn :: /\ forall IN0 INTER0 OUT0 IN1 INTER1 OUT1 . (xf: (y:ITransformer<IN0, INTER0, OUT0>)=>ITransformer<IN1, INTER1, OUT1>, builder: ITransformer<IN0, INTER0, OUT0>) => {(result:INTER1, input:IN1) => QQ<Mutable, INTER1> | true}
-            /\ forall IN0        OUT0 IN1 INTER1 OUT1 . (xf: (y:ITransformer<IN0, OUT0,   OUT0>)=>ITransformer<IN1, INTER1, OUT1>, builder: (result:OUT0, input:IN0)=>OUT0)  => {(result:INTER1, input:IN1) => QQ<Mutable, INTER1> | true} */
+/*@ toFn :: /\ forall IN0 INTER0 OUT0 IN1 INTER1 OUT1 . (xf: (ITransformer<IN0, INTER0, OUT0>)=>ITransformer<IN1, INTER1, OUT1>, builder: ITransformer<IN0, INTER0, OUT0>) => {(result:INTER1, input:IN1) => QQ<Mutable, INTER1> | true}
+            /\ forall IN0        OUT0 IN1 INTER1 OUT1 . (xf: (ITransformer<IN0, OUT0,   OUT0>)=>ITransformer<IN1, INTER1, OUT1>, builder: (result:OUT0, input:IN0)=>OUT0)  => {(result:INTER1, input:IN1) => QQ<Mutable, INTER1> | true} */
 function toFn<IN, INTER, OUT>(xf, builder) {
     if(typeof builder === "function") {
         return xf(wrap(builder)).step;//TODO: see below
