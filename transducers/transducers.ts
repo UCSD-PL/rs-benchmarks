@@ -23,7 +23,7 @@ module com {
 module cognitect {
 module transducers {
 
-/*@ predicate Inst(X, Key, Type) = ((Prop (keyVal(X, Key))) => instanceof (X, Type)) */
+/*@ predicate Inst(X, Key, Type) = (hasProperty(Key, X) => instanceof (X, Type)) */
 
 /*@ predicate InstIterator(V) = Inst(V,"next","Iterator") */
 /*@ predicate InstIterable(V) = Inst(V,"ATATiterator","Iterable") */
