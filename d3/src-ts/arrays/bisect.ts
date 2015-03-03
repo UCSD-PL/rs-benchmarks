@@ -74,13 +74,13 @@ function d3_bisector<T>(comp: (data: T, index: T) => number): Id3_bisector<T> {
 	};
 }
 
-// var d3_bisect = d3_bisector(d3.ascending);
+// var d3_bisect = d3_bisector(d3_ascending);
 // d3.bisectLeft = d3_bisect.left;
 // d3.bisectRight = d3_bisect.right;
 // d3.bisect = d3_bisect.right;
 
 // d3.bisector = function (f: (data: any, index?: number) => any): any {
 // 	return d3_bisector(f.length === 1
-// 		? function (d, x) { return d3.ascending(f(d), x); }
+// 		? function (d, x) { return d3_ascending(f(d), x); }
 // 		: f);
 // };
