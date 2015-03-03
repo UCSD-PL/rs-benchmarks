@@ -1,7 +1,7 @@
 /// <reference path="../../../d3.d.ts" />
 /// <reference path="../../math/number.ts" />
 
-d3.median = function(array0 : any, f?: any): any 
+d3.median = function(array0, f?) 
 /*@ <anonymous> /\ forall T. (array : IArray<T>, f: (T) => number) => {number + undefined | true}
                 /\           (array : IArray<number>)              => {number + undefined | true} 
  */

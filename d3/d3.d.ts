@@ -218,33 +218,33 @@ declare module D3 {
         */
         /*@ quantile : (arr: {IArray<number> | 0 < len v}, p: {number | 0 <= v && v < 1}) => number */
         quantile: (arr: number[], p: number) => number;
-//        /**
-//        * Locate the insertion point for x in array to maintain sorted order
-//        *
-//        * @param arr Array to search
-//        * @param x Value to search for insertion point
-//        * @param low Minimum value of array subset
-//        * @param hihg Maximum value of array subset
-//        */
-//        bisect<T>(arr: T[], x: T, low?: number, high?: number): number;
-//        /**
-//        * Locate the insertion point for x in array to maintain sorted order
-//        *
-//        * @param arr Array to search
-//        * @param x Value to serch for insertion point
-//        * @param low Minimum value of array subset
-//        * @param high Maximum value of array subset
-//        */
-//        bisectLeft<T>(arr: T[], x: T, low?: number, high?: number): number;
-//        /**
-//        * Locate the insertion point for x in array to maintain sorted order
-//        *
-//        * @param arr Array to search
-//        * @param x Value to serch for insertion point
-//        * @param low Minimum value of array subset
-//        * @param high Maximum value of array subset
-//        */
-//        bisectRight<T>(arr: T[], x: T, low?: number, high?: number): number;
+        /**
+        * Locate the insertion point for x in array to maintain sorted order
+        *
+        * @param arr Array to search
+        * @param x Value to search for insertion point
+        * @param low Minimum value of array subset
+        * @param hihg Maximum value of array subset
+        */
+        bisect<T>(arr: T[], x: T, low?: number, high?: number): number;
+        /**
+        * Locate the insertion point for x in array to maintain sorted order
+        *
+        * @param arr Array to search
+        * @param x Value to serch for insertion point
+        * @param low Minimum value of array subset
+        * @param high Maximum value of array subset
+        */
+        bisectLeft<T>(arr: T[], x: T, low?: number, high?: number): number;
+        /**
+        * Locate the insertion point for x in array to maintain sorted order
+        *
+        * @param arr Array to search
+        * @param x Value to serch for insertion point
+        * @param low Minimum value of array subset
+        * @param high Maximum value of array subset
+        */
+        bisectRight<T>(arr: T[], x: T, low?: number, high?: number): number;
 //        /**
 //        * Bisect using an accessor.
 //        *
