@@ -425,14 +425,14 @@ module SplayVERSION {
          * @type {SplayTree.Node}
          */
         /*@ left : SplayTreeNode<Mutable> + null */
-        public left = null;
+        public left : SplayTreeNode = null;
 
 
         /**
          * @type {SplayTree.Node}
          */
         /*@ right : SplayTreeNode<Mutable> + null */
-        public right = null;
+        public right : SplayTreeNode = null;
 
 
         /**
@@ -443,7 +443,7 @@ module SplayVERSION {
          * @private
          */
         /*@ traverse_ : (this: SplayTreeNode<Mutable>, f: (arg:SplayTreeNode<Mutable>) => top) : {void | true} */
-        public traverse_(f) {
+        public traverse_(f : (arg:SplayTreeNode) => any) {
             var left = this.left;
             if (left) left.traverse_(f);
             f(this);
