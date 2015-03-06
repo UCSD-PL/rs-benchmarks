@@ -44,6 +44,7 @@ module SplayVERSION {
     /*@ splayTree :: SplayTree<Mutable> + null */
     var splayTree:SplayTree = null;
 
+
     function GeneratePayloadTree(depth:number, tag:string) {
         if (depth === 0) {
             return <any>{
@@ -58,11 +59,13 @@ module SplayVERSION {
         }
     }
 
+
     function GenerateKey() {
         // The benchmark framework guarantees that Math.random is
         // deterministic; see base.js.
         return Math.random();
     }
+
 
     function InsertNewNode() {
         var tree = splayTree;
@@ -78,11 +81,13 @@ module SplayVERSION {
     }
 
 
+
     /*@ SplaySetup :: () => {void | true} */
     export function SplaySetup() {
         splayTree = new SplayTree();
         for (var i = 0; i < kSplayTreeSize; i++) InsertNewNode();
     }
+
 
     /*@ SplayTearDown :: () => {void | true} */
     export function SplayTearDown() {
@@ -107,6 +112,7 @@ module SplayVERSION {
             }
         }
     }
+
 
     /*@ SplayRun :: () => {void | true} */
     export function SplayRun() {
