@@ -131,10 +131,12 @@ module NavierStokes {
         private iters:number;
         private visc:number;
         private dt:number;
-        // private displayFunc: (f:Field) => void;
+        private displayFunc: (f:Field) => void;
 
-        // /*@ uiCallback : (field:Field) => void */
-        // private uiCallback = function(field:Field) {};
+        /*@ uiCallback : (Field<Mutable>) => void */
+        private uiCallback = function(field:Field) 
+            /*@ <anonymous> (Field<Mutable>)=>void */ 
+            {};
 
         /*@ new (canvas:top, hRes:pos, wRes:pos) => {void | true} */
         constructor(canvas, hRes, wRes) {
@@ -172,10 +174,9 @@ module NavierStokes {
             this.visc = 1/2;//.
             this.dt = 1/10;//.
 
-            // @ displayFunc :: null + (f:Field<Immutable>) => void 
-            // this.displayFunc = null;
-
-            
+            this.displayFunc = function(f:Field) 
+                /*@ <anonymous> (Field<Immutable>)=>void */ 
+                {}; //ORIG: null
         }
 
             /*@ addFields : (x:{v:IArray<number> | (len v) = this.size}, s:{v:IArray<number> | (len v) = this.size}, dt:number) : void */
@@ -447,11 +448,12 @@ module NavierStokes {
                 this.queryUI(this.dens_prev, this.u_prev, this.ww_prev);
                 this.vel_step(this.u, this.ww, this.u_prev, this.ww_prev, this.dt);
                 this.dens_step(this.dens, this.dens_prev, this.u, this.ww, this.dt);
-                // this.displayFunc(new Field(this.rowSize, this.width, this.height, this.dens, this.u, this.v));
+                this.displayFunc(new Field(this.rowSize, this.width, this.height, this.dens, this.u, this.ww));
             }
-            // public setDisplayFunction(func:(f:Field) => void) {
-            //     this.displayFunc = func;
-            // }
+            /*@ setDisplayFunction : (this:FluidField<Mutable>, (Field<Immutable>)=>void) : {void | true} */
+            public setDisplayFunction(f:(f:Field) => void) {
+                this.displayFunc = f;
+            }
             
             /*@ iterations : () : {number | true} */
             public iterations() { return this.iters; }
