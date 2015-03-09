@@ -303,12 +303,12 @@ module NavierStokes {
                     //         var lastX = x[currentRow];
                     //         var lastY = y[currentRow];
                     //         ++currentRow;
-                    //         for (var i = 1; i <= width; i++) {
+                            for (var i = 1; i <= width; i++) {
                     //             x[currentRow] = (x0[currentRow] + a * (lastX + x[currentRow] + x[lastRow] + x[nextRow])) * invC;
                     //             lastX = x[currentRow];
                     //             y[currentRow] = (y0[currentRow] + a * (lastY + y[++currentRow] + y[++lastRow] + y[++nextRow])) * invC;
                     //             lastY = y[currentRow];
-                    //         }
+                            }
                         }
                         this.set_bnd(1, x);
                         this.set_bnd(2, y);
@@ -336,7 +336,7 @@ module NavierStokes {
                 var Hp5 = height + 1/2;//.
                 for (var j = 1; j<= height; j++) {
                 //     var pos = j * rowSize;
-                //     for (var i = 1; i <= width; i++) {
+                    for (var i = 1; i <= width; i++) {
                 //         var x:any = i - Wdt0 * u[++pos];
                 //         var y:any = j - Hdt0 * ww[pos];
                 //         if (x < 1/2)//.
@@ -358,7 +358,7 @@ module NavierStokes {
                 //         var row1 = j0 * rowSize;
                 //         var row2 = j1 * rowSize;
                 //         d[pos] = s0 * (t0 * d0[i0 + row1] + t1 * d0[i0 + row2]) + s1 * (t0 * d0[i1 + row1] + t1 * d0[i1 + row2]);
-                //     }
+                    }
                 }
                 this.set_bnd(b, d);
             }
@@ -374,9 +374,9 @@ module NavierStokes {
                 for (var j = 1 ; j <= height; j++ ) {
                     var row = j * rowSize;
                     // var previousRow = (j - 1) * rowSize;
-                    // var prevValue = row - 1;
+                    var prevValue = row - 1;
                     var currentRow = row;
-                    // var nextValue = row + 1;
+                    var nextValue = row + 1;
                     // var nextRow = (j + 1) * rowSize;
                     for (var i = 1; i <= width; i++ ) {
                 //         div[++currentRow] = h * (u[++nextValue] - u[++prevValue] + ww[++nextRow] - ww[++previousRow]);
@@ -389,7 +389,7 @@ module NavierStokes {
                 // this.lin_solve(0, p, div, 1, 4 );
                 // var wScale = 1/2 * width;//.
                 // var hScale = 1/2 * height;//.
-                // for (var k = 1; k<= height; k++ ) {
+                for (var k = 1; k<= height; k++ ) {
                 //     var prevPos = k * rowSize - 1;
                 //     var currentPos = k * rowSize;
                 //     var nextPos = k * rowSize + 1;
@@ -397,11 +397,11 @@ module NavierStokes {
                 //     var currentRow = k * rowSize;
                 //     var nextRow = (k + 1) * rowSize;
 
-                //     for (var i = 1; i<= width; i++) {
+                    for (var i = 1; i<= width; i++) {
                 //         u[++currentPos] -= wScale * (p[++nextPos] - p[++prevPos]);
                 //         ww[currentPos]   -= hScale * (p[++nextRow] - p[++prevRow]);
-                //     }
-                // }
+                    }
+                }
                 this.set_bnd(1, u);
                 this.set_bnd(2, ww);
             }
@@ -428,8 +428,8 @@ module NavierStokes {
                 // temp = u0; u0 = u; u = temp;
                 // // var
                 // temp = v0; v0 = ww; ww = temp;
-                // this.advect(1, u, u0, u0, v0, dt);
-                // this.advect(2, ww, v0, u0, v0, dt);
+                this.advect(1, u, u0, u0, v0, dt);
+                this.advect(2, ww, v0, u0, v0, dt);
                 // this.project(u, ww, u0, v0 );
             }
 
