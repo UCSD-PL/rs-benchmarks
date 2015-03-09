@@ -24,6 +24,8 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
+//NOTE: all 'v's replaced by 'ww' to prevent collision with default value variable 'v' (TODO: might be no longer necessary?)
+
 /*@ qualif Add(v: number, n: number, m: number): v = m + n */
 
 // Known Size Number Array
@@ -415,8 +417,8 @@ module NavierStokes {
             /*@ vel_step : (u:{v:IArray<number> | (len v) = this.size}, ww:{v:IArray<number> | (len v) = this.size}, u0:{v:IArray<number> | (len v) = this.size}, v0:{v:IArray<number> | (len v) = this.size}, dt:number) : void */
             vel_step(u:number[], ww:number[], u0:number[], v0:number[], dt:number)
             {
-                // this.addFields(u, u0, dt );
-                // this.addFields(ww, v0, dt );
+                this.addFields(u, u0, dt );
+                this.addFields(ww, v0, dt );
                 // var temp = u0; u0 = u; u = temp;
                 // // var
                 // temp = v0; v0 = ww; ww = temp;
@@ -439,7 +441,7 @@ module NavierStokes {
                     ww[i] = 0;//.
                     d[i] = 0;//.
                 }
-                // this.uiCallback(new Field(this.rowSize, this.width, this.height, d, u, v));
+                this.uiCallback(new Field(this.rowSize, this.width, this.height, d, u, ww));
             } 
 
             /*@ update : () : {void | true} */
@@ -463,8 +465,9 @@ module NavierStokes {
                 if (iters > 0 && iters <= 100)
                     this.iters = iters;
             }
+            /*@ setUICallback : (this:FluidField<Mutable>, (Field<Mutable>)=>void) : {void | true} */
             public setUICallback(callback:(f:Field) => void) {
-                // this.uiCallback = callback;
+                this.uiCallback = callback;
             }
             /*@ reset : () : {void | true} */
             public reset()
