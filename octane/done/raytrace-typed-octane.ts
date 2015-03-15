@@ -56,7 +56,7 @@ module VERSION {
             /*@ blue : number */
             public blue=0;
 
-            /*@ new(red:number, green:number, blue:number) => {void | true} */
+            /*@ new(red:number, green:number, blue:number) => {Color<M> | true} */
             constructor(red?, green?, blue?) {
                 this.red = red;
                 this.green = green;
@@ -181,7 +181,7 @@ module VERSION {
             public color:Color;
             public intensity:number=10;
 
-            /*@ new(position:Vector<Mutable>, color:Color<Immutable>, intensity:number) => {void | true} */
+            /*@ new(position:Vector<Mutable>, color:Color<Immutable>, intensity:number) => {Light<M> | true} */
             constructor(position:Vector, color:Color, intensity?) {
                 this.position = position;
                 this.color = color;
@@ -202,7 +202,7 @@ module VERSION {
             /*@ z : number */
             public z = 0;
 
-            /*@ new(x:number, y:number, z:number) => {void | true} */
+            /*@ new(x:number, y:number, z:number) => {Vector<M> | true} */
             constructor(x?, y?, z?) {
                 this.x = x;
                 this.y = y;
@@ -225,7 +225,10 @@ module VERSION {
 
             /*@ magnitude : () : {number | true} */
             public magnitude() {
-                return Math.sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z));
+                var x /*@ readonly */ = this.x;
+                var y /*@ readonly */ = this.y;
+                var z /*@ readonly */ = this.z;
+                return Math.sqrt((x * x) + (y * y) + (z * z));
             }
 
             /*@ cross : forall M . (w:Vector<ReadOnly>) : {Vector<M> | true} */
@@ -274,7 +277,7 @@ module VERSION {
             /*@ direction : Vector<Mutable> */
             public direction:Vector;
 
-            /*@ new(position:Vector<Mutable>, direction:Vector<Mutable>) => {void | true} */
+            /*@ new(position:Vector<Mutable>, direction:Vector<Mutable>) => {Ray<M> | true} */
             constructor(position:Vector, direction:Vector) {
                 this.position = position;
                 this.direction = direction;
@@ -294,7 +297,7 @@ module VERSION {
             public lights : Light[];
             public background : Background;
 
-            /*@ new() => {void | true} */
+            /*@ new() => {Scene<M> | true} */
             constructor() {
                 this.camera = new Camera(
                     new Vector(0, 0, -5),
@@ -316,7 +319,7 @@ module VERSION {
             public refraction:number = 1/2;
             public hasTexture:boolean = false;
 
-            /*@ new(gloss:number, transparency:number, reflection:number, refraction:number, hasTexture:boolean) => {void | true} */
+            /*@ new(gloss:number, transparency:number, reflection:number, refraction:number, hasTexture:boolean) => {BaseMaterial<M> | true} */
             constructor(gloss?,             // [0...infinity] 0 = matt
                         transparency?,      // 0=opaque
                         reflection?,       // [0...infinity] 0 = no reflection
@@ -351,7 +354,7 @@ module VERSION {
         export class Solid extends BaseMaterial {
             public color:Color;
 
-            /*@ new(color:Color<Immutable>, reflection:number, refraction:number, transparency:number, gloss:number) => {void | true} */
+            /*@ new(color:Color<Immutable>, reflection:number, refraction:number, transparency:number, gloss:number) => {Solid<M> | true} */
             constructor(color:Color, reflection:number, refraction:number, transparency:number, gloss:number) {
                 super(gloss, transparency, reflection, refraction, false);
                 this.color = color;
@@ -373,7 +376,7 @@ module VERSION {
             public colorOdd:Color;
             public density:number = 1/2;
 
-            /*@ new(colorEven:Color<Immutable>, colorOdd:Color<Immutable>, reflection:number, transparency:number, gloss:number, density:number) => {void | true} */
+            /*@ new(colorEven:Color<Immutable>, colorOdd:Color<Immutable>, reflection:number, transparency:number, gloss:number, density:number) => {Chessboard<M> | true} */
             constructor(colorEven:Color, colorOdd:Color, 
                         reflection:number, 
                         transparency:number, 
@@ -406,7 +409,7 @@ module VERSION {
             public position:Vector;
             public material:BaseMaterial;
 
-            /*@ new(position:Vector<Mutable>, material:BaseMaterial<Immutable>) => {void | true} */
+            /*@ new(position:Vector<Mutable>, material:BaseMaterial<Immutable>) => {Shape<M> | true} */
             constructor(position:Vector, material:BaseMaterial) {
                 this.position = position;
                 this.material = material;
@@ -421,7 +424,7 @@ module VERSION {
         export class Sphere extends Shape {
             public radius:number;
 
-            /*@ new(position:Vector<Mutable>, radius:number, material:BaseMaterial<Immutable>) => {void | true} */
+            /*@ new(position:Vector<Mutable>, radius:number, material:BaseMaterial<Immutable>) => {Sphere<M> | true} */
             constructor(position:Vector, radius:number, material:BaseMaterial) {
                 super(position, material);
                 this.radius = radius;
@@ -471,7 +474,7 @@ module VERSION {
         export class Plane extends Shape {
             public d:number;
 
-            /*@ new(position:Vector<Mutable>, d:number, material:BaseMaterial<Immutable>) => {void | true} */
+            /*@ new(position:Vector<Mutable>, d:number, material:BaseMaterial<Immutable>) => {Plane<M> | true} */
             constructor(position:Vector, d:number, material:BaseMaterial) {
                 super(position, material);
                 this.d = d;
@@ -542,7 +545,7 @@ module VERSION {
                     position:Vector<Mutable>?,
                     normal:Vector<Mutable>?,
                     color:Color<Immutable>?,
-                    distance:number?) => {void | true} */
+                    distance:number?) => {IntersectionInfo<M> | true} */
             constructor(isHit?, hitCount?, shape?, position?, normal?, color?, distance?) {
                 this.isHit = isHit;
                 this.hitCount = hitCount;
@@ -577,7 +580,7 @@ module VERSION {
             /*@ up : Vector<Mutable> */
             public up:Vector;
 
-            /*@ new(position:Vector<Mutable>, lookAt:Vector<Mutable>, up:Vector<Mutable>) => {void | true} */
+            /*@ new(position:Vector<Mutable>, lookAt:Vector<Mutable>, up:Vector<Mutable>) => {Camera<M> | true} */
             constructor(position:Vector,
                         lookAt:Vector,
                         up:Vector) {
@@ -619,7 +622,7 @@ module VERSION {
             public color:Color;
             public ambience:number = 0;
 
-            /*@ new(color:Color<Mutable>, ambience:number) => {void | true} */
+            /*@ new(color:Color<Mutable>, ambience:number) => {Background<M> | true} */
             constructor(color:Color, ambience?) {
                 this.color = color;
                 this.ambience = ambience;
@@ -640,7 +643,7 @@ module VERSION {
             /*@ options : EngineOptions */
             public options;
 
-            /*@ new(options:EngineOptions) => {void | true} */
+            /*@ new(options:EngineOptions) => {Engine<M> | true} */
             constructor(options) {
                 // ORIG:
                 // var this_options = extend({

@@ -154,7 +154,7 @@ module RichardsTYPEDVERSION {
                 blocks:{IArray<TaskControlBlock<Mutable> + null> | (len v) = NUMBER_OF_IDS}, 
                 list:TaskControlBlock<Mutable> + null, 
                 currentTcb:TaskControlBlock<Mutable> + null, 
-                currentId:{number | -1<=v && v<NUMBER_OF_IDS}) => {void | true} */
+                currentId:{number | -1<=v && v<NUMBER_OF_IDS}) => {Scheduler<M> | true} */
         constructor(queueCount?, holdCount?, blocks?, list?, currentTcb?, currentId?) {
             this.queueCount = queueCount;
             this.holdCount = holdCount;
@@ -376,7 +376,7 @@ module RichardsTYPEDVERSION {
                 id:{nat | v<NUMBER_OF_IDS}, 
                 priority:number, 
                 queue:Packet<Mutable> + null, 
-                task:Task<Mutable>) => {void | true} */
+                task:Task<Mutable>) => {TaskControlBlock<M> | true} */
         constructor(link, id, priority, queue, task) {
             this.link = link;
             this.id = id;
@@ -470,7 +470,7 @@ module RichardsTYPEDVERSION {
     }
 
     class Task {
-        /*@ new () => {void | true} */
+        /*@ new () => {Task<M> | true} */
         constructor() {}
         /*@ run : /\ (this:Self<Mutable>, packet: Packet<Mutable>) : { TaskControlBlock<Mutable> + null | true }
                   /\ (this:Self<Mutable>) : { TaskControlBlock<Mutable> + null | true } */
@@ -494,7 +494,7 @@ module RichardsTYPEDVERSION {
          * @param {int} count the number of times this task should be scheduled
          * @constructor
          */
-        /*@ new(scheduler:Scheduler<Mutable>, v1:bitvector32, count:number) => {void | true} */
+        /*@ new(scheduler:Scheduler<Mutable>, v1:bitvector32, count:number) => {IdleTask<M> | true} */
         constructor(scheduler, v1, count) {
             super();
             this.scheduler = scheduler;
@@ -535,7 +535,7 @@ module RichardsTYPEDVERSION {
          * @param {Scheduler} scheduler the scheduler that manages this task
          * @constructor
          */
-        /*@ new(scheduler:Scheduler<Mutable>, v1:Packet<Mutable> + null) => {void | true} */
+        /*@ new(scheduler:Scheduler<Mutable>, v1:Packet<Mutable> + null) => {DeviceTask<M> | true} */
         constructor(scheduler, v1?) {
             super();
             this.scheduler = scheduler;
@@ -577,7 +577,7 @@ module RichardsTYPEDVERSION {
          * @param {int} v2 another seed used to specify how work packets are manipulated
          * @constructor
          */
-        /*@ new(scheduler:Scheduler<Mutable>, v1:{nat | v<NUMBER_OF_IDS}, v2:nat) => {void | true} */
+        /*@ new(scheduler:Scheduler<Mutable>, v1:{nat | v<NUMBER_OF_IDS}, v2:nat) => {WorkerTask<M> | true} */
         constructor(scheduler, v1, v2) {
             super();
             this.scheduler = scheduler;
@@ -626,7 +626,7 @@ module RichardsTYPEDVERSION {
          * @param {Scheduler} scheduler the scheduler that manages this task
          * @constructor
          */
-        /*@ new(scheduler:Scheduler<Mutable>, v1:Packet<Mutable> + null, v2:Packet<Mutable> + null) => {void | true} */
+        /*@ new(scheduler:Scheduler<Mutable>, v1:Packet<Mutable> + null, v2:Packet<Mutable> + null) => {HandlerTask<M> | true} */
         constructor(scheduler, v1?, v2?) {
             super();
             this.scheduler = scheduler;
@@ -698,7 +698,7 @@ module RichardsTYPEDVERSION {
          * @param {int} kind the type of this packet
          * @constructor
          */
-        /*@ new(link:Packet<Mutable> + null, id:{nat | v<NUMBER_OF_IDS}, kind:number, a1:nat) => {void | true} */
+        /*@ new(link:Packet<Mutable> + null, id:{nat | v<NUMBER_OF_IDS}, kind:number, a1:nat) => {Packet<M> | true} */
         constructor(link, id, kind, a1?) {
             this.a2 = new Array(DATA_SIZE);
             this.link = link;

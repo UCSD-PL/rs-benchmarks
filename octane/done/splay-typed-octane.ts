@@ -139,7 +139,7 @@ module SplayVERSION {
      * @constructor
      */
     class SplayTree {
-        /*@ new() => {void | true} */
+        /*@ new() => {SplayTree<M> | true} */
         constructor() {}
 
         /**
@@ -415,7 +415,7 @@ module SplayVERSION {
         public key:number;
         public value:any;
 
-        /*@ new (key:number, value:top) => {void | true} */
+        /*@ new (key:number, value:top) => {SplayTreeNode<M> | true} */
         constructor(key, value) {
             this.key = key;
             this.value = value;
