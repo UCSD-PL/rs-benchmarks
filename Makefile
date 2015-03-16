@@ -1,9 +1,9 @@
 
 THREADS=1
 
-.PHONY: d3 octane
+.PHONY: d3 octane transducers
 
-all: d3 octane
+all: d3 octane transducers
 
 d3:
 	@echo "======================================"
@@ -16,6 +16,12 @@ octane:
 	@echo "                Octane"
 	@echo "======================================"
 	cd octane && ./regrtest.py -t $(THREADS) && cd ../
+
+transducers:
+	@echo "======================================"
+	@echo "              Transducers"
+	@echo "======================================"
+	cd transducers && ./regrtest.py -t $(THREADS) && cd ../
 
 
 clean:
