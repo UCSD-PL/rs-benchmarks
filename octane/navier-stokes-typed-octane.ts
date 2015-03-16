@@ -80,7 +80,7 @@ module NavierStokes {
         solver = null;
     }
 
-    /*@ addPoints :: ({v:Field<Mutable> | v.w = 128 && v.h = 128}) => void */
+    /*@ addPoints :: ({v:Field<Mutable> | offset(v,"w") ~~ 128 && offset(v,"h") ~~ 128}) => void */
     function addPoints(field:Field) {
         var n = 64;
         for (var i = 1; i <= n; i++) {
@@ -137,7 +137,7 @@ module NavierStokes {
         private dt:number;
         private displayFunc: (f:Field) => void;
 
-        /*@ uiCallback : ({v:Field<Mutable> | v.w = this.width && v.h = this.height}) => void */
+        /*@ uiCallback : ({v:Field<Mutable> | offset(v,"w") ~~ this.width && offset(v,"h") ~~ this.height}) => void */
         private uiCallback = function(field:Field) 
             /*@ <anonymous> (Field<Mutable>)=>void */ 
             {};
@@ -362,23 +362,23 @@ module NavierStokes {
                             x = 1/2;//.
                         else if (x > Wp5)
                             x = Wp5;
-                        //TODO
-                        // var i0 = x | 0;
-                        // var i1 = i0 + 1;
+                        var i0 = Math.floor(x); //ORIG: x | 0;
+                        var i1 = i0 + 1;
                         if (y < 1/2)//.
                             y = 1/2;//.
                         else if (y > Hp5)
                             y = Hp5;
-                        //TODO
-                        // var j0 = y | 0;
-                        // var j1 = j0 + 1;
-                        // var s1 = x - i0;
-                        // var s0 = 1 - s1;
-                        // var t1 = y - j0;
-                        // var t0 = 1 - t1;
-                        // var row1 = j0 * rowSize;
-                        // var row2 = j1 * rowSize;
-                        // d[pos] = s0 * (t0 * d0[i0 + row1] + t1 * d0[i0 + row2]) + s1 * (t0 * d0[i1 + row1] + t1 * d0[i1 + row2]);
+                        var j0 = Math.floor(y); //ORIG: y | 0;
+                        var j1 = j0 + 1;
+                        var s1 = x - i0;
+                        var s0 = 1 - s1;
+                        var t1 = y - j0;
+                        var t0 = 1 - t1;
+                        var row1 = j0 * rowSize;
+                        var row2 = j1 * rowSize;
+                        mulThm2(rowSize, j0, height+2);
+                        mulThm2(rowSize, j1, height+2);
+                        d[pos] = s0 * (t0 * d0[i0 + row1] + t1 * d0[i0 + row2]) + s1 * (t0 * d0[i1 + row1] + t1 * d0[i1 + row2]);
                     }
                 }
                 this.set_bnd(b, d);
@@ -489,7 +489,7 @@ module NavierStokes {
                 if (iters > 0 && iters <= 100)
                     this.iters = iters;
             }
-            /*@ setUICallback : (this:FluidField<Mutable>, ({v:Field<Mutable> | v.w = this.width && v.h = this.height})=>void) : {void | true} */
+            /*@ setUICallback : (this:FluidField<Mutable>, ({v:Field<Mutable> | offset(v,"w") ~~ this.width && offset(v,"h") ~~ this.height})=>void) : {void | true} */
             public setUICallback(callback:(f:Field) => void) {
                 this.uiCallback = callback;
             }
@@ -542,28 +542,28 @@ module NavierStokes {
         }
 
             /*@ setDensity : (x:{v:nat | v < this.w}, y:{v:nat | v < this.h}, d:number) : void */
-            public setDensity(x:number,y:number,d:number):void {
+            public setDensity(x:number, y:number, d:number) {
                 var _lemma = mulThm2(this.rowSize, y+1, this.h+2);
                 this.dens[(x + 1) + (y + 1) * this.rowSize] = d;
             }
             /*@ getDensity : (x:{v:nat | v < this.w}, y:{v:nat | v < this.h}) : number */
-            public getDensity(x:number, y:number):number {
+            public getDensity(x:number, y:number) {
                 var _lemma = mulThm2(this.rowSize, y+1, this.h+2);
                 return this.dens[(x + 1) + (y + 1) * this.rowSize];
             }
             /*@ setVelocity : (x:{v:nat | v < this.w}, y:{v:nat | v < this.h}, xv:number, yv:number) : void */
-            public setVelocity(x:number, y:number, xv:number, yv:number):void {
+            public setVelocity(x:number, y:number, xv:number, yv:number) {
                 var _lemma = mulThm2(this.rowSize, y+1, this.h+2);
                 this.u[(x + 1) + (y + 1) * this.rowSize] = xv;
                 this.ww[(x + 1) + (y + 1) * this.rowSize] = yv;
             }
             /*@ getXVelocity : (x:{v:nat | v < this.w}, y:{v:nat | v < this.h}) : number */
-            public getXVelocity(x:number, y:number):number {
+            public getXVelocity(x:number, y:number) {
                 var _lemma = mulThm2(this.rowSize, y+1, this.h+2);
                 return this.u[(x + 1) + (y + 1) * this.rowSize];
             }
             /*@ getYVelocity : (x:{v:nat | v < this.w}, y:{v:nat | v < this.h}) : number */
-            public getYVelocity(x:number, y:number):number {
+            public getYVelocity(x:number, y:number) {
                 var _lemma = mulThm2(this.rowSize, y+1, this.h+2);
                 return this.ww[(x + 1) + (y + 1) * this.rowSize];
             }
