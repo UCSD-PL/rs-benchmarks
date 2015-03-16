@@ -1,7 +1,7 @@
 /// <reference path="../../d3.d.ts" />
 
-/*@ qualif Bot(v:a,s:string): hasProperty(v,s) */
-/*@ qualif Bot(v:a,s:string): enumProp(v,s) */
+/*@ qualif Bot(s:Str,v:a): hasProperty(s,v) */
+/*@ qualif Bot(s:Str,v:a): enumProp(s,v) */
 
 /*@ d3_map :: /\ (d3_Map<Immutable>) => {d3_Map<Immutable> | true}
               /\ ([Immutable]{}) => {d3_Map<Immutable> | true} */
@@ -97,7 +97,7 @@ class d3_Map {
   }
 
   public forEach(f: (key: string, value: any) => void): void {
-    for (var key in this.internalMap) if (key.charCodeAt(0) === d3_map_prefixCode) f.call(this, key.substring(1), this.internalMap[key]);
+    for (var key in this.internalMap) if (key.charCodeAt(0) === d3_map_prefixCode) f.call(this, key.substring(1), this.internalMap[key]); // TODO: f.call this or this.internalMap?
   }
 
 }

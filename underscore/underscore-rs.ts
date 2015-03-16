@@ -68,8 +68,8 @@
 /*@ alias ArrIter<T,TResult> = (value: T, index: number, list: IArray<T>) => {TResult | true} */
 /*@ alias MemoIter<T,TResult> = (prev: TResult, curr: T, index: number, list: IArray<T>) => {TResult | true} */
 
-/*@ qualif Bot(v:a,s:string): hasProperty(v,s) */
-/*@ qualif Bot(v:a,s:string): enumProp(v,s) */
+/*@ qualif Bot(s:Str,v:a): hasProperty(s,v) */
+/*@ qualif Bot(s:Str,v:a): enumProp(s,v) */
 
   class UImpl {// TODO: implements UnderscoreStatic {
     constructor() {}

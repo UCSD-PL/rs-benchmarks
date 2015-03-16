@@ -15,9 +15,8 @@
 
 //TODO: restore "ATATiterator" to "@@iterator"
 
-//TODO: move to prelude?
-/*@ qualif Bot(v:a, s:string): hasProperty(v,s) */
-/*@ qualif Bot(v:a, s:string): enumProp(v,s) */
+/*@ qualif Bot(s:Str,v:a): hasProperty(s,v) */
+/*@ qualif Bot(s:Str,v:a): enumProp(s,v) */
 
 module com {
 module cognitect {

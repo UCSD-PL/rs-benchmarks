@@ -17,8 +17,8 @@
 
 
 //TODO: move this stuff to prelude?
-/*@ qualif Bot(v:a, s:string): hasProperty(v,s) */
-/*@ qualif Bot(v:a, s:string): enumProp(v,s) */
+/*@ qualif Bot(s:Str,v:a): hasProperty(s,v) */
+/*@ qualif Bot(s:Str,v:a): enumProp(s,v) */
 interface HTMLCanvasElement {
     /*@ getContext : (string) => {CanvasRenderingContext2D<Mutable> | true} */
     getContext(s:string):CanvasRenderingContext2D; //or WebGLRenderingContext or null

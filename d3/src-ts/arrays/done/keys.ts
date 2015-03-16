@@ -1,7 +1,7 @@
 /// <reference path="../../../d3.d.ts" />
 
-/*@ qualif Bot(v:a,s:string): hasProperty(v,s) */
-/*@ qualif Bot(v:a,s:string): enumProp(v,s) */
+/*@ qualif Bot(s:Str,v:a): hasProperty(s,v) */
+/*@ qualif Bot(s:Str,v:a): enumProp(s,v) */
 
 d3.keys = function(map:{ }): string[] 
 /*@ <anonymous> (map: [Immutable]{ }) => MArray<{string | hasProperty(v, map) && enumProp(v, map)}> */

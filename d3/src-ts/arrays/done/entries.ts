@@ -1,7 +1,7 @@
 /// <reference path="../../../d3.d.ts" />
 
-/*@ qualif Bot(v:a,s:string): hasProperty(v,s) */
-/*@ qualif Bot(v:a,s:string): enumProp(v,s) */
+/*@ qualif Bot(s:Str,v:a): hasProperty(s,v) */
+/*@ qualif Bot(s:Str,v:a): enumProp(s,v) */
 
 /*@ d3_entries :: forall T . ([Immutable]{[k:string]:T}) => {MArray<{key:string; value:T}> | true} */ 
 function d3_entries<T>(map) {
