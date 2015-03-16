@@ -1170,14 +1170,14 @@ function reduce(xf:any, init:any, coll:any):any {
  *     var xf = t.comp(t.map(inc),t.filter(isEven));
  *     t.transduce(xf, apush, [], [1,2,3,4]); // [2,4]
  */
-/*@ transduce :: /\ forall IN0 INTER0 OUT0 IN1 INTER1 OUT1   . (xf: ITransducer<IN0, INTER0, OUT0, IN1,      INTER1, OUT1>, f: ITransformer<IN0, INTER0, OUT0>, init:INTER1, coll:IArray<IN1>) => {OUT1 | true}
-                 /\ forall IN0 INTER0 OUT0     INTER1 OUT1   . (xf: ITransducer<IN0, INTER0, OUT0, string,   INTER1, OUT1>, f: ITransformer<IN0, INTER0, OUT0>, init:INTER1, coll:string)      => {OUT1 | true}
-                 /\ forall IN0 INTER0 OUT0     INTER1 OUT1 M . (xf: ITransducer<IN0, INTER0, OUT0, Entry<M>, INTER1, OUT1>, f: ITransformer<IN0, INTER0, OUT0>, init:INTER1, coll:ObjNoIter)   => {OUT1 | true}
-                 /\ forall IN0 INTER0 OUT0     INTER1 OUT1   . (xf: ITransducer<IN0, INTER0, OUT0, top,      INTER1, OUT1>, f: ITransformer<IN0, INTER0, OUT0>, init:INTER1, coll:ObjIter)     => {OUT1 | true}
-                 /\ forall IN0        OUT0 IN1 INTER1 OUT1   . (xf: ITransducer<IN0, OUT0,   OUT0, IN1,      INTER1, OUT1>, f: (result:OUT0, input:IN0)=>OUT0,  init:INTER1, coll:IArray<IN1>) => {OUT1 | true}
-                 /\ forall IN0        OUT0     INTER1 OUT1   . (xf: ITransducer<IN0, OUT0,   OUT0, string,   INTER1, OUT1>, f: (result:OUT0, input:IN0)=>OUT0,  init:INTER1, coll:string)      => {OUT1 | true}
-                 /\ forall IN0        OUT0     INTER1 OUT1 M . (xf: ITransducer<IN0, OUT0,   OUT0, Entry<M>, INTER1, OUT1>, f: (result:OUT0, input:IN0)=>OUT0,  init:INTER1, coll:ObjNoIter)   => {OUT1 | true}
-                 /\ forall IN0        OUT0     INTER1 OUT1   . (xf: ITransducer<IN0, OUT0,   OUT0, top,      INTER1, OUT1>, f: (result:OUT0, input:IN0)=>OUT0,  init:INTER1, coll:ObjIter)     => {OUT1 | true} */
+/*@ transduce :: /\ forall A B C X Y Z   . (xf: ITransducer<A, B, C, X,        Y, Z>, f: ITransformer<A, B, C>,  init:Y, coll:IArray<X>) => {Z | true}
+                 /\ forall A B C   Y Z   . (xf: ITransducer<A, B, C, string,   Y, Z>, f: ITransformer<A, B, C>,  init:Y, coll:string)    => {Z | true}
+                 /\ forall A B C   Y Z M . (xf: ITransducer<A, B, C, Entry<M>, Y, Z>, f: ITransformer<A, B, C>,  init:Y, coll:ObjNoIter) => {Z | true}
+                 /\ forall A B C   Y Z   . (xf: ITransducer<A, B, C, top,      Y, Z>, f: ITransformer<A, B, C>,  init:Y, coll:ObjIter)   => {Z | true}
+                 /\ forall A   C X Y Z   . (xf: ITransducer<A, C, C, X,        Y, Z>, f: (result:C, input:A)=>C, init:Y, coll:IArray<X>) => {Z | true}
+                 /\ forall A   C   Y Z   . (xf: ITransducer<A, C, C, string,   Y, Z>, f: (result:C, input:A)=>C, init:Y, coll:string)    => {Z | true}
+                 /\ forall A   C   Y Z M . (xf: ITransducer<A, C, C, Entry<M>, Y, Z>, f: (result:C, input:A)=>C, init:Y, coll:ObjNoIter) => {Z | true}
+                 /\ forall A   C   Y Z   . (xf: ITransducer<A, C, C, top,      Y, Z>, f: (result:C, input:A)=>C, init:Y, coll:ObjIter)   => {Z | true} */
 function transduce(xf:any, f:any, init:any, coll:any) {
     f = typeof f === "function" ? wrap(f) : f;
     xf = xf(f);
@@ -1219,18 +1219,18 @@ function addEntry(ob, entry) {
  *     t.into([], xf, [1,2,3,4]); // [2,4]
  */
 //TODO: when empty is a string, xf should actually be (ITransformer<string + number + boolean, string, string>) =>...
-/*@ into :: /\ forall       OUT1     . (empty: string,    xf: ITransducer<string, string, string,             string,   string,    OUT1>, coll: string)      => {OUT1 | true}
-            /\ forall   IN1 OUT1     . (empty: string,    xf: ITransducer<string, string, string,             IN1,      string,    OUT1>, coll: IArray<IN1>) => {OUT1 | true}
-            /\ forall       OUT1   M . (empty: string,    xf: ITransducer<string, string, string,             Entry<M>, string,    OUT1>, coll: ObjNoIter)   => {OUT1 | true}
-            /\ forall       OUT1     . (empty: string,    xf: ITransducer<string, string, string,             top,      string,    OUT1>, coll: ObjIter)     => {OUT1 | true}
-            /\ forall T     OUT1     . (empty: MArray<T>, xf: ITransducer<T, MArray<T>, MArray<T>,            string,   MArray<T>, OUT1>, coll: string)      => {OUT1 | true}
-            /\ forall T IN1 OUT1     . (empty: MArray<T>, xf: ITransducer<T, MArray<T>, MArray<T>,            IN1,      MArray<T>, OUT1>, coll: IArray<IN1>) => {OUT1 | true}
-            /\ forall T     OUT1   M . (empty: MArray<T>, xf: ITransducer<T, MArray<T>, MArray<T>,            Entry<M>, MArray<T>, OUT1>, coll: ObjNoIter)   => {OUT1 | true}
-            /\ forall T     OUT1     . (empty: MArray<T>, xf: ITransducer<T, MArray<T>, MArray<T>,            top,      MArray<T>, OUT1>, coll: ObjIter)     => {OUT1 | true}
-            /\ forall T     OUT1 N   . (empty: MMap<T>,   xf: ITransducer<Pair<N,string,T>, MMap<T>, MMap<T>, string,   MMap<T>,   OUT1>, coll: string)      => {OUT1 | true}
-            /\ forall T IN1 OUT1 N   . (empty: MMap<T>,   xf: ITransducer<Pair<N,string,T>, MMap<T>, MMap<T>, IN1,      MMap<T>,   OUT1>, coll: IArray<IN1>) => {OUT1 | true}
-            /\ forall T     OUT1 N M . (empty: MMap<T>,   xf: ITransducer<Pair<N,string,T>, MMap<T>, MMap<T>, Entry<M>, MMap<T>,   OUT1>, coll: ObjNoIter)   => {OUT1 | true}
-            /\ forall T     OUT1 N   . (empty: MMap<T>,   xf: ITransducer<Pair<N,string,T>, MMap<T>, MMap<T>, top,      MMap<T>,   OUT1>, coll: ObjIter)     => {OUT1 | true} */
+/*@ into :: /\ forall     Z     . (empty: string,    xf: ITransducer<string, string, string,             string,   string,    Z>, coll: string)    => {Z | true}
+            /\ forall   X Z     . (empty: string,    xf: ITransducer<string, string, string,             X,        string,    Z>, coll: IArray<X>) => {Z | true}
+            /\ forall     Z M   . (empty: string,    xf: ITransducer<string, string, string,             Entry<M>, string,    Z>, coll: ObjNoIter) => {Z | true}
+            /\ forall     Z     . (empty: string,    xf: ITransducer<string, string, string,             top,      string,    Z>, coll: ObjIter)   => {Z | true}
+            /\ forall T   Z     . (empty: MArray<T>, xf: ITransducer<T, MArray<T>, MArray<T>,            string,   MArray<T>, Z>, coll: string)    => {Z | true}
+            /\ forall T X Z     . (empty: MArray<T>, xf: ITransducer<T, MArray<T>, MArray<T>,            X,        MArray<T>, Z>, coll: IArray<X>) => {Z | true}
+            /\ forall T   Z M   . (empty: MArray<T>, xf: ITransducer<T, MArray<T>, MArray<T>,            Entry<M>, MArray<T>, Z>, coll: ObjNoIter) => {Z | true}
+            /\ forall T   Z     . (empty: MArray<T>, xf: ITransducer<T, MArray<T>, MArray<T>,            top,      MArray<T>, Z>, coll: ObjIter)   => {Z | true}
+            /\ forall T   Z N   . (empty: MMap<T>,   xf: ITransducer<Pair<N,string,T>, MMap<T>, MMap<T>, string,   MMap<T>,   Z>, coll: string)    => {Z | true}
+            /\ forall T X Z N   . (empty: MMap<T>,   xf: ITransducer<Pair<N,string,T>, MMap<T>, MMap<T>, X,        MMap<T>,   Z>, coll: IArray<X>) => {Z | true}
+            /\ forall T   Z N M . (empty: MMap<T>,   xf: ITransducer<Pair<N,string,T>, MMap<T>, MMap<T>, Entry<M>, MMap<T>,   Z>, coll: ObjNoIter) => {Z | true}
+            /\ forall T   Z N   . (empty: MMap<T>,   xf: ITransducer<Pair<N,string,T>, MMap<T>, MMap<T>, top,      MMap<T>,   Z>, coll: ObjIter)   => {Z | true} */
 function into(empty, xf, coll) {
     if(isString(empty)) {
         return transduce(xf, stringAppend, empty, coll);
@@ -1307,8 +1307,8 @@ function completing<IN, INTER, OUT>(xf: any, cf?: (z:QQ<INTER>) => OUT):any {
  *     var xf = t.comp(t.map(inc),t.filter(isEven));
  *     arr.reduce(t.toFn(xf, apush), []); // [2,4,6]
  */
-/*@ toFn :: /\ forall IN0 INTER0 OUT0 IN1 INTER1 OUT1 . (xf: ITransducer<IN0, INTER0, OUT0, IN1, INTER1, OUT1>, builder: ITransformer<IN0, INTER0, OUT0>) => {(result:INTER1, input:IN1) => MQQ<INTER1> | true}
-            /\ forall IN0        OUT0 IN1 INTER1 OUT1 . (xf: ITransducer<IN0, OUT0,   OUT0, IN1, INTER1, OUT1>, builder: (result:OUT0, input:IN0)=>OUT0)  => {(result:INTER1, input:IN1) => MQQ<INTER1> | true} */
+/*@ toFn :: /\ forall A B C X Y T . (xf: ITransducer<A, B, C, X, Y, T>, builder: ITransformer<A, B, C>)  => {(result:Y, input:X) => MQQ<Y> | true}
+            /\ forall A   C X Y T . (xf: ITransducer<A, C, C, X, Y, T>, builder: (result:C, input:A)=>C) => {(result:Y, input:X) => MQQ<Y> | true} */
 function toFn<IN, INTER, OUT>(xf, builder) {
     if(typeof builder === "function") {
         return xf(wrap(builder)).step;//TODO: see below
