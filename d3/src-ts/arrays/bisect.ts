@@ -4,13 +4,13 @@
 /*@ qualif Len(v:b, w:a): v <= (len w) */
 
 interface Id3_bisector<T> {
-	/*@ left : /\ (a: IArray<T>, x:T, lo:{number | [0 <= v ; v <= (len a)]}, hi:{number | [lo <= v ; v <= (len a)]}) => number
+	/*@ left :  /\ (a: IArray<T>, x:T, lo:{number | [0 <= v ; v <= (len a)]}, hi:{number | [lo <= v ; v <= (len a)]}) => number
 				/\ (a: IArray<T>, x:T, lo:{number | [0 <= v ; v <= (len a)]})                                         => number
-				/\ (a: IArray<T>, x:T)                                                                               => {number | true} */
+				/\ (a: IArray<T>, x:T)                                                                                => {number | true} */
 	left : (a: T[], x: T, lo?: number, hi?: number) => number;
 	/*@ right : /\ (a: IArray<T>, x:T, lo:{number | [0 <= v ; v <= (len a)]}, hi:{number | [lo <= v ; v <= (len a)]}) => number
 				/\ (a: IArray<T>, x:T, lo:{number | [0 <= v ; v <= (len a)]})                                         => number
-				/\ (a: IArray<T>, x:T)                                                                               => {number | true} */
+				/\ (a: IArray<T>, x:T)                                                                                => {number | true} */
 	right: (a: T[], x: T, lo?: number, hi?: number) => number;
 }
 
