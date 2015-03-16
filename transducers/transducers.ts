@@ -37,6 +37,7 @@ module transducers {
 /*@ alias MQQ<T> = QQ<Mutable,T> */
 
 /*@ alias Entry<M> = Pair<M,string,top> */
+/*@ alias MMap<T> = [Mutable]{[s:string]:T} */
 
 interface Goog {
     /*@ typeOf : /\ forall M T . (x:Array<M,T>) : {string | v =  "array"}
@@ -1190,8 +1191,7 @@ function arrayPush<T>(arr:T[], x:T) {
     return arr;
 }
 
-/*@ addEntry :: forall M T . (ob: [Mutable] {[s:string]:T}, entry: Pair<M,string,T>)
-             => { [Mutable] {[s:string]:T} | true } */
+/*@ addEntry :: forall M T . (ob: MMap<T>, entry: Pair<M,string,T>) => { MMap<T> | true } */
 function addEntry(ob, entry) {
     ob[entry.x] = entry.y; //ORIG: ob[entry[0]] = entry[1];
     return ob;
@@ -1214,19 +1214,27 @@ function addEntry(ob, entry) {
  *     t.into([], xf, [1,2,3,4]); // [2,4]
  */
 //TODO: when empty is a string, xf should actually be (ITransformer<string + number + boolean, string, string>) =>...
-/*@ into :: /\ forall       OUT1 . (empty: string,    xf: (ITransformer<string, string, string>) =>ITransformer<string, string,    OUT1>, coll: string)      => {OUT1 | true}
-            /\ forall   IN1 OUT1 . (empty: string,    xf: (ITransformer<string, string, string>) =>ITransformer<IN1,    string,    OUT1>, coll: IArray<IN1>) => {OUT1 | true}
-            /\ forall T     OUT1 . (empty: MArray<T>, xf: (ITransformer<T, MArray<T>, MArray<T>>)=>ITransformer<string, MArray<T>, OUT1>, coll: string)      => {OUT1 | true}
-            /\ forall T IN1 OUT1 . (empty: MArray<T>, xf: (ITransformer<T, MArray<T>, MArray<T>>)=>ITransformer<IN1,    MArray<T>, OUT1>, coll: IArray<IN1>) => {OUT1 | true} */
+/*@ into :: /\ forall       OUT1     . (empty: string,    xf: (ITransformer<string, string, string>) =>ITransformer<string,   string,    OUT1>,          coll: string)                                         => {OUT1 | true}
+            /\ forall   IN1 OUT1     . (empty: string,    xf: (ITransformer<string, string, string>) =>ITransformer<IN1,      string,    OUT1>,          coll: IArray<IN1>)                                    => {OUT1 | true}
+            /\ forall       OUT1     . (empty: string,    xf: (ITransformer<string, string, string>) =>ITransformer<top,      string,    OUT1>,          coll: {Iterator<Immutable> | hasProperty("next", v)}) => {OUT1 | true}
+            /\ forall       OUT1   M . (empty: string,    xf: (ITransformer<string, string, string>) =>ITransformer<Entry<M>, string,    OUT1>,          coll: {ObjectK | not hasProperty("next", v)})         => {OUT1 | true}
+            /\ forall T     OUT1     . (empty: MArray<T>, xf: (ITransformer<T, MArray<T>, MArray<T>>)=>ITransformer<string,   MArray<T>, OUT1>,          coll: string)                                         => {OUT1 | true}
+            /\ forall T IN1 OUT1     . (empty: MArray<T>, xf: (ITransformer<T, MArray<T>, MArray<T>>)=>ITransformer<IN1,      MArray<T>, OUT1>,          coll: IArray<IN1>)                                    => {OUT1 | true}
+            /\ forall T     OUT1     . (empty: MArray<T>, xf: (ITransformer<T, MArray<T>, MArray<T>>)=>ITransformer<top,      MArray<T>, OUT1>,          coll: {Iterator<Immutable> | hasProperty("next", v)}) => {OUT1 | true}
+            /\ forall T     OUT1   M . (empty: MArray<T>, xf: (ITransformer<T, MArray<T>, MArray<T>>)=>ITransformer<Entry<M>, MArray<T>, OUT1>,          coll: {ObjectK | not hasProperty("next", v)})         => {OUT1 | true}
+            /\ forall T     OUT1 N   . (empty: MMap<T>,   xf: (ITransformer<Pair<N,string,T>, MMap<T>, MMap<T>>)=>ITransformer<string,   MMap<T>, OUT1>, coll: string)                                         => {OUT1 | true}
+            /\ forall T IN1 OUT1 N   . (empty: MMap<T>,   xf: (ITransformer<Pair<N,string,T>, MMap<T>, MMap<T>>)=>ITransformer<IN1,      MMap<T>, OUT1>, coll: IArray<IN1>)                                    => {OUT1 | true}
+            /\ forall T     OUT1 N   . (empty: MMap<T>,   xf: (ITransformer<Pair<N,string,T>, MMap<T>, MMap<T>>)=>ITransformer<top,      MMap<T>, OUT1>, coll: {Iterator<Immutable> | hasProperty("next", v)}) => {OUT1 | true}
+            /\ forall T     OUT1 N M . (empty: MMap<T>,   xf: (ITransformer<Pair<N,string,T>, MMap<T>, MMap<T>>)=>ITransformer<Entry<M>, MMap<T>, OUT1>, coll: {ObjectK | not hasProperty("next", v)})         => {OUT1 | true} */
 function into(empty, xf, coll) {
     if(isString(empty)) {
         return transduce(xf, stringAppend, empty, coll);
-    } else {//TODOif(isArray(empty)) {
+    } else if(isArray(empty)) {
         return transduce(xf, arrayPush, empty, coll);
-    } //TODO
-    // else if(transducers.isObject(empty)) {
-    //     return transducers.transduce(xf, transducers.addEntry, empty, coll);
-    // }
+    } else if(isObject(empty)) {
+        return transduce(xf, addEntry, empty, coll);
+    }
+    else throw new Error("illegal 'empty' arg to into()");
 }
 
 class Completing<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
@@ -1265,9 +1273,9 @@ class Completing<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
 // TODO: the ITransformers in this signature could be TruncatedTransformers instead...
 /*@ completing :: /\ forall IN INTER OUT M T . (xf: ITransformer<IN, INTER, T>,      cf: (MQQ<INTER>) => OUT) => {Completing<M, IN, INTER, OUT       > | true}
                   /\ forall IN INTER OUT M   . (xf: (result:INTER, input:IN)=>INTER, cf: (MQQ<INTER>) => OUT) => {Completing<M, IN, INTER, OUT       > | true}
-                  /\ forall IN INTER OUT M T . (xf: ITransformer<IN, INTER, T>,      cf: null               ) => {Completing<M, IN, INTER, MQQ<INTER>> | true}
-                  /\ forall IN INTER OUT M   . (xf: (result:INTER, input:IN)=>INTER, cf: null               ) => {Completing<M, IN, INTER, MQQ<INTER>> | true} */
-function completing<IN, INTER, OUT>(xf: any, cf: (z:QQ<INTER>) => OUT):any {
+                  /\ forall IN INTER OUT M T . (xf: ITransformer<IN, INTER, T>)                               => {Completing<M, IN, INTER, MQQ<INTER>> | true}
+                  /\ forall IN INTER OUT M   . (xf: (result:INTER, input:IN)=>INTER)                          => {Completing<M, IN, INTER, MQQ<INTER>> | true} */
+function completing<IN, INTER, OUT>(xf: any, cf?: (z:QQ<INTER>) => OUT):any {
     var wxf:TruncatedTransformer<IN, INTER> = typeof xf === "function" ? wrap(xf) : xf;
     if(TRANSDUCERS_DEV && (wxf !== null) && !isObject(wxf)) {
         throw new Error("completing must be given a transducer as first argument");
