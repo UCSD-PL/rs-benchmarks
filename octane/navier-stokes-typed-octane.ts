@@ -32,7 +32,7 @@
 /// <reference path="mulThms.ts" />
 
 module NavierStokes {
-    /*@ solver :: FluidField<Mutable> + null */
+    /*@ solver :: {v:FluidField<Mutable> | offset(v,"width") ~~ 128 && offset(v,"height") ~~ 128} + null */
     var solver:FluidField = null;
     /*@ nsFrameCounter :: number */
     var nsFrameCounter = 0;
@@ -42,15 +42,17 @@ module NavierStokes {
     {
         var solverRO /*@ readonly */ = solver;
         if (!solverRO) throw new Error("solver is null! did you forget to call setupNavierStokes first?");
-        (<FluidField>solverRO).update();
+        solverRO.update();
         nsFrameCounter++;
 
         if(nsFrameCounter===15)
-            checkResult((<FluidField>solverRO).getDens());
+            checkResult(solverRO.getDens());
     }
 
+    /*@ checkResult :: ({v:IArray<number> | (len v) = (128+2) * (128+2)}) => void */
     function checkResult(dens) {
     
+        var _lemma = mulThm130(130);
         var result = 0;
         for (var i=7000;i<7100;i++) {
             result+=~~((dens[i]*10));
@@ -98,7 +100,7 @@ module NavierStokes {
     /*@ framesBetweenAddingPoints :: number */
     var framesBetweenAddingPoints = 5;
 
-    /*@ prepareFrame :: (Field<Mutable>) => {void | true} */
+    /*@ prepareFrame :: ({v:Field<Mutable> | offset(v,"w") ~~ 128 && offset(v,"h") ~~ 128}) => void */
     function prepareFrame(field:Field)
     {
         if (framesTillAddingPoints === 0) {
@@ -541,28 +543,28 @@ module NavierStokes {
             this.ww = ww;
         }
 
-            /*@ setDensity : (x:{v:nat | v < this.w}, y:{v:nat | v < this.h}, d:number) : void */
+            /*@ setDensity : (x:{v:nat | v <= this.w}, y:{v:nat | v <= this.h}, d:number) : void */
             public setDensity(x:number, y:number, d:number) {
                 var _lemma = mulThm2(this.rowSize, y+1, this.h+2);
                 this.dens[(x + 1) + (y + 1) * this.rowSize] = d;
             }
-            /*@ getDensity : (x:{v:nat | v < this.w}, y:{v:nat | v < this.h}) : number */
+            /*@ getDensity : (x:{v:nat | v <= this.w}, y:{v:nat | v <= this.h}) : number */
             public getDensity(x:number, y:number) {
                 var _lemma = mulThm2(this.rowSize, y+1, this.h+2);
                 return this.dens[(x + 1) + (y + 1) * this.rowSize];
             }
-            /*@ setVelocity : (x:{v:nat | v < this.w}, y:{v:nat | v < this.h}, xv:number, yv:number) : void */
+            /*@ setVelocity : (x:{v:nat | v <= this.w}, y:{v:nat | v <= this.h}, xv:number, yv:number) : void */
             public setVelocity(x:number, y:number, xv:number, yv:number) {
                 var _lemma = mulThm2(this.rowSize, y+1, this.h+2);
                 this.u[(x + 1) + (y + 1) * this.rowSize] = xv;
                 this.ww[(x + 1) + (y + 1) * this.rowSize] = yv;
             }
-            /*@ getXVelocity : (x:{v:nat | v < this.w}, y:{v:nat | v < this.h}) : number */
+            /*@ getXVelocity : (x:{v:nat | v <= this.w}, y:{v:nat | v <= this.h}) : number */
             public getXVelocity(x:number, y:number) {
                 var _lemma = mulThm2(this.rowSize, y+1, this.h+2);
                 return this.u[(x + 1) + (y + 1) * this.rowSize];
             }
-            /*@ getYVelocity : (x:{v:nat | v < this.w}, y:{v:nat | v < this.h}) : number */
+            /*@ getYVelocity : (x:{v:nat | v <= this.w}, y:{v:nat | v <= this.h}) : number */
             public getYVelocity(x:number, y:number) {
                 var _lemma = mulThm2(this.rowSize, y+1, this.h+2);
                 return this.ww[(x + 1) + (y + 1) * this.rowSize];
