@@ -29,10 +29,10 @@
 /*@ qualif Add(v: number, n: number, m: number): v < m + n */
 /*@ qualif Add(v: number, n: number, m: number): v = m + n */
 
-/// <reference path="mulThms.ts" />
+/// <reference path="mulThms.d.ts" />
 
 module NavierStokes {
-    /*@ solver :: {v:FluidField<Mutable> | offset(v,"width") ~~ 128 && offset(v,"height") ~~ 128} + null */
+    /*@ solver :: {v:FluidField<Mutable> | offset(v,"width") = 128 && offset(v,"height") = 128} + null */
     var solver:FluidField = null;
     /*@ nsFrameCounter :: number */
     var nsFrameCounter = 0;
@@ -66,10 +66,11 @@ module NavierStokes {
     /*@ setupNavierStokes :: () => {void | true} */
     export function setupNavierStokes()
     {
+        var _lemma = mulThm128(128);
         var solverRO /*@ readonly */ = new FluidField(null, 128, 128);
         solverRO.setIterations(20);
         solverRO.setDisplayFunction(function(f:Field)
-            /*@ <anonymous> (Field<Immutable>) => {void | true} */
+            /*@ <anonymous> (Field<Immutable>) => void */
             {});
         solverRO.setUICallback(prepareFrame);
         solverRO.reset();
@@ -82,7 +83,7 @@ module NavierStokes {
         solver = null;
     }
 
-    /*@ addPoints :: ({v:Field<Mutable> | offset(v,"w") ~~ 128 && offset(v,"h") ~~ 128}) => void */
+    /*@ addPoints :: ({v:Field<Mutable> | offset(v,"w") = 128 && offset(v,"h") = 128}) => void */
     function addPoints(field:Field) {
         var n = 64;
         for (var i = 1; i <= n; i++) {
@@ -100,7 +101,7 @@ module NavierStokes {
     /*@ framesBetweenAddingPoints :: number */
     var framesBetweenAddingPoints = 5;
 
-    /*@ prepareFrame :: ({v:Field<Mutable> | offset(v,"w") ~~ 128 && offset(v,"h") ~~ 128}) => void */
+    /*@ prepareFrame :: ({v:Field<Mutable> | offset(v,"w") = 128 && offset(v,"h") = 128}) => void */
     function prepareFrame(field:Field)
     {
         if (framesTillAddingPoints === 0) {
@@ -139,14 +140,13 @@ module NavierStokes {
         private dt:number;
         private displayFunc: (f:Field) => void;
 
-        /*@ uiCallback : ({v:Field<Mutable> | offset(v,"w") ~~ this.width && offset(v,"h") ~~ this.height}) => void */
+        /*@ uiCallback : ({v:Field<Mutable> | offset(v,"w") = this.width && offset(v,"h") = this.height}) => void */
         private uiCallback = function(field:Field) 
             /*@ <anonymous> (Field<Mutable>)=>void */ 
             {};
 
-        /*@ new (canvas:top, hRes:pos, wRes:pos) => {FluidField<M> | offset(v,"width") = wRes && offset(v,"height") = hRes} */
+        /*@ new (canvas:top, hRes:pos, wRes:{pos | hRes * v < 1000000}) => {FluidField<M> | offset(v,"width") = wRes && offset(v,"height") = hRes} */
         constructor(canvas, hRes, wRes) {
-            // TODO: formerly didn't allow hRes*wRes to be >= 1000000
             var width = wRes;
             var height = hRes;
             var size = (height+2) * (width+2);
@@ -162,12 +162,7 @@ module NavierStokes {
             var ww         = new Array<number>(size);
             var ww_prev    = new Array<number>(size);
             for (var i = 0; i < size; i++) {
-                dens_prev[i] = 0;
-                u_prev[i] = 0;
-                ww_prev[i] = 0;
-                dens[i] = 0;
-                u[i] = 0;
-                ww[i] = 0;
+                dens_prev[i] = 0; u_prev[i] = 0; ww_prev[i] = 0; dens[i] = 0; u[i] = 0; ww[i] = 0;
             }
             this.dens = dens;
             this.dens_prev = dens_prev;
@@ -463,14 +458,11 @@ module NavierStokes {
             queryUI(d:number[], u:number[], ww:number[])
             {
                 for (var i = 0; i < this.size; i++) {
-                    u[i] = 0;//.
-                    ww[i] = 0;//.
-                    d[i] = 0;//.
+                    u[i] = 0; ww[i] = 0; d[i] = 0;//.
                 }
                 this.uiCallback(new Field(this.rowSize, this.width, this.height, d, u, ww));
             } 
 
-            /*@ update : () : {void | true} */
             public update() 
             {
                 this.queryUI(this.dens_prev, this.u_prev, this.ww_prev);
@@ -491,20 +483,14 @@ module NavierStokes {
                 if (iters > 0 && iters <= 100)
                     this.iters = iters;
             }
-            /*@ setUICallback : (this:FluidField<Mutable>, ({v:Field<Mutable> | offset(v,"w") ~~ this.width && offset(v,"h") ~~ this.height})=>void) : {void | true} */
+            /*@ setUICallback : (this:FluidField<Mutable>, ({v:Field<Mutable> | offset(v,"w") = this.width && offset(v,"h") = this.height})=>void) : {void | true} */
             public setUICallback(callback:(f:Field) => void) {
                 this.uiCallback = callback;
             }
-            /*@ reset : () : {void | true} */
             public reset()
             {
                 for (var i = 0; i < this.size; i++) {
-                    this.dens_prev[i] = 0;
-                    this.u_prev[i] = 0;
-                    this.ww_prev[i] = 0;
-                    this.dens[i] = 0;
-                    this.u[i] = 0;
-                    this.ww[i] = 0;
+                    this.dens_prev[i] = 0; this.u_prev[i] = 0; this.ww_prev[i] = 0; this.dens[i] = 0; this.u[i] = 0; this.ww[i] = 0;
                 }
             }
             /*@ getDens : () : {v:IArray<number> | (len v) = this.size} */
