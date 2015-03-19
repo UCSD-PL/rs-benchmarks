@@ -340,11 +340,10 @@ module SplayVERSION {
             // the L tree of the algorithm.  The left child of the dummy node
             // will hold the R tree of the algorithm.  Using a dummy node, left
             // and right will always be nodes and we avoid special cases.
-            var dummy:SplayTreeNode=new SplayTreeNode(-1, null);
+            /*@ dummy :: SplayTreeNode<Mutable> */
+            var dummy:SplayTreeNode=new SplayTreeNode(-1, null); // ORIG: dummy = left = right = new SplayTreeNode(null, null);
             var left:SplayTreeNode=dummy;
-            /*@ right :: SplayTreeNode<Mutable> */
             var right:SplayTreeNode=dummy;
-//            dummy = left = right = new SplayTreeNode(null, null);
             var current = <SplayTreeNode>root;
             var shouldBreak = false;
             while (!shouldBreak) {
@@ -413,13 +412,9 @@ module SplayVERSION {
      */
     class SplayTreeNode {
         public key:number;
-        public value:any;
-
+        public value;
         /*@ new (key:number, value:top) => {SplayTreeNode<M> | true} */
-        constructor(key, value) {
-            this.key = key;
-            this.value = value;
-        }
+        constructor(key, value) { this.key = key; this.value = value; }
 
         /**
          * @type {SplayTree.Node}
