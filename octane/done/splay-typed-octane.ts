@@ -170,7 +170,7 @@ module SplayVERSION {
          * @param {*} value Value to insert into the tree.
          */
         /*@ insert : (this:SplayTree<Mutable>, key:number, value:top) : {void | true} */
-        public insert(key, value) {
+        public insert(key:number, value) {
             var root = this.root_;
             if (!root) {
                 this.root_ = new SplayTreeNode(key, value);
@@ -310,10 +310,9 @@ module SplayVERSION {
             var result:number[] = [];
             var root = this.root_;
             if (root) {
-                var f = function (node)
-                    /*@ <anonymous> (x:SplayTreeNode<Mutable>) => {void | true} */ 
-                    { result.push(node.key); };
-                root.traverse_(f);
+                root.traverse_(function (node)
+                    /*@ <anonymous> (SplayTreeNode<Mutable>) => void */ 
+                    { result.push(node.key); });
             }
             return result;
         }
