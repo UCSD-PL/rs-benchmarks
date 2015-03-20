@@ -37,7 +37,8 @@
 /*@ alias nat = {number | 0 <= v} */
 
 module RichardsTYPEDVERSION {
-    var COUNT /*@ readonly */ = 1000;
+    /*@ readonly COUNT :: # */
+    var COUNT = 1000;
 
     /**
      * These two constants specify how many times a packet is queued and
@@ -46,43 +47,61 @@ module RichardsTYPEDVERSION {
      * correct run so if the actual queue or hold count is different from
      * the expected there must be a bug in the implementation.
      **/
-    var EXPECTED_QUEUE_COUNT /*@ readonly */ = 2322;
-    var EXPECTED_HOLD_COUNT /*@ readonly */ = 928;
+    /*@ readonly EXPECTED_QUEUE_COUNT :: # */
+    var EXPECTED_QUEUE_COUNT = 2322;
+    /*@ readonly EXPECTED_HOLD_COUNT :: # */
+    var EXPECTED_HOLD_COUNT = 928;
 
-    var ID_IDLE       /*@ readonly */ = 0;
-    var ID_WORKER     /*@ readonly */ = 1;
-    var ID_HANDLER_A  /*@ readonly */ = 2;
-    var ID_HANDLER_B  /*@ readonly */ = 3;
-    var ID_DEVICE_A   /*@ readonly */ = 4;
-    var ID_DEVICE_B   /*@ readonly */ = 5;
-    var NUMBER_OF_IDS /*@ readonly */ = 6;
-    var KIND_DEVICE   /*@ readonly */ = 0;
-    var KIND_WORK     /*@ readonly */ = 1;
-    var DATA_SIZE     /*@ readonly */ = 4;
+    /*@ readonly ID_IDLE :: # */
+    var ID_IDLE       = 0;
+    /*@ readonly ID_WORKER :: # */
+    var ID_WORKER     = 1;
+    /*@ readonly ID_HANDLER_A :: # */
+    var ID_HANDLER_A  = 2;
+    /*@ readonly ID_HANDLER_B :: # */
+    var ID_HANDLER_B  = 3;
+    /*@ readonly ID_DEVICE_A :: # */
+    var ID_DEVICE_A   = 4;
+    /*@ readonly ID_DEVICE_B :: # */
+    var ID_DEVICE_B   = 5;
+    /*@ readonly NUMBER_OF_IDS :: # */
+    var NUMBER_OF_IDS = 6;
+    /*@ readonly KIND_DEVICE :: # */
+    var KIND_DEVICE   = 0;
+    /*@ readonly KIND_WORK :: # */
+    var KIND_WORK     = 1;
+    /*@ readonly DATA_SIZE :: # */
+    var DATA_SIZE     = 4;
 
     /**
      * The task is running and is currently scheduled.
      */
-    var STATE_RUNNING   /*@ readonly */ = 0x00000000;
+    /*@ readonly STATE_RUNNING :: # */
+    var STATE_RUNNING   = 0x00000000;
 
     /**
      * The task has packets left to process.
      */
-    var STATE_RUNNABLE  /*@ readonly */ = 0x00000001;
+    /*@ readonly STATE_RUNNABLE :: # */
+    var STATE_RUNNABLE  = 0x00000001;
 
     /**
      * The task is not currently running.  The task is not blocked as such and may
      * be started by the scheduler.
      */
-    var STATE_SUSPENDED /*@ readonly */ = 0x00000002;
+    /*@ readonly STATE_SUSPENDED :: # */
+    var STATE_SUSPENDED = 0x00000002;
 
     /**
      * The task is blocked and cannot be run until it is explicitly released.
      */
-    var STATE_HELD      /*@ readonly */ = 0x00000004;
+    /*@ readonly STATE_HELD :: # */
+    var STATE_HELD      = 0x00000004;
 
-    var STATE_SUSPENDED_RUNNABLE /*@ readonly */ = STATE_SUSPENDED | STATE_RUNNABLE;
-    var STATE_NOT_HELD           /*@ readonly */ = 0xFFFFFFFB //ORIG: ~STATE_HELD;
+    /*@ readonly STATE_SUSPENDED_RUNNABLE :: # */
+    var STATE_SUSPENDED_RUNNABLE = STATE_SUSPENDED | STATE_RUNNABLE;
+    /*@ readonly STATE_NOT_HELD :: # */
+    var STATE_NOT_HELD           = 0xFFFFFFFB //ORIG: ~STATE_HELD;
 
     /*@ testRichards :: () => {void | true} */
     export function testRichards() {

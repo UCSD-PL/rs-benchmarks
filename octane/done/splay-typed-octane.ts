@@ -37,9 +37,12 @@
 module SplayVERSION {
 
     // Configuration.
-    var kSplayTreeSize /*@ readonly */ = 8000;
-    var kSplayTreeModifications /*@ readonly */ = 80;
-    var kSplayTreePayloadDepth /*@ readonly */ = 5;
+    /*@ readonly kSplayTreeSize :: # */
+    var kSplayTreeSize = 8000;
+    /*@ readonly kSplayTreeModifications :: # */
+    var kSplayTreeModifications = 80;
+    /*@ readonly kSplayTreePayloadDepth :: # */
+    var kSplayTreePayloadDepth = 5;
 
     /*@ splayTree :: SplayTree<Mutable> + null */
     var splayTree:SplayTree = null;

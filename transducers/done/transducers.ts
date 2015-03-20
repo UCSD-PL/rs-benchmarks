@@ -75,16 +75,20 @@ interface Transformer<IN, INTER, OUT> extends TruncatedTransformer<IN, INTER> {
 // Build target config
 
 /** @define {boolean} */
-var TRANSDUCERS_DEV /*@ readonly */ = true;
+/*@ readonly TRANSDUCERS_DEV :: # */ 
+var TRANSDUCERS_DEV = true;
 
 /** @define {boolean} */
-var TRANSDUCERS_NODE_TARGET /*@ readonly */ = false;
+/*@ readonly TRANSDUCERS_NODE_TARGET :: # */ 
+var TRANSDUCERS_NODE_TARGET = false;
 
 /** @define {boolean} */
-var TRANSDUCERS_BROWSER_TARGET /*@ readonly */ = false;
+/*@ readonly TRANSDUCERS_BROWSER_TARGET :: # */ 
+var TRANSDUCERS_BROWSER_TARGET = false;
 
 /** @define {boolean} */
-var TRANSDUCERS_BROWSER_AMD_TARGET /*@ readonly */ = false;
+/*@ readonly TRANSDUCERS_BROWSER_AMD_TARGET :: # */ 
+var TRANSDUCERS_BROWSER_AMD_TARGET = false;
 
         // goog.scope(function() {
 
@@ -145,7 +149,8 @@ function isIterable(x:any) {
 //TODO: this now only supports unary functions
 /*@ complement :: forall T . ((T)=>top) => {(T)=>boolean | true} */
 function complement(f) {
-    var ff /*@ readonly */ = f;
+    /*@ readonly ff :: # */ 
+    var ff = f;
     return function(y)
     /*@ <anonymous> (T) => boolean */
     { return !ff(y) };
@@ -196,7 +201,8 @@ function wrap<IN, OUT>(stepFn:any) {
 
 /*@ addQQ0 :: forall M T U . (stepFn:(T,U)=>T) => {(T,U)=>QQ<M,T> | true} */
 function addQQ0<T, U>(stepFn:(T,U)=>T):(T,U)=>QQ<T> {
-    var ff /*@ readonly */ = stepFn;
+    /*@ readonly ff :: # */ 
+    var ff = stepFn;
     return function(t:T, u:U) 
     /*@ <anonymous> (T,U)=>QQ<M,T> */
     { return new QQ(ff(t,u), 0) };
@@ -303,8 +309,10 @@ function comp(f:Function, g:any) {
 
 /*@ binaryComp :: forall S T U . (f:(T)=>U, g:(S)=>T) => {(S)=>U | true} */
 function binaryComp(f, g) {
-    var ff /*@ readonly */ = f;
-    var gg /*@ readonly */ = g;
+    /*@ readonly ff :: # */ 
+    var ff = f;
+    /*@ readonly gg :: # */ 
+    var gg = g;
     return function(s) 
     /*@ <anonymous> (S)=>U */
     { return ff(gg(s)) }
@@ -346,7 +354,8 @@ step(result:INTER, input:IN):QQ<INTER> {
  */
 /*@ map :: forall IN INTER OUT T . (f: (IN)=>T) => {(xf: ITransformer<T, INTER, OUT>) => Map<Immutable, IN, INTER, OUT, T> | true} */
 function map<IN, INTER, OUT, T>(f: (IN)=>T): (xf: Transformer<T, INTER, OUT>) => Map<IN, INTER, OUT, T> {
-    var ff /*@ readonly */ = f;
+    /*@ readonly ff :: # */ 
+    var ff = f;
     if(TRANSDUCERS_DEV && (f === null)) {
         throw new Error("At least one argument must be supplied to map");
     } else {
@@ -396,7 +405,8 @@ step(result:INTER, input:IN):QQ<INTER> {
  */
 /*@ filter :: forall IN INTER OUT . (pred: (IN)=>boolean) => {(xf: ITransformer<IN, INTER, OUT>) => Filter<Immutable, IN, INTER, OUT> | true} */
 function filter<IN, INTER, OUT>(pred: (IN)=>boolean): (xf: Transformer<IN, INTER, OUT>) => Filter<IN, INTER, OUT> {
-    var ff /*@ readonly */ = pred;
+    /*@ readonly ff :: # */ 
+    var ff = pred;
     if(TRANSDUCERS_DEV && (typeof pred !== "function")) {
         throw new Error("filter must be given a function");
     } else {
@@ -471,7 +481,8 @@ step(result:INTER, input:IN):QQ<INTER> {
  */
 /*@ take :: forall IN INTER OUT . (n:number) => {(xf: ITransformer<IN, INTER, OUT>) => Take<Immutable, IN, INTER, OUT> | true} */
 function take<IN, INTER, OUT>(n:number): (xf: Transformer<IN, INTER, OUT>) => Take<IN, INTER, OUT> {
-    var nn /*@ readonly */ = n;
+    /*@ readonly nn :: # */ 
+    var nn = n;
     if(TRANSDUCERS_DEV && (typeof n !== "number")) {
         throw new Error("take must be given an integer");
     } else {
@@ -521,7 +532,8 @@ step(result:INTER, input:IN):QQ<INTER> {
  */
 /*@ takeWhile :: forall IN INTER OUT . (pred: (IN)=>boolean) => {(xf: ITransformer<IN, INTER, OUT>) => TakeWhile<Immutable, IN, INTER, OUT> | true} */
 function takeWhile<IN, INTER, OUT>(pred: (IN)=>boolean): (xf: Transformer<IN, INTER, OUT>) => TakeWhile<IN, INTER, OUT> {
-    var ff /*@ readonly */ = pred;
+    /*@ readonly ff :: # */ 
+    var ff = pred;
     if(TRANSDUCERS_DEV && (typeof pred !== "function")) {
         throw new Error("takeWhile must given a function");
     } else {
@@ -574,7 +586,8 @@ step(result:INTER, input:IN):QQ<INTER> {
  */
 /*@ takeNth :: forall IN INTER OUT . (n:number) => {(xf: ITransformer<IN, INTER, OUT>) => TakeNth<Immutable, IN, INTER, OUT> | true} */
 function takeNth<IN, INTER, OUT>(n:number): (xf: Transformer<IN, INTER, OUT>) => TakeNth<IN, INTER, OUT> {
-    var nn /*@ readonly */ = n;
+    /*@ readonly nn :: # */ 
+    var nn = n;
     if(TRANSDUCERS_DEV && (typeof n !== "number")) {
         throw new Error("takeNth must be given a number");
     } else {
@@ -628,7 +641,8 @@ step(result:INTER, input:IN):QQ<INTER> {
  */
 /*@ drop :: forall IN INTER OUT . (n:number) => {(xf: ITransformer<IN, INTER, OUT>) => Drop<Immutable, IN, INTER, OUT> | true} */
 function drop<IN, INTER, OUT>(n:number): (xf: Transformer<IN, INTER, OUT>) => Drop<IN, INTER, OUT> {
-    var nn /*@ readonly */ = n;
+    /*@ readonly nn :: # */ 
+    var nn = n;
     if(TRANSDUCERS_DEV && (typeof n !== "number")) {
         throw new Error("drop must be given an integer");
     } else {
@@ -682,7 +696,8 @@ step(result:INTER, input:IN):QQ<INTER> {
  */
 /*@ dropWhile :: forall IN INTER OUT . (pred: (IN)=>boolean) => {(xf: ITransformer<IN, INTER, OUT>) => DropWhile<Immutable, IN, INTER, OUT> | true} */
 function dropWhile<IN, INTER, OUT>(pred: (IN)=>boolean): (xf: Transformer<IN, INTER, OUT>) => DropWhile<IN, INTER, OUT> {
-    var ff /*@ readonly */ = pred;
+    /*@ readonly ff :: # */ 
+    var ff = pred;
     if(TRANSDUCERS_DEV && (typeof pred !== "function")) {
         throw new Error("dropWhile must be given a function");
     } else {
@@ -692,7 +707,8 @@ function dropWhile<IN, INTER, OUT>(pred: (IN)=>boolean): (xf: Transformer<IN, IN
     }
 }
 
-var NONE /*@ readonly */ = {};
+/*@ readonly NONE :: # */ 
+var NONE = {};
 
 class PartitionBy<IN, INTER, OUT> implements Transformer<IN, INTER, OUT> {
 public f: (z:IN) => any;
@@ -762,7 +778,8 @@ step(result:INTER, input:IN):QQ<INTER> {
  */
 /*@ partitionBy :: forall IN INTER OUT . (f: (IN)=>top) => {(xf: ITransformer<MArray<IN>, INTER, OUT>) => PartitionBy<Immutable, IN, INTER, OUT> | true} */
 function partitionBy<IN, INTER, OUT>(f: (IN)=>any): (xf: Transformer<Array<IN>, INTER, OUT>) => PartitionBy<IN, INTER, OUT> {
-    var ff /*@ readonly */ = f;
+    /*@ readonly ff :: # */ 
+    var ff = f;
     if(TRANSDUCERS_DEV && (typeof f !== "function")) {
         throw new Error("partitionBy must be given an function");
     } else {
@@ -823,7 +840,8 @@ step(result:INTER, input:IN):QQ<INTER> {
  */
 /*@ partitionAll :: forall IN INTER OUT . (n:number) => {(xf: ITransformer<MArray<IN>, INTER, OUT>) => PartitionAll<Immutable, IN, INTER, OUT> | true} */
 function partitionAll<IN, INTER, OUT>(n:number): (xf: Transformer<Array<IN>, INTER, OUT>) => PartitionAll<IN, INTER, OUT> {
-    var nn /*@ readonly */ = n;
+    /*@ readonly nn :: # */ 
+    var nn = n;
     if(TRANSDUCERS_DEV && (typeof n !== "number")) {
         throw new Error("partitionAll must be given a number");
     } else {
@@ -874,7 +892,8 @@ step(result:INTER, input:IN):QQ<INTER> {
  */
 /*@ keep :: forall IN INTER OUT . (f: (IN)=>top) => {(xf: ITransformer<IN, INTER, OUT>) => Keep<Immutable, IN, INTER, OUT> | true} */
 function keep<IN, INTER, OUT>(f: (IN)=>any): (xf: Transformer<IN, INTER, OUT>) => Keep<IN, INTER, OUT> {
-    var ff /*@ readonly */ = f;
+    /*@ readonly ff :: # */ 
+    var ff = f;
     if(TRANSDUCERS_DEV && (typeof f !== "function")) {
         throw new Error("keep must be given a function");
     } else {
@@ -929,7 +948,8 @@ step(result:INTER, input:IN):QQ<INTER> {
  */
 /*@ keepIndexed :: forall IN INTER OUT . (f: (idx:number, z:IN)=>top) => {(xf: ITransformer<IN, INTER, OUT>) => KeepIndexed<Immutable, IN, INTER, OUT> | true} */
 function keepIndexed<IN, INTER, OUT>(f: (idx:number, z:IN)=>any): (xf: Transformer<IN, INTER, OUT>) => KeepIndexed<IN, INTER, OUT> {
-    var ff /*@ readonly */ = f;
+    /*@ readonly ff :: # */ 
+    var ff = f;
     if(TRANSDUCERS_DEV && (typeof f !== "function")) {
         throw new Error("keepIndexed must be given a function");
     } else {
@@ -1028,7 +1048,8 @@ step(result:INTER, input:Array<IN>):QQ<INTER> {
  */
 /*@ mapcat :: forall IN INTER OUT S . (f: (z:S)=>IArray<IN>) => {(xf: ITransformer<IN, INTER, OUT>) => Map<Immutable, S, INTER, OUT, IArray<IN>> | true} */
 function mapcat<IN, INTER, OUT, S>(f: (z:S)=>IN[]) {
-    var ff /*@ readonly */ = f;
+    /*@ readonly ff :: # */ 
+    var ff = f;
     return function(xf: Transformer<IN, INTER, OUT>) 
     /*@ <anonymous> (xf: ITransformer<IN, INTER, OUT>) => {Map<Immutable, S, INTER, OUT, IArray<IN>> | true} */
     {
