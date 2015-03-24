@@ -161,12 +161,13 @@ module ts {
     export function mapToArray<T>(map: Map<T>): T[] {
         /*@ result :: MArray<T> */
         var result: T[] = [];
+
         for (var id in map) {
             result.push(map[id]);
         }
+
         return result;
     }
-
 
     /**
      * Creates a map from the elements of an array.

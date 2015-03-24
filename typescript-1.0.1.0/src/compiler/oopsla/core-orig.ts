@@ -103,15 +103,9 @@ module ts {
         return ~low;
     }
 
-    var hasOwnProperty = Object.prototype.hasOwnProperty;
+    export declare function hasProperty<T>(map: Map<T>, key: string): boolean;
 
-    export function hasProperty<T>(map: Map<T>, key: string): boolean {
-        return hasOwnProperty.call(map, key);
-    }
-
-    export function getProperty<T>(map: Map<T>, key: string): T {
-        return hasOwnProperty.call(map, key) ? map[key] : undefined;
-    }
+    export declare function getProperty<T>(map: Map<T>, key: string): T;
 
     export function isEmpty<T>(map: Map<T>) {
         for (var id in map) {
@@ -120,14 +114,6 @@ module ts {
             }
         }
         return true;
-    }
-
-    export function clone<T>(object: T): T {
-        var result: any = {};
-        for (var id in object) {
-            result[id] = (<any>object)[id];
-        }
-        return <T>result;
     }
 
     export function forEachValue<T, U>(map: Map<T>, callback: (value: T) => U): U {
@@ -144,10 +130,6 @@ module ts {
             if (result = callback(id)) break;
         }
         return result;
-    }
-
-    export function lookUp<T>(map: Map<T>, key: string): T {
-        return hasProperty(map, key) ? map[key] : undefined;
     }
 
     export function mapToArray<T>(map: Map<T>): T[] {
@@ -193,4 +175,6 @@ module ts {
         getTypeConstructor(): new (checker: TypeChecker, flags: TypeFlags) => Type;
         getSignatureConstructor(): new (checker: TypeChecker) => Signature;
     }
+
+    function Type(checker: TypeChecker, flags: TypeFlags) {  this.flags = flags;  }
 }
