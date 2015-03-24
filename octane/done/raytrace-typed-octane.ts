@@ -225,9 +225,9 @@ module VERSION {
 
             /*@ magnitude : () : {number | true} */
             public magnitude() {
-                var x /*@ readonly */ = this.x;
-                var y /*@ readonly */ = this.y;
-                var z /*@ readonly */ = this.z;
+                var x = this.x;
+                var y = this.y;
+                var z = this.z;
                 return Math.sqrt((x * x) + (y * y) + (z * z));
             }
 

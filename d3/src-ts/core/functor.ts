@@ -10,7 +10,8 @@ function d3_functor<T>(x: any): (p : any) => T {
 
   // return typeof v === "function" ? v : function() { return v; }; // ORIG
 
-  var xx /*@ readonly */ = x; 
+  /*@ readonly xx :: # */
+  var xx = x; 
   
   if (typeof xx === "function") {
   // 
