@@ -3,7 +3,7 @@
 /*@ d3_functor :: forall R T . (fun: (p: R) => T) => (p: R) => { T | true } */
 function d3_functor<R,T>(fun: (p : R) => T): (p : R) => T;
 
-/*@ d3_functor :: forall T . (value: T) => () => { T | true } */
+/*@ d3_functor :: forall T . (value: {T | ttag(v) != "function"}) => () => { T | true } */
 function d3_functor<T>(value: T): (p : any) => T;
 
 function d3_functor<T>(x: any): (p : any) => T {
@@ -22,6 +22,8 @@ function d3_functor<T>(x: any): (p : any) => T {
   //     Perhaps this could be fixed we somehow can get the guarantee that 
   //     only the first overload can be a function. 
   // 
+  // BC: I've refined that overload with {T | ttag(v) != "function"} - is
+  //     that a useful solution?
     return xx;
   }
   else {
