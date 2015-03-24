@@ -8,88 +8,89 @@ module ts {
 
     export interface StringSet extends Map<any> { }
 
-// // <<<< DONE >>>>
-
     /*@ forEach :: forall T U . (array: IArray<T>, callback: (element: T) => U) => { U | true } + undefined */
-    export declare function forEach<T, U>(array: T[], callback: (element: T) => U): U;
-    //// DONE
-    //export function forEach<T, U>(array: T[], callback: (element: T) => U): U {
-    //    /*@ result :: U */
-    //    var result: U;
-    //    if (array) {
-    //        var cnt = false;
-    //        for (var i = 0, len = array.length; i < len && cnt; i++) {
-    //            if (result = callback(array[i])) 
-    //                cnt = false;
-    //        }
-    //    }
-    //    return result;
-    //}
+    // export declare function forEach<T, U>(array: T[], callback: (element: T) => U): U;
+    // DONE
+    export function forEach<T, U>(array: T[], callback: (element: T) => U): U {
+        /*@ result :: U + undefined */
+        var result: U;
+        if (array) {
+            var cnt = false;
+            for (var i = 0, len = array.length; i < len && cnt; i++) {
+                if (result = callback(array[i])) 
+                    cnt = false;
+            }
+        }
+        return result;
+    }
 
     /*@  contains :: forall T . (array: IArray<T>, value: T) => { boolean | true } */
-    export declare function contains<T>(array: T[], value: T): boolean;
-    //// DONE
-    //export function contains<T>(array: T[], value: T): boolean {
-    //    if (array) {
-    //        var len = array.length;
-    //        for (var i = 0; i < len; i++) {
-    //            if (array[i] === value) {
-    //                return true;
-    //            }
-    //        }
-    //    }
-    //    return false;
-    //}
+    //export declare function contains<T>(array: T[], value: T): boolean;
+    // DONE
+    export function contains<T>(array: T[], value: T): boolean {
+        if (array) {
+            var len = array.length;
+            for (var i = 0; i < len; i++) {
+                if (array[i] === value) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     /*@  indexOf :: forall T . (array: IArray<T>, value: T) => { number | true } */
-    export declare function indexOf<T>(array: T[], value: T): number;
-    //// DONE
-    //export function indexOf<T>(array: T[], value: T): number {
-    //    if (array) {
-    //        var len = array.length;
-    //        for (var i = 0; i < len; i++) {
-    //            if (array[i] === value) {
-    //                return i;
-    //            }
-    //        }
-    //    }
-    //    return -1;
-    //}
+    //export declare function indexOf<T>(array: T[], value: T): number;
+    // DONE
+    export function indexOf<T>(array: T[], value: T): number {
+        if (array) {
+            var len = array.length;
+            for (var i = 0; i < len; i++) {
+                if (array[i] === value) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
 
     /*@  filter :: forall T . (array: IArray<T>, f: (T) => boolean) => { MArray<T> | true } + undefined */
-    export declare function filter<T>(array: T[], f: (x: T) => boolean): T[];
-    //// DONE
-    //export function filter<T>(array: T[], f: (x: T) => boolean): T[] {
-    //    var result: T[];
-    //    if (array) {
-    //        result = [];
-    //        for (var i = 0, len = array.length; i < len; i++) {
-    //            var item = array[i];
-    //            if (f(item)) {
-    //                result.push(item);
-    //            }
-    //        }
-    //    }
-    //    return result;
-    //}
+    //export declare function filter<T>(array: T[], f: (x: T) => boolean): T[];
+    // DONE
+    export function filter<T>(array: T[], f: (x: T) => boolean): T[] {
+        /*@ result :: MArray<T> + undefined */
+        var result: T[];
+        if (array) {
+        var result_1 = [];    //PV: modification
+            for (var i = 0, len = array.length; i < len; i++) {
+                var item = array[i];
+                if (f(item)) {
+                    result_1.push(item);
+                }
+            }
+            result = result_1;
+        }
+        return result;
+    }
 
 // NOTE: BC added a few more possible annotations below but changed nothing else
 
-    /*@ map :: /\ forall T U . (array: IArray<T>, f: (x:T)=>U) => {MArray<U> | true}
-               /\ forall T U . (array: undefined, f: (x:T)=>U) => {undefined | true} */
-    export declare function map<T, U>(array: T[], f: (x: T) => U): U[];
-    //// DONE
-    //export function map<T, U>(array: T[], f: (x: T) => U): U[] {
-    //    var result: U[];
-    //    if (array) {
-    //        result = [];
-    //        var len = array.length;
-    //        for (var i = 0; i < len; i++) {
-    //            result.push(f(array[i]));
-    //        }
-    //    }
-    //    return result;
-    //}
+    /*@ map :: forall T U . (array: IArray<T>, f: (x:T)=>U) => {MArray<U> | true} + undefined */
+    //export declare function map<T, U>(array: T[], f: (x: T) => U): U[];
+    // DONE
+    export function map<T, U>(array: T[], f: (x: T) => U): U[] {
+      /*@ result :: MArray<U> + undefined */
+        var result: U[];
+        if (array) {
+            var result_0 = [];
+            var len = array.length;
+            for (var i = 0; i < len; i++) {
+                result_0.push(f(array[i]));
+            }
+            result = result_0;
+        }
+        return result;
+    }
 
 
     //TODO should we relax the inputs to allow e.g. nulls? otherwise the checks seem pretty silly
@@ -98,65 +99,59 @@ module ts {
                                     , array2: IArray<T> + undefined) 
                     =>                      { IArray<T> + undefined | true }
      */
-    export declare function concatenate<T>(array1: T[], array2: T[]): T[];
-    //// DONE
-    //export function concatenate<T>(array1: T[], array2: T[]): T[] {
+    //export declare function concatenate<T>(array1: T[], array2: T[]): T[];
+    // DONE
+    export function concatenate<T>(array1: T[], array2: T[]): T[] {
 
-    //    if (!array2 || !array2.length) return array1;
-    //    if (!array1 || !array1.length) return array2;
-    //    // return undefined 
-    //    // 
-    //    // PV: This is what casting to the polymorphic type IArray<T>
-    //    //     can look like 
-    //    //
-    //    /*@ arr1 :: IArray<T> */
-    //    var arr1 /*@ readonly */ = array1;
-    //    /*@ arr2 :: IArray<T> */
-    //    var arr2 /*@ readonly */ = array2;
-    //    return arr1.concat(arr2);
-    //}
+        if (!array2 || !array2.length) return array1;
+        if (!array1 || !array1.length) return array2;
+        // PV: This is what casting to the polymorphic type IArray<T>
+        //     can look like 
+        /*@ arr1 :: IArray<T> */
+        var arr1 = array1;
+        /*@ arr2 :: IArray<T> */
+        var arr2 = array2;
+        return arr1.concat(arr2);
+    }
 
 
     /*@ sum :: (array: IArray<{{[s:string]:number} | hasProperty(prop, v)}>, prop: string) => { number | true } */
-    export declare function sum(array: any[], prop: string): number;
-    //// DONE
-    //export function sum(array: any[], prop: string): number {
-    //    var result = 0;
-    //    for (var i = 0; i < array.length; i++) {
-    //        result += (array[i][prop]);
-    //    }
-    //    return result;
-    //}
+    //export declare function sum(array: any[], prop: string): number;
+    // DONE
+    export function sum(array: any[], prop: string): number {
+        var result = 0;
+        for (var i = 0; i < array.length; i++) {
+            result += <number>(array[i][prop]);
+        }
+        return result;
+    }
 
 
     /*@ binarySearch :: (array: { IArray<number> | (len v) > 1 }, value: number) => { number | ((0 <= v && v < (len array)) || v = -1) } */
-    export declare function binarySearch(array: number[], value: number): number;
-    //// DONE
-    //export function binarySearch(array: number[], value: number): number {
-    //    var low = 0;
-    //    var high = array.length - 1;
-    //    while (low <= high) {
-    //        var middle = low + ((high - low) >> 1);
-    //        //
-    //        // PV: Giving up here
-    //        //
-    //        assume(low <= middle && middle <= high);
-    //        var midValue = array[middle];
-    //        if (midValue === value) {
-    //            return middle;
-    //        }
-    //        else if (midValue > value) {
-    //            high = middle - 1;
-    //        }
-    //        else {
-    //            low = middle + 1;
-    //        }
-    //    }
-    //    //
-    //    // PV: Not sure what the purpose of ~low is. 
-    //    //
-    //    return -1; // ~low;
-    //}
+    //export declare function binarySearch(array: number[], value: number): number;
+    // DONE
+    export function binarySearch(array: number[], value: number): number {
+        var low = 0;
+        var high = array.length - 1;
+        while (low <= high) {
+            var middle = low + ((high - low) >> 1);
+            //
+            // PV: Giving up here
+            //
+            assume(low <= middle && middle <= high);
+            var midValue = array[middle];
+            if (midValue === value) {
+                return middle;
+            }
+            else if (midValue > value) {
+                high = middle - 1;
+            }
+            else {
+                low = middle + 1;
+            }
+        }
+        return -1; // ~low;     // PV: Not sure what the purpose of ~low is. 
+    }
 
 
     // PV: We do not allow extraction of method properties
@@ -164,13 +159,10 @@ module ts {
 
 
     /*@ hasProperty :: forall T M . (map: Map<M,T>, key: string) => { boolean | Prop(v) <=> (hasDirectProperty(key,map) && hasProperty(key,map)) } */
-    export declare function hasProperty<T>(map_: Map<T>, key: string): boolean;
-    //// DONE
-    //export function hasProperty<T>(map_: Map<T>, key: string): boolean {
-    //  return hasOwnProperty.call(map_, key);
-    //  // TODO 
-    //  // return map_.hasOwnProperty(key);
-    //  return hasProperty(map_,key);
+    export declare function hasProperty<T>(map: Map<T>, key: string): boolean;
+    //// TODO
+    //export function hasProperty<T>(map: Map<T>, key: string): boolean {
+    //  return hasOwnProperty.call(map, key);
     //}
 
 
@@ -183,21 +175,21 @@ module ts {
 
 
 
-    /*  qualif HSqualif(v:a,s:string): hasProperty(s,v) */
-    /*  qualif EPqualif(v:a,s:string): enumProp(s,v) */
+    /*@  qualif HSqualif(s:Str,v:a): hasProperty(s,v) */
+    /*@  qualif EPqualif(s:Str,v:a): enumProp(s,v) */
 
 
     /*@ isEmpty :: forall T . (map: Map<Immutable,T>) => { boolean | true } */
-    export declare function isEmpty<T>(map: Map<T>): boolean;
-    //// DONE
-    //export function isEmpty<T>(map: Map<T>) {
-    //    for (var id in map) {
-    //        if (hasProperty(map, id)) {
-    //            return false;
-    //        }
-    //    }
-    //    return true;
-    //}
+    //export declare function isEmpty<T>(map: Map<T>): boolean;
+    // DONE
+    export function isEmpty<T>(map: Map<T>) {
+        for (var id in map) {
+            if (hasProperty(map, id)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
 
     /*@ clone :: forall T . (T) => { T | true } */
@@ -211,54 +203,53 @@ module ts {
     //    return <T>result;
     //}
 
-
     /*@ forEachValue :: forall T U . (map: Map<Immutable,T>, callback: (value: T) => U) => { U | true } + undefined */
-    export declare function forEachValue<T, U>(map: Map<T>, callback: (value: T) => U): U;
-    //// DONE
-    //export function forEachValue<T, U>(map: Map<T>, callback: (value: T) => U): U {
-    //    /*@ result :: U */ 
-    //    var result: U;
-    //    for (var id in map) {
-    //        // if (result = callback(map[id])) break; // ORIG
-    //        result = callback(map[id]);
-    //    }
-    //    return result;
-    //}
+    //export declare function forEachValue<T, U>(map: Map<T>, callback: (value: T) => U): U;
+    // DONE
+    export function forEachValue<T, U>(map: Map<T>, callback: (value: T) => U): U {
+        /*@ result :: U + undefined */ 
+        var result: U;
+        for (var id in map) {
+            // if (result = callback(map[id])) break; // ORIGINAL
+            result = callback(map[id]);
+        }
+        return result;
+    }
 
 
     /*@ forEachKey :: forall T U . (map: Map<Immutable,T>, callback: (key: string) => U) => { U | true } + undefined */
-    export declare function forEachKey<T, U>(map: Map<T>, callback: (key: string) => U): U;
-    //// DONE
-    //export function forEachKey<T, U>(map: Map<T>, callback: (key: string) => U): U {
-    //    /*@ result :: U */
-    //    var result: U;
-    //    for (var id in map) {
-    //        result = callback(id);
-    //        // if (result = callback(id)) break;    // ORIG
-    //    }
-    //    return result;
-    //}
+    //export declare function forEachKey<T, U>(map: Map<T>, callback: (key: string) => U): U;
+    // DONE
+    export function forEachKey<T, U>(map: Map<T>, callback: (key: string) => U): U {
+        /*@ result :: U + undefined */
+        var result: U;
+        for (var id in map) {
+            result = callback(id);
+            // if (result = callback(id)) break;    // ORIGINAL
+        }
+        return result;
+    }
 
 
     /*@ lookUp :: forall T . (map: Map<Immutable,T>, key: string) => { T | hasProperty(key,map) } + undefined */ 
     export declare function lookUp<T>(map: Map<T>, key: string): T;
-    //// DONE
+    //// TODO
     //export function lookUp<T>(map: Map<T>, key: string): T {
     //    return hasProperty(map, key) ? map[key] : undefined;
     //}
 
 
     /*@ mapToArray :: forall T . (map: Map<Immutable,T>) => { MArray<T> | true } */
-    export declare function mapToArray<T>(map: Map<T>): T[];
-    //// DONE
-    //export function mapToArray<T>(map: Map<T>): T[] {
-    //    /*@ result :: MArray<T> */
-    //    var result: T[] = [];
-    //    for (var id in map) {
-    //        result.push(map[id]);
-    //    }
-    //    return result;
-    //}
+    //export declare function mapToArray<T>(map: Map<T>): T[];
+    // DONE
+    export function mapToArray<T>(map: Map<T>): T[] {
+        /*@ result :: MArray<T> */
+        var result: T[] = [];
+        for (var id in map) {
+            result.push(map[id]);
+        }
+        return result;
+    }
 
 
     /**
@@ -272,19 +263,24 @@ module ts {
      * index in the array will be the one associated with the produced key.
      */
 
+    /*@ _toMap :: forall S T M . (obj: S) => Map<M,T> */
+    declare function _toMap(obj: any): Map<any>;
+
+
     /*@ arrayToMap :: forall T . (array: IArray<T>, makeKey: (value: T) => string) => { Map<Mutable,T> | true } */
-    export declare function arrayToMap<T>(array: T[], makeKey: (value: T) => string): Map<T>;
-    //// DONE
-    //export function arrayToMap<T>(array: T[], makeKey: (value: T) => string): Map<T> {
-    //    var makeKeyLoc /*@ readonly */ = makeKey;
-    //    /*@ result :: Map<Mutable,T> */
-    //    var result /*@ readonly */ : Map<T> = {};
-    //    forEach(array, function(value:T) /*@ <anonymous> (value: T) => undefined */ {
-    //        result[makeKeyLoc(value)] = value;
-    //        return undefined;
-    //    });
-    //    return result;
-    //}
+    //export declare function arrayToMap<T>(array: T[], makeKey: (value: T) => string): Map<T>;
+    // DONE
+    export function arrayToMap<T>(array: T[], makeKey: (value: T) => string): Map<T> {
+        /*@ readonly makeKeyLoc :: # */
+        var makeKeyLoc = makeKey;
+
+        /*@ readonly result :: Map<Mutable,T> */
+        var result: Map<T> = _toMap({});
+        forEach(array, function(value:T) /*@ <anonymous> (value: T) => void */ {
+            result[makeKeyLoc(value)] = value;
+        });
+        return result;
+    }
 
 
     //// TODO (OR NOT) 
@@ -308,30 +304,25 @@ module ts {
     //}
 
     
-    // TODO: first overload 
-    // export function createFileDiagnostic(file: Sourceile, start: number, length: number, message: DiagnosticMessage, ...args: any[]): Diagnostic;
-
-    /*@ createFileDiagnostic :: (SourceFile<Immutable>, number, number, DiagnosticMessage<Immutable>) => Diagnostic<Immutable> */
-    export declare function createFileDiagnostic(file: SourceFile, start: number, length: number, message: DiagnosticMessage): Diagnostic;
-    //// DONE
-    //export function createFileDiagnostic(file: SourceFile, start: number, length: number, message: DiagnosticMessage): Diagnostic {
-    //    // Debug.assert(start >= 0, "start must be non-negative, is " + start);
-    //    // Debug.assert(length >= 0, "length must be non-negative, is " + length);
-    //    var text = ""; // getLocaleSpecificMessage(message.key);
-    //    if (arguments.length > 4) {
-    //        // text = formatStringFromArgs(text, arguments, 4);
-    //    }
-    //    return {
-    //        file: file,
-    //        start: start,
-    //        length: length,
-    //        messageText: text,
-    //        category: message.category,
-    //        code: message.code
-    //    };
-    //}
-
-
+//     export function createFileDiagnostic(file: Sourceile, start: number, length: number, message: DiagnosticMessage, ...args: any[]): Diagnostic;
+//     export function createFileDiagnostic(file: SourceFile, start: number, length: number, message: DiagnosticMessage): Diagnostic {
+//         // Debug.assert(start >= 0, "start must be non-negative, is " + start);
+//         // Debug.assert(length >= 0, "length must be non-negative, is " + length);
+//         var text = ""; // getLocaleSpecificMessage(message.key);
+//         if (arguments.length > 4) {
+//             // text = formatStringFromArgs(text, arguments, 4);
+//         }
+//         return {
+//             file: file,
+//             start: start,
+//             length: length,
+//             messageText: text,
+//             category: message.category,
+//             code: message.code
+//         };
+//     }
+// 
+// 
 //     export function createCompilerDiagnostic(message: DiagnosticMessage, ...args: any[]): Diagnostic;
 //     export function createCompilerDiagnostic(message: DiagnosticMessage): Diagnostic {
 //         var text = getLocaleSpecificMessage(message.key);
@@ -401,14 +392,14 @@ module ts {
 //     }
 // 
     /*@ compareValues :: forall T . (a:T, b:T) => { number | true } */
-    export declare function compareValues<T>(a: T, b: T): number;
-    //// DONE
-    //export function compareValues<T>(a: T, b: T): number {
-    //    if (a === b) return 0;
-    //    if (a === undefined) return -1;
-    //    if (b === undefined) return 1;
-    //    return a < b ? -1 : 1;
-    //}
+    //export declare function compareValues<T>(a: T, b: T): number;
+    // DONE
+    export function compareValues<T>(a: T, b: T): number {
+        if (a === b) return 0;
+        if (a === undefined) return -1;
+        if (b === undefined) return 1;
+        return a < b ? -1 : 1;
+    }
 
 //     function getDiagnosticFilename(diagnostic: Diagnostic): string {
 //         return diagnostic.file ? diagnostic.file.filename : undefined;
