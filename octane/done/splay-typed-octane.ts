@@ -37,9 +37,12 @@
 module SplayVERSION {
 
     // Configuration.
-    var kSplayTreeSize /*@ readonly */ = 8000;
-    var kSplayTreeModifications /*@ readonly */ = 80;
-    var kSplayTreePayloadDepth /*@ readonly */ = 5;
+    /*@ readonly kSplayTreeSize :: # */
+    var kSplayTreeSize = 8000;
+    /*@ readonly kSplayTreeModifications :: # */
+    var kSplayTreeModifications = 80;
+    /*@ readonly kSplayTreePayloadDepth :: # */
+    var kSplayTreePayloadDepth = 5;
 
     /*@ splayTree :: SplayTree<Mutable> + null */
     var splayTree:SplayTree = null;
@@ -170,7 +173,7 @@ module SplayVERSION {
          * @param {*} value Value to insert into the tree.
          */
         /*@ insert : (this:SplayTree<Mutable>, key:number, value:top) : {void | true} */
-        public insert(key, value) {
+        public insert(key:number, value) {
             var root = this.root_;
             if (!root) {
                 this.root_ = new SplayTreeNode(key, value);
@@ -310,10 +313,9 @@ module SplayVERSION {
             var result:number[] = [];
             var root = this.root_;
             if (root) {
-                var f = function (node)
-                    /*@ <anonymous> (x:SplayTreeNode<Mutable>) => {void | true} */ 
-                    { result.push(node.key); };
-                root.traverse_(f);
+                root.traverse_(function (node)
+                    /*@ <anonymous> (SplayTreeNode<Mutable>) => void */ 
+                    { result.push(node.key); });
             }
             return result;
         }
@@ -340,11 +342,10 @@ module SplayVERSION {
             // the L tree of the algorithm.  The left child of the dummy node
             // will hold the R tree of the algorithm.  Using a dummy node, left
             // and right will always be nodes and we avoid special cases.
-            var dummy:SplayTreeNode=new SplayTreeNode(-1, null);
+            /*@ dummy :: SplayTreeNode<Mutable> */
+            var dummy:SplayTreeNode=new SplayTreeNode(-1, null); // ORIG: dummy = left = right = new SplayTreeNode(null, null);
             var left:SplayTreeNode=dummy;
-            /*@ right :: SplayTreeNode<Mutable> */
             var right:SplayTreeNode=dummy;
-//            dummy = left = right = new SplayTreeNode(null, null);
             var current = <SplayTreeNode>root;
             var shouldBreak = false;
             while (!shouldBreak) {
@@ -413,13 +414,9 @@ module SplayVERSION {
      */
     class SplayTreeNode {
         public key:number;
-        public value:any;
-
+        public value;
         /*@ new (key:number, value:top) => {SplayTreeNode<M> | true} */
-        constructor(key, value) {
-            this.key = key;
-            this.value = value;
-        }
+        constructor(key, value) { this.key = key; this.value = value; }
 
         /**
          * @type {SplayTree.Node}

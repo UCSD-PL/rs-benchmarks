@@ -37,7 +37,8 @@
 /*@ alias nat = {number | 0 <= v} */
 
 module RichardsTYPEDVERSION {
-    var COUNT /*@ readonly */ = 1000;
+    /*@ readonly COUNT :: # */
+    var COUNT = 1000;
 
     /**
      * These two constants specify how many times a packet is queued and
@@ -46,43 +47,61 @@ module RichardsTYPEDVERSION {
      * correct run so if the actual queue or hold count is different from
      * the expected there must be a bug in the implementation.
      **/
-    var EXPECTED_QUEUE_COUNT /*@ readonly */ = 2322;
-    var EXPECTED_HOLD_COUNT /*@ readonly */ = 928;
+    /*@ readonly EXPECTED_QUEUE_COUNT :: # */
+    var EXPECTED_QUEUE_COUNT = 2322;
+    /*@ readonly EXPECTED_HOLD_COUNT :: # */
+    var EXPECTED_HOLD_COUNT = 928;
 
-    var ID_IDLE       /*@ readonly */ = 0;
-    var ID_WORKER     /*@ readonly */ = 1;
-    var ID_HANDLER_A  /*@ readonly */ = 2;
-    var ID_HANDLER_B  /*@ readonly */ = 3;
-    var ID_DEVICE_A   /*@ readonly */ = 4;
-    var ID_DEVICE_B   /*@ readonly */ = 5;
-    var NUMBER_OF_IDS /*@ readonly */ = 6;
-    var KIND_DEVICE   /*@ readonly */ = 0;
-    var KIND_WORK     /*@ readonly */ = 1;
-    var DATA_SIZE     /*@ readonly */ = 4;
+    /*@ readonly ID_IDLE :: # */
+    var ID_IDLE       = 0;
+    /*@ readonly ID_WORKER :: # */
+    var ID_WORKER     = 1;
+    /*@ readonly ID_HANDLER_A :: # */
+    var ID_HANDLER_A  = 2;
+    /*@ readonly ID_HANDLER_B :: # */
+    var ID_HANDLER_B  = 3;
+    /*@ readonly ID_DEVICE_A :: # */
+    var ID_DEVICE_A   = 4;
+    /*@ readonly ID_DEVICE_B :: # */
+    var ID_DEVICE_B   = 5;
+    /*@ readonly NUMBER_OF_IDS :: # */
+    var NUMBER_OF_IDS = 6;
+    /*@ readonly KIND_DEVICE :: # */
+    var KIND_DEVICE   = 0;
+    /*@ readonly KIND_WORK :: # */
+    var KIND_WORK     = 1;
+    /*@ readonly DATA_SIZE :: # */
+    var DATA_SIZE     = 4;
 
     /**
      * The task is running and is currently scheduled.
      */
-    var STATE_RUNNING   /*@ readonly */ = 0x00000000;
+    /*@ readonly STATE_RUNNING :: # */
+    var STATE_RUNNING   = 0x00000000;
 
     /**
      * The task has packets left to process.
      */
-    var STATE_RUNNABLE  /*@ readonly */ = 0x00000001;
+    /*@ readonly STATE_RUNNABLE :: # */
+    var STATE_RUNNABLE  = 0x00000001;
 
     /**
      * The task is not currently running.  The task is not blocked as such and may
      * be started by the scheduler.
      */
-    var STATE_SUSPENDED /*@ readonly */ = 0x00000002;
+    /*@ readonly STATE_SUSPENDED :: # */
+    var STATE_SUSPENDED = 0x00000002;
 
     /**
      * The task is blocked and cannot be run until it is explicitly released.
      */
-    var STATE_HELD      /*@ readonly */ = 0x00000004;
+    /*@ readonly STATE_HELD :: # */
+    var STATE_HELD      = 0x00000004;
 
-    var STATE_SUSPENDED_RUNNABLE /*@ readonly */ = STATE_SUSPENDED | STATE_RUNNABLE;
-    var STATE_NOT_HELD           /*@ readonly */ = 0xFFFFFFFB //ORIG: ~STATE_HELD;
+    /*@ readonly STATE_SUSPENDED_RUNNABLE :: # */
+    var STATE_SUSPENDED_RUNNABLE = STATE_SUSPENDED | STATE_RUNNABLE;
+    /*@ readonly STATE_NOT_HELD :: # */
+    var STATE_NOT_HELD           = 0xFFFFFFFB //ORIG: ~STATE_HELD;
 
     /*@ testRichards :: () => {void | true} */
     export function testRichards() {
@@ -96,21 +115,21 @@ module RichardsTYPEDVERSION {
      * operating system.
      **/
     function runRichards() {
-        var scheduler = new Scheduler(0, 0, new Array(NUMBER_OF_IDS), null, null, -1);
+        var scheduler = new Scheduler();
         scheduler.addIdleTask(ID_IDLE, 0, null, COUNT);
 
-        var queue = new Packet(null, ID_WORKER, KIND_WORK, 0);
-        queue = new Packet(queue,  ID_WORKER, KIND_WORK, 0);
+        var queue = new Packet(null, ID_WORKER, KIND_WORK);
+        queue = new Packet(queue,  ID_WORKER, KIND_WORK);
         scheduler.addWorkerTask(ID_WORKER, 1000, queue);
 
-        queue = new Packet(null, ID_DEVICE_A, KIND_DEVICE, 0);
-        queue = new Packet(queue,  ID_DEVICE_A, KIND_DEVICE, 0);
-        queue = new Packet(queue,  ID_DEVICE_A, KIND_DEVICE, 0);
+        queue = new Packet(null, ID_DEVICE_A, KIND_DEVICE);
+        queue = new Packet(queue,  ID_DEVICE_A, KIND_DEVICE);
+        queue = new Packet(queue,  ID_DEVICE_A, KIND_DEVICE);
         scheduler.addHandlerTask(ID_HANDLER_A, 2000, queue);
 
-        queue = new Packet(null, ID_DEVICE_B, KIND_DEVICE, 0);
-        queue = new Packet(queue,  ID_DEVICE_B, KIND_DEVICE, 0);
-        queue = new Packet(queue,  ID_DEVICE_B, KIND_DEVICE, 0);
+        queue = new Packet(null, ID_DEVICE_B, KIND_DEVICE);
+        queue = new Packet(queue,  ID_DEVICE_B, KIND_DEVICE);
+        queue = new Packet(queue,  ID_DEVICE_B, KIND_DEVICE);
         scheduler.addHandlerTask(ID_HANDLER_B, 3000, queue);
 
         scheduler.addDeviceTask(ID_DEVICE_A, 4000, null);
@@ -141,27 +160,30 @@ module RichardsTYPEDVERSION {
         /*@ holdCount : number */
         public holdCount = 0;
         /*@ blocks : {IArray<TaskControlBlock<Mutable> + null> | (len v) = NUMBER_OF_IDS} */
-        public blocks = new Array(NUMBER_OF_IDS);
+        public blocks : TaskControlBlock[] = new Array<TaskControlBlock>(NUMBER_OF_IDS);
         /*@ list : TaskControlBlock<Mutable> + null */
-        public list = null;
+        public list : TaskControlBlock = null;
         /*@ currentTcb : TaskControlBlock<Mutable> + null */
-        public currentTcb = null;
+        public currentTcb : TaskControlBlock = null;
         /*@ currentId : {number | -1<=v && v<NUMBER_OF_IDS} */
-        public currentId = -1;
+        public currentId:number = -1;
 
-        /*@ new(queueCount:number, 
-                holdCount:number, 
-                blocks:{IArray<TaskControlBlock<Mutable> + null> | (len v) = NUMBER_OF_IDS}, 
-                list:TaskControlBlock<Mutable> + null, 
-                currentTcb:TaskControlBlock<Mutable> + null, 
-                currentId:{number | -1<=v && v<NUMBER_OF_IDS}) => {Scheduler<M> | true} */
+        /*@ new /\ (queueCount:number, 
+                    holdCount:number, 
+                    blocks:{IArray<TaskControlBlock<Mutable> + null> | (len v) = NUMBER_OF_IDS}, 
+                    list:TaskControlBlock<Mutable> + null, 
+                    currentTcb:TaskControlBlock<Mutable> + null, 
+                    currentId:{number | -1<=v && v<NUMBER_OF_IDS}) => Scheduler<M>
+                /\ () => {Scheduler<M> | true} */
         constructor(queueCount?, holdCount?, blocks?, list?, currentTcb?, currentId?) {
-            this.queueCount = queueCount;
-            this.holdCount = holdCount;
-            this.blocks = blocks;
-            this.list = list;
-            this.currentTcb = currentTcb;
-            this.currentId = currentId;
+            if (arguments.length === 6) {
+                this.queueCount = queueCount;
+                this.holdCount = holdCount;
+                this.blocks = blocks;
+                this.list = list;
+                this.currentTcb = currentTcb;
+                this.currentId = currentId;
+            }
         }
 
         /**
@@ -176,7 +198,7 @@ module RichardsTYPEDVERSION {
                            priority:number, 
                            queue:Packet<Mutable> + null, 
                            count:number) : {void | true} */
-        public addIdleTask(id, priority, queue, count) {
+        public addIdleTask(id: number, priority: number, queue:Packet, count: number) {
             this.addRunningTask(id, priority, queue, new IdleTask(this, 0x00000001, count));
         }
 
@@ -190,7 +212,7 @@ module RichardsTYPEDVERSION {
                              id:{nat | v<NUMBER_OF_IDS}, 
                              priority:number, 
                              queue:Packet<Mutable> + null) : {void | true} */
-        public addWorkerTask(id, priority, queue) {
+        public addWorkerTask(id:number, priority:number, queue:Packet) {
             this.addTask(id, priority, queue, new WorkerTask(this, ID_HANDLER_A, 0));
         }
 
@@ -204,8 +226,8 @@ module RichardsTYPEDVERSION {
                               id:{nat | v<NUMBER_OF_IDS}, 
                               priority:number, 
                               queue:Packet<Mutable> + null) : {void | true} */
-        public addHandlerTask(id, priority, queue) {
-            this.addTask(id, priority, queue, new HandlerTask(this, null, null));
+        public addHandlerTask(id:number, priority:number, queue:Packet) {
+            this.addTask(id, priority, queue, new HandlerTask(this));
         }
 
         /**
@@ -218,8 +240,8 @@ module RichardsTYPEDVERSION {
                              id:{nat | v<NUMBER_OF_IDS}, 
                              priority:number, 
                              queue:Packet<Mutable> + null) : {void | true} */
-        public addDeviceTask(id, priority, queue) {
-            this.addTask(id, priority, queue, new DeviceTask(this, null))
+        public addDeviceTask(id:number, priority:number, queue:Packet) {
+            this.addTask(id, priority, queue, new DeviceTask(this))
         }
 
         /**
@@ -234,7 +256,7 @@ module RichardsTYPEDVERSION {
                               priority:number, 
                               queue:Packet<Mutable> + null, 
                               task:Task<Mutable>) : {void | true} */
-        public addRunningTask(id, priority, queue, task) {
+        public addRunningTask(id:number, priority:number, queue:Packet, task:Task) {
             this.addTask(id, priority, queue, task);
             var currentTcb = this.currentTcb;
             if (!currentTcb) throw new Error('This check should never fail'); // since addTask sets this.currentTcb
@@ -253,7 +275,7 @@ module RichardsTYPEDVERSION {
                        priority:number, 
                        queue:Packet<Mutable> + null, 
                        task:Task<Mutable>) : {void | true} */
-        public addTask(id, priority, queue, task) {
+        public addTask(id:number, priority:number, queue:Packet, task:Task) {
             this.currentTcb = new TaskControlBlock(this.list, id, priority, queue, task);
             this.list = this.currentTcb;
             this.blocks[id] = this.currentTcb;
@@ -284,7 +306,7 @@ module RichardsTYPEDVERSION {
          * @param {int} id the id of the task to suspend
          */
         /*@ release : (id:{nat | v<NUMBER_OF_IDS}) : {TaskControlBlock<Mutable> + null | true} */
-        public release(id) {
+        public release(id:number) {
             var tcb = this.blocks[id];
             if (!tcb) return tcb;
             var currentTcb = this.currentTcb;
@@ -474,7 +496,7 @@ module RichardsTYPEDVERSION {
         constructor() {}
         /*@ run : /\ (this:Self<Mutable>, packet: Packet<Mutable>) : { TaskControlBlock<Mutable> + null | true }
                   /\ (this:Self<Mutable>) : { TaskControlBlock<Mutable> + null | true } */
-        public run(packet?) {
+        public run(packet:Packet) : TaskControlBlock {
             throw "Abstract method";
         }
     }
@@ -504,7 +526,7 @@ module RichardsTYPEDVERSION {
 
         /*@ run : /\ (this:Self<Mutable>, packet: Packet<ReadOnly>) : { TaskControlBlock<Mutable> + null | true }
                   /\ (this:Self<Mutable>) : { TaskControlBlock<Mutable> + null | true } */
-        public run(packet?) {
+        public run(packet:Packet) : TaskControlBlock {
             this.count--;
             if (this.count === 0) return this.scheduler.holdCurrent();
             //ORIG:
@@ -527,7 +549,7 @@ module RichardsTYPEDVERSION {
         /*@ scheduler : Scheduler<Mutable> */
         public scheduler;
         /*@ v1 : Packet<Mutable> + null */
-        public v1;
+        public v1 = null;
 
         /**
          * A task that suspends itself after each time it has been run to simulate
@@ -535,16 +557,17 @@ module RichardsTYPEDVERSION {
          * @param {Scheduler} scheduler the scheduler that manages this task
          * @constructor
          */
-        /*@ new(scheduler:Scheduler<Mutable>, v1:Packet<Mutable> + null) => {DeviceTask<M> | true} */
+        /*@ new /\ (scheduler:Scheduler<Mutable>, v1:Packet<Mutable> + null) => {DeviceTask<M> | true}
+                /\ (scheduler:Scheduler<Mutable>) => {DeviceTask<M> | true} */
         constructor(scheduler, v1?) {
             super();
             this.scheduler = scheduler;
-            this.v1 = v1;
+            if (arguments.length === 2) this.v1 = v1;
         }
 
         /*@ run : /\ (this:Self<Mutable>, packet: Packet<Mutable>) : { TaskControlBlock<Mutable> + null | true }
                   /\ (this:Self<Mutable>) : { TaskControlBlock<Mutable> + null | true } */
-        public run(packet?) {
+        public run(packet:Packet) : TaskControlBlock {
             if (!packet) {
                 var v1 = this.v1;
                 if (!v1) return this.scheduler.suspendCurrent();
@@ -587,7 +610,7 @@ module RichardsTYPEDVERSION {
 
         /*@ run : /\ (this:Self<Mutable>, packet: Packet<Mutable>) : { TaskControlBlock<Mutable> + null | true }
                   /\ (this:Self<Mutable>) : { TaskControlBlock<Mutable> + null | true } */
-        public run(packet?) {
+        public run(packet:Packet) : TaskControlBlock {
             if (!packet) {
                 return this.scheduler.suspendCurrent();
             } else {
@@ -617,26 +640,29 @@ module RichardsTYPEDVERSION {
         /*@ scheduler : Scheduler<Mutable> */
         public scheduler;
         /*@ v1 : Packet<Mutable> + null */
-        public v1;
+        public v1 = null;
         /*@ v2 : Packet<Mutable> + null */
-        public v2;
+        public v2 = null;
 
         /**
          * A task that manipulates work packets and then suspends itself.
          * @param {Scheduler} scheduler the scheduler that manages this task
          * @constructor
          */
-        /*@ new(scheduler:Scheduler<Mutable>, v1:Packet<Mutable> + null, v2:Packet<Mutable> + null) => {HandlerTask<M> | true} */
+        /*@ new /\ (scheduler:Scheduler<Mutable>, v1:Packet<Mutable> + null, v2:Packet<Mutable> + null) => {HandlerTask<M> | true}
+                /\ (scheduler:Scheduler<Mutable>) => {HandlerTask<M> | true} */
         constructor(scheduler, v1?, v2?) {
             super();
             this.scheduler = scheduler;
-            this.v1 = v1;
-            this.v2 = v2;
+            if (arguments.length === 3) {
+                this.v1 = v1;
+                this.v2 = v2;
+            }
         }
 
         /*@ run : /\ (this:Self<Mutable>, packet: Packet<Mutable>) : { TaskControlBlock<Mutable> + null | true }
                   /\ (this:Self<Mutable>) : { TaskControlBlock<Mutable> + null | true } */
-        public run(packet?) {
+        public run(packet:Packet) : TaskControlBlock {
             if (packet) {
                 if (packet.kind === KIND_WORK) {
                     this.v1 = packet.addTo(this.v1);
@@ -698,13 +724,14 @@ module RichardsTYPEDVERSION {
          * @param {int} kind the type of this packet
          * @constructor
          */
-        /*@ new(link:Packet<Mutable> + null, id:{nat | v<NUMBER_OF_IDS}, kind:number, a1:nat) => {Packet<M> | true} */
+        /*@ new /\ (link:Packet<Mutable> + null, id:{nat | v<NUMBER_OF_IDS}, kind:number, a1:nat) => {Packet<M> | true}
+                /\ (link:Packet<Mutable> + null, id:{nat | v<NUMBER_OF_IDS}, kind:number)         => {Packet<M> | true} */
         constructor(link, id, kind, a1?) {
             this.a2 = new Array(DATA_SIZE);
             this.link = link;
             this.id = id;
             this.kind = kind;
-            this.a1 = a1;
+            if (arguments.length === 4) this.a1 = a1;
         }
 
         /**
@@ -712,7 +739,7 @@ module RichardsTYPEDVERSION {
          * @param {Packet} queue the worklist to add this packet to
          */
         /*@ addTo : (this: Packet<Mutable>, queue: Packet<Mutable> + null) : {Packet<Mutable> | true} */
-        public addTo(queue) {
+        public addTo(queue:Packet) : Packet {
             this.link = null;
             if (!queue) return this;
             var next = queue;
