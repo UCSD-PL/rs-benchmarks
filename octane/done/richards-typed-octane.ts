@@ -71,7 +71,7 @@ module RichardsTYPEDVERSION {
     /*@ readonly KIND_WORK :: # */
     var KIND_WORK     = 1;
     /*@ readonly DATA_SIZE :: # */
-    var DATA_SIZE     = 4;
+    var DATA_SIZE = 4;
 
     /**
      * The task is running and is currently scheduled.
@@ -724,8 +724,8 @@ module RichardsTYPEDVERSION {
          * @param {int} kind the type of this packet
          * @constructor
          */
-        /*@ new /\ (link:Packet<Mutable> + null, id:{nat | v<NUMBER_OF_IDS}, kind:number, a1:nat) => {Packet<M> | true}
-                /\ (link:Packet<Mutable> + null, id:{nat | v<NUMBER_OF_IDS}, kind:number)         => {Packet<M> | true} */
+        /*@ new /\ (link:Packet<Mutable> + null, id:{nat | v<NUMBER_OF_IDS}, kind:number, a1:nat) => Packet<M>
+                /\ (link:Packet<Mutable> + null, id:{nat | v<NUMBER_OF_IDS}, kind:number)         => Packet<M> */
         constructor(link, id, kind, a1?) {
             this.a2 = new Array(DATA_SIZE);
             this.link = link;
