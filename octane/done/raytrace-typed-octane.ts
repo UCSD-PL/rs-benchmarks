@@ -156,7 +156,6 @@ module VERSION {
                 return result;
             }
 
-            /*@ brightness : () : {number | true} */
             public brightness() {
                 var r = Math.floor(this.red * 255);
                 var g = Math.floor(this.green * 255);
@@ -164,7 +163,6 @@ module VERSION {
                 return (r * 77 + g * 150 + b * 29) / 256 //ORIG: >> 8;
             }
 
-            /* toString : () : {string | true} */
             public toString() {
                 var r = Math.floor(this.red * 255);
                 var g = Math.floor(this.green * 255);
@@ -188,7 +186,6 @@ module VERSION {
                 this.intensity = intensity;
             }
 
-            /* toString : () : {string | true} */
             public toString() {
                 return 'Light [' + this.position.x + ',' + this.position.y + ',' + this.position.z + ']';
             }
@@ -265,7 +262,6 @@ module VERSION {
                 return new Vector(v.x * w, v.y * w, v.z * w);
             }
 
-            /* toString : () : {string | true} */
             public toString() {
                 return 'Vector [' + this.x + ',' + this.y + ',' + this.z + ']';
             }
@@ -283,7 +279,6 @@ module VERSION {
                 this.direction = direction;
             }
 
-            /* toString : () : {string | true} */
             public toString() {
                 return 'Ray [' + this.position.toString() + ',' + this.direction.toString() + ']';
             }
@@ -345,7 +340,6 @@ module VERSION {
                 return t;
             }
 
-            /* toString : () : {string | true} */
             public toString() {
                 return 'Material [gloss=' + this.gloss + ', transparency=' + this.transparency + ', hasTexture=' + this.hasTexture + ']';
             }
@@ -365,7 +359,6 @@ module VERSION {
                 return this.color;
             }
 
-            /* toString : () : {string | true} */
             public toString() {
                 return 'SolidMaterial [gloss=' + this.gloss + ', transparency=' + this.transparency + ', hasTexture=' + this.hasTexture + ']';
             }
@@ -398,7 +391,6 @@ module VERSION {
                     return this.colorOdd;
             }
 
-            /* toString : () : {string | true} */
             public toString() {
                 return 'ChessMaterial [gloss=' + this.gloss + ', transparency=' + this.transparency + ', hasTexture=' + this.hasTexture + ']';
             }
@@ -465,7 +457,6 @@ module VERSION {
                 return info;
             }
 
-            /* toString : () : {string | true} */
             public toString() {
                 return 'Sphere [position=' + this.position.toString() + ', radius=' + this.radius + ']';
             }
@@ -516,7 +507,6 @@ module VERSION {
                 return info;
             }
 
-            /* toString : () : {string | true} */
             public toString() {
                 return 'Plane [' + this.position.toString() + ', d=' + this.d + ']';
             }
@@ -561,7 +551,6 @@ module VERSION {
                 this.color = new Color(0, 0, 0);
             }
 
-            /*@ toString : () : {string | true} */
             public toString() {
                 var position = this.position;
                 if (!position) return 'Intersection [position==null]';
@@ -611,7 +600,6 @@ module VERSION {
                 return ray;
             }
             
-            /*@ toString : () : {string | true} */
             public toString() {
                 return 'Ray []';
             }
@@ -873,7 +861,6 @@ module VERSION {
         }
         // }
 
-        /*@ renderScene :: () => {void | true} */
         export function renderScene() {
             var scene = new Scene();
 

@@ -33,6 +33,7 @@
 // also has to deal with a lot of changes to the large tree object
 // graph.
 
+/*@ alias MSplayTreeNode = SplayTreeNode<Mutable> */
 
 module SplayVERSION {
 
@@ -85,14 +86,12 @@ module SplayVERSION {
 
 
 
-    /*@ SplaySetup :: () => {void | true} */
     export function SplaySetup() {
         splayTree = new SplayTree();
         for (var i = 0; i < kSplayTreeSize; i++) InsertNewNode();
     }
 
 
-    /*@ SplayTearDown :: () => {void | true} */
     export function SplayTearDown() {
         var tree = splayTree;
         if (!tree) throw new Error('splayTree is null! did you forget to call SplaySetup?');
@@ -117,7 +116,6 @@ module SplayVERSION {
     }
 
 
-    /*@ SplayRun :: () => {void | true} */
     export function SplayRun() {
         var tree = splayTree;
         if (!tree) throw new Error('splayTree is null! did you forget to call SplaySetup?');
@@ -151,7 +149,7 @@ module SplayVERSION {
          * @type {SplayTree.Node}
          * @private
          */
-        /*@ root_ : SplayTreeNode<Mutable> + null */
+        /*@ root_ : MSplayTreeNode + null */
         private root_ : SplayTreeNode = null;
 
 
@@ -209,7 +207,7 @@ module SplayVERSION {
          * @param {number} key Key to find and remove from the tree.
          * @return {SplayTree.Node} The removed node.
          */
-        /*@ remove : (this:SplayTree<Mutable>, key:number) : {SplayTreeNode<Mutable> | true} */
+        /*@ remove : (this:SplayTree<Mutable>, key:number) : {MSplayTreeNode | true} */
         public remove(key) {
             var root = this.root_;
             if (!root) {
@@ -246,7 +244,7 @@ module SplayVERSION {
          * @param {number} key Key to find in the tree.
          * @return {SplayTree.Node} Node having the specified key.
          */
-        /*@ find : (this:SplayTree<Mutable>, key:number) : {SplayTreeNode<Mutable> + null | true} */
+        /*@ find : (this:SplayTree<Mutable>, key:number) : {MSplayTreeNode + null | true} */
         public find(key) {
             var root = this.root_;
             if (!root) {
@@ -262,7 +260,7 @@ module SplayVERSION {
         /**
          * @return {SplayTree.Node} Node having the maximum key value.
          */
-        /*@ findMax : (opt: SplayTreeNode<Mutable> + null) : {SplayTreeNode<Mutable> + null | true} */
+        /*@ findMax : (opt: MSplayTreeNode + null) : {MSplayTreeNode + null | true} */
         public findMax(opt_startNode) {
             var root = this.root_;
             if (!root) {
@@ -282,7 +280,7 @@ module SplayVERSION {
          * @return {SplayTree.Node} Node having the maximum key value that
          *     is less than the specified key value.
          */
-        /*@ findGreatestLessThan : (this:SplayTree<Mutable>, key: number) : {SplayTreeNode<Mutable> + null | true} */
+        /*@ findGreatestLessThan : (this:SplayTree<Mutable>, key: number) : {MSplayTreeNode + null | true} */
         public findGreatestLessThan(key) {
             var root = this.root_;
             if (!root) {
@@ -314,7 +312,7 @@ module SplayVERSION {
             var root = this.root_;
             if (root) {
                 root.traverse_(function (node)
-                    /*@ <anonymous> (SplayTreeNode<Mutable>) => void */ 
+                    /*@ <anonymous> (MSplayTreeNode) => void */ 
                     { result.push(node.key); });
             }
             return result;
@@ -342,8 +340,9 @@ module SplayVERSION {
             // the L tree of the algorithm.  The left child of the dummy node
             // will hold the R tree of the algorithm.  Using a dummy node, left
             // and right will always be nodes and we avoid special cases.
-            /*@ dummy :: SplayTreeNode<Mutable> */
-            var dummy:SplayTreeNode=new SplayTreeNode(-1, null); // ORIG: dummy = left = right = new SplayTreeNode(null, null);
+            /*@ dummy :: MSplayTreeNode */
+            // ORIG: dummy = left = right = new SplayTreeNode(null, null);
+            var dummy:SplayTreeNode=new SplayTreeNode(-1, null);
             var left:SplayTreeNode=dummy;
             var right:SplayTreeNode=dummy;
             var current = <SplayTreeNode>root;
@@ -421,14 +420,14 @@ module SplayVERSION {
         /**
          * @type {SplayTree.Node}
          */
-        /*@ left : SplayTreeNode<Mutable> + null */
+        /*@ left : MSplayTreeNode + null */
         public left : SplayTreeNode = null;
 
 
         /**
          * @type {SplayTree.Node}
          */
-        /*@ right : SplayTreeNode<Mutable> + null */
+        /*@ right : MSplayTreeNode + null */
         public right : SplayTreeNode = null;
 
 
@@ -439,7 +438,7 @@ module SplayVERSION {
          * @param {function(SplayTree.Node)} f Visitor function.
          * @private
          */
-        /*@ traverse_ : (this: SplayTreeNode<Mutable>, f: (arg:SplayTreeNode<Mutable>) => top) : {void | true} */
+        /*@ traverse_ : (this: MSplayTreeNode, f: (arg:MSplayTreeNode) => top) : {void | true} */
         public traverse_(f : (arg:SplayTreeNode) => any) {
             var left = this.left;
             if (left) left.traverse_(f);

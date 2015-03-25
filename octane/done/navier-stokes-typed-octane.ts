@@ -35,7 +35,6 @@ module NavierStokes {
     /*@ nsFrameCounter :: number */
     var nsFrameCounter = 0;
 
-    /*@ runNavierStokes :: () => {void | true} */
     export function runNavierStokes()
     {
         var solverRO /*@ readonly */ = solver;
@@ -61,7 +60,6 @@ module NavierStokes {
         }
     }
 
-    /*@ setupNavierStokes :: () => {void | true} */
     export function setupNavierStokes()
     {
         var _lemma = mulThm128(128);
@@ -75,7 +73,6 @@ module NavierStokes {
         solver = solverRO;
     }
 
-    /*@ tearDownNavierStokes :: () => {void | true} */
     export function tearDownNavierStokes()
     {
         solver = null;
@@ -506,14 +503,13 @@ module NavierStokes {
                 this.dens_step(this.dens, this.dens_prev, this.u, this.v, this.dt);
                 this.displayFunc(new Field(this.rowSize, this.width, this.height, this.dens, this.u, this.v));
             }
-            /*@ setDisplayFunction : (this:FluidField<Mutable>, (Field<Immutable>)=>void) : {void | true} */
+            /*@ setDisplayFunction : (this:FluidField<Mutable>, (Field<Immutable>)=>void) : void */
             public setDisplayFunction(f:(f:Field) => void) {
                 this.displayFunc = f;
             }
             
-            /*@ iterations : () : {number | true} */
             public iterations() { return this.iters; }
-            /*@ setIterations : (this:FluidField<Mutable>, iters:number) : {void | true} */
+            /*@ setIterations : (this:FluidField<Mutable>, iters:number) : void */
             public setIterations(iters:number) 
             {
                 if (iters > 0 && iters <= 100)
