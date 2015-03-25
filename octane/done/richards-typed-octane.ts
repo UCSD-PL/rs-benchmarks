@@ -176,7 +176,7 @@ module RichardsTYPEDVERSION {
                     list:MTaskControlBlock + null, 
                     currentTcb:MTaskControlBlock + null, 
                     currentId:{number | -1<=v && v<NUMBER_OF_IDS}) => Scheduler<M> */
-                //\ () => {Scheduler<M> | true}
+                //\ () => Scheduler<M>
         constructor(queueCount?, holdCount?, blocks?, list?, currentTcb?, currentId?) {
             this.queueCount = queueCount;
             this.holdCount = holdCount;
@@ -490,7 +490,6 @@ module RichardsTYPEDVERSION {
     }
 
     class Task {
-        /*@ new () => {Task<M> | true} */
         constructor() {}
         /*@ run : /\ (this:Self<Mutable>, packet: MPacket) : { MTaskControlBlock + null | true }
                   /\ (this:Self<Mutable>) : { MTaskControlBlock + null | true } */

@@ -140,7 +140,6 @@ module SplayVERSION {
      * @constructor
      */
     class SplayTree {
-        /*@ new() => {SplayTree<M> | true} */
         constructor() {}
 
         /**
@@ -156,7 +155,6 @@ module SplayVERSION {
         /**
          * @return {boolean} Whether the tree is empty.
          */
-        /*@ isEmpty : () : {boolean | true} */
         public isEmpty() {
             return !this.root_;
         }

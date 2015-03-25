@@ -220,7 +220,6 @@ module VERSION {
                 return new Vector(this.x / m, this.y / m, this.z / m);
             }
 
-            /*@ magnitude : () : {number | true} */
             public magnitude() {
                 var x = this.x;
                 var y = this.y;
@@ -292,7 +291,6 @@ module VERSION {
             public lights : Light[];
             public background : Background;
 
-            /*@ new() => {Scene<M> | true} */
             constructor() {
                 this.camera = new Camera(
                     new Vector(0, 0, -5),
