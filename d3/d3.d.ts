@@ -182,7 +182,7 @@ declare module D3 {
         * @param map Accsessor function
         */
         
-        /*@ mean : forall T. (array : IArray<T>, f: (T, idx[array]) => number) => {number + undefined | true} */
+        /*@ mean : forall T. (array : IArray<T>, f: (T, idx[array]) => number + undefined) => {number + undefined | true} */
         mean<T>(arr: T[], map: (v: T) => number): number;
         /**
         * Compute the arithmetic mean of an array of numbers
@@ -190,7 +190,7 @@ declare module D3 {
         * @param arr Array to search
         */
         
-        /*@ mean : (array : IArray<number>) => {number + undefined | true} */ 
+        /*@ mean : (array : IArray<number + undefined>) => {number + undefined | true} */ 
         mean(arr: number[]): number;
 
         /**
@@ -513,6 +513,7 @@ declare module D3 {
 //            /**
 //            * The map of registered namespace prefixes
 //            */
+//            /*@ prefix: [#Mutable]{[x:string]:string} */
 //            prefix: {
 //                svg: string;
 //                xhtml: string;
@@ -523,7 +524,8 @@ declare module D3 {
 //            /**
 //            * Qualifies the specified name
 //            */
-//            qualify(name: string): { space: string; local: string; };
+//            /*@ qualify: (name:string) => {space:string; local:string} + string */
+//            qualify(name: string): any;
 //        };
 //        /**
 //        * Returns a built-in easing function of the specified type

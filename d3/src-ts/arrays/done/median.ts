@@ -7,7 +7,7 @@ d3.median = function(array0, f?)
  */
 {
   /*@ array :: IArray<number> */
-  var array : number[];
+  var array = [];
   if (arguments.length > 1) array = array0.map(f);
   else array = array0;
 

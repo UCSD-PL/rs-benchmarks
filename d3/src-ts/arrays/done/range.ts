@@ -9,14 +9,27 @@ declare var Infinity:number;
 /*@ d3_range :: /\ (number, number, {number | v != 0}) =>   MArray<number>
                 /\ (number, number                   ) => { MArray<number> | true }
                 /\ (number                           ) => { MArray<number> | true } */
-function d3_range(start:number, stop?:number, step?:number): number[] {
+function d3_range(start:number, arg_stop?:number, arg_step?:number): number[] {
+  /*@ local loc_start :: number + undefined */
+  var loc_start = start;
+  /*@ local loc_stop :: number + undefined */
+  var loc_stop = arg_stop;
+  /*@ local loc_step :: number + undefined */
+  var loc_step = arg_step;
+  /*@ local ONE :: number + undefined */
+  var ONE = 1;
+
   if (arguments.length < 3) {
-    step = 1;
+    loc_step = ONE;
     if (arguments.length < 2) {
-      stop = start;
+      loc_stop = loc_start;
       start = 0;
     }
   }
+
+  var stop = <number>loc_stop;
+  var step = <number>loc_step;
+
   if ((stop - start) / step === Infinity) throw new Error("infinite range");
   var range:number[] = [],
        k:number = d3_range_integerScale(Math.abs(step)),
