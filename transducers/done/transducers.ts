@@ -118,7 +118,6 @@ function isArray(x:any) {
 }
         // }
 
-/*@ isObject :: (x:top) => {boolean | true} */
 function isObject(x:any) {
     return goog.typeOf(x) === "object";
 }
@@ -164,7 +163,6 @@ class Wrap<IN, OUT> implements Transformer<IN, OUT, OUT> {
         this.stepFn = stepFn;
     }
 
-    /*@ init : () : {OUT | true} */
     init():OUT {
         throw new Error("init not implemented");
     }
@@ -327,7 +325,6 @@ constructor(f:(z:IN) => T, xf:Transformer<T, INTER, OUT>) {
     this.xf = xf;
 }
 
-/*@ init : () : {INTER | true} */
 init():INTER {
     return this.xf.init();
 }
@@ -374,7 +371,6 @@ constructor(pred: (z:IN) => boolean, xf: Transformer<IN, INTER, OUT>) {
     this.xf = xf;
 }
 
-/*@ init : () : {INTER | true} */
 init():INTER {
     return this.xf.init();
 }
@@ -447,7 +443,6 @@ constructor(n:number, xf:Transformer<IN, INTER, OUT>) {
     this.xf = xf;
 }
 
-/*@ init : () : {INTER | true} */
 init():INTER {
     return this.xf.init();
 }
@@ -501,7 +496,6 @@ constructor(pred: (z:IN) => boolean, xf: Transformer<IN, INTER, OUT>) {
     this.xf = xf;
 }
 
-/*@ init : () : {INTER | true} */
 init():INTER {
     return this.xf.init();
 }
@@ -555,7 +549,6 @@ constructor(n:number, xf:Transformer<IN, INTER, OUT>) {
     this.xf = xf;
 }
 
-/*@ init : () : {INTER | true} */
 init():INTER {
     return this.xf.init();
 }
@@ -610,7 +603,6 @@ constructor(n:number, xf:Transformer<IN, INTER, OUT>) {
     this.xf = xf;
 }
 
-/*@ init : () : {INTER | true} */
 init():INTER {
     return this.xf.init();
 }
@@ -664,7 +656,6 @@ constructor(pred: (z:IN) => boolean, xf: Transformer<IN, INTER, OUT>) {
     this.xf = xf;
 }
 
-/*@ init : () : {INTER | true} */
 init():INTER {
     return this.xf.init();
 }
@@ -725,7 +716,6 @@ constructor(f: (z:IN) => any, xf: Transformer<Array<IN>, INTER, OUT>) {
     this.pval = NONE;
 }
 
-/*@ init : () : {INTER | true} */
 init():INTER {
     return this.xf.init();
 }
@@ -801,7 +791,6 @@ constructor(n:number, xf:Transformer<Array<IN>, INTER, OUT>) {
     this.a = [];
 }
 
-/*@ init : () : {INTER | true} */
 init():INTER {
     return this.xf.init();
 }
@@ -860,7 +849,6 @@ constructor(f: (z:IN) => any, xf: Transformer<IN, INTER, OUT>) {
     this.xf = xf;
 }
 
-/*@ init : () : {INTER | true} */
 init():INTER {
     return this.xf.init();
 }
@@ -915,7 +903,6 @@ constructor(f: (idx:number, z:IN) => any, xf: Transformer<IN, INTER, OUT>) {
     this.xf = xf;
 }
 
-/*@ init : () : {INTER | true} */
 init():INTER {
     return this.xf.init();
 }
@@ -982,7 +969,6 @@ constructor(xf: TruncatedTransformer<IN, INTER>) {
     this.xf = xf;
 }
 
-/*@ init : () : {INTER | true} */
 init():INTER {
     return this.xf.init();
 }
@@ -1021,7 +1007,6 @@ constructor(xf: Transformer<IN, INTER, OUT>) {
     this.rxf = preservingReduced(xf);
 }
 
-/*@ init : () : {INTER | true} */
 init():INTER {
     return this.xf.init();
 }
@@ -1273,7 +1258,6 @@ constructor(cf: (z:QQ<INTER>) => OUT, xf: TruncatedTransformer<IN, INTER>) {
     this.xf = xf;
 }
 
-/*@ init : () : {INTER | true} */
 init():INTER {
     return this.xf.init();
 }
