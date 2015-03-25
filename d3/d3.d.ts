@@ -15,7 +15,8 @@
 /*@ qualif ArrLen(v:number, a:a) : v < (len a) */
 /*@ qualif ArrLen(a:n, b:m) : (len a) = (len b) */
 
-
+/*@ qualif Bot(s:Str,v:a): hasProperty(s,v) */
+/*@ qualif Bot(s:Str,v:a): enumProp(s,v) */
 
 
 declare module D3 {

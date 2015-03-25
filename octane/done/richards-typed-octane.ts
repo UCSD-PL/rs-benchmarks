@@ -36,6 +36,10 @@
 
 /*@ alias nat = {number | 0 <= v} */
 /*@ alias natLT[num] = {nat | v < num} */
+
+/*@ alias MSelf = Self<Mutable> */
+/*@ alias MTask = Task<Mutable> */
+/*@ alias MScheduler = Scheduler<Mutable> */
 /*@ alias MPacket = Packet<Mutable> */
 /*@ alias MTaskControlBlock = TaskControlBlock<Mutable> */
 
@@ -193,7 +197,7 @@ module RichardsTYPEDVERSION {
          * @param {Packet} queue the queue of work to be processed by the task
          * @param {int} count the number of times to schedule the task
          */
-        /*@ addIdleTask : (this: Scheduler<Mutable>, 
+        /*@ addIdleTask : (this: MScheduler, 
                            id:natLT<NUMBER_OF_IDS>, 
                            priority:number, 
                            queue:MPacket + null, 
@@ -208,7 +212,7 @@ module RichardsTYPEDVERSION {
          * @param {int} priority the task's priority
          * @param {Packet} queue the queue of work to be processed by the task
          */
-        /*@ addWorkerTask : (this: Scheduler<Mutable>, 
+        /*@ addWorkerTask : (this: MScheduler, 
                              id:natLT<NUMBER_OF_IDS>, 
                              priority:number, 
                              queue:MPacket + null) : void */
@@ -222,7 +226,7 @@ module RichardsTYPEDVERSION {
          * @param {int} priority the task's priority
          * @param {Packet} queue the queue of work to be processed by the task
          */
-        /*@ addHandlerTask : (this: Scheduler<Mutable>, 
+        /*@ addHandlerTask : (this: MScheduler, 
                               id:natLT<NUMBER_OF_IDS>, 
                               priority:number, 
                               queue:MPacket + null) : void */
@@ -236,7 +240,7 @@ module RichardsTYPEDVERSION {
          * @param {int} priority the task's priority
          * @param {Packet} queue the queue of work to be processed by the task
          */
-        /*@ addDeviceTask : (this: Scheduler<Mutable>, 
+        /*@ addDeviceTask : (this: MScheduler, 
                              id:natLT<NUMBER_OF_IDS>, 
                              priority:number, 
                              queue:MPacket + null) : void */
@@ -251,11 +255,11 @@ module RichardsTYPEDVERSION {
          * @param {Packet} queue the queue of work to be processed by the task
          * @param {Task} task the task to add
          */
-        /*@ addRunningTask : (this:Scheduler<Mutable>, 
+        /*@ addRunningTask : (this:MScheduler, 
                               id:natLT<NUMBER_OF_IDS>, 
                               priority:number, 
                               queue:MPacket + null, 
-                              task:Task<Mutable>) : void */
+                              task:MTask) : void */
         public addRunningTask(id:number, priority:number, queue:Packet, task:Task) {
             this.addTask(id, priority, queue, task);
             var currentTcb = this.currentTcb;
@@ -270,11 +274,11 @@ module RichardsTYPEDVERSION {
          * @param {Packet} queue the queue of work to be processed by the task
          * @param {Task} task the task to add
          */
-        /*@ addTask : (this:Scheduler<Mutable>, 
+        /*@ addTask : (this:MScheduler, 
                        id:natLT<NUMBER_OF_IDS>, 
                        priority:number, 
                        queue:MPacket + null, 
-                       task:Task<Mutable>) : {void | true} */
+                       task:MTask) : {void | true} */
         public addTask(id:number, priority:number, queue:Packet, task:Task) {
             this.currentTcb = new TaskControlBlock(this.list, id, priority, queue, task);
             this.list = this.currentTcb;
@@ -284,7 +288,7 @@ module RichardsTYPEDVERSION {
         /**
          * Execute the tasks managed by this scheduler.
          */
-        /*@ schedule : (this:Scheduler<Mutable>) : {void | true} */
+        /*@ schedule : (this:MScheduler) : {void | true} */
         public schedule() {
             this.currentTcb = this.list;
             var currentTcb = this.currentTcb;
@@ -325,7 +329,7 @@ module RichardsTYPEDVERSION {
          * to run.  The blocked task will not be made runnable until it is explicitly
          * released, even if new work is added to it.
          */
-        /*@ holdCurrent : (this:Scheduler<Mutable>) : MTaskControlBlock + null */
+        /*@ holdCurrent : (this:MScheduler) : MTaskControlBlock + null */
         public holdCurrent() {
             var currentTcb = this.currentTcb;
             if (!currentTcb) throw new Error("Illegal state");
@@ -353,7 +357,7 @@ module RichardsTYPEDVERSION {
          * suspended.
          * @param {Packet} packet the packet to add
          */
-        /*@ queue : (this:Scheduler<Mutable>, packet: MPacket) : {MTaskControlBlock + null | true} */
+        /*@ queue : (this:MScheduler, packet: MPacket) : {MTaskControlBlock + null | true} */
         public queue(packet) {
             var t = this.blocks[packet.id];
             if (!t) return t;
@@ -381,7 +385,7 @@ module RichardsTYPEDVERSION {
         public priority;
         /*@ queue : MPacket + null */
         public queue;
-        /*@ task : Task<Mutable> */
+        /*@ task : MTask */
         public task;
 
         /**
@@ -398,7 +402,7 @@ module RichardsTYPEDVERSION {
                 id:natLT<NUMBER_OF_IDS>, 
                 priority:number, 
                 queue:MPacket + null, 
-                task:Task<Mutable>) => TaskControlBlock<M> */
+                task:MTask) => TaskControlBlock<M> */
         constructor(link, id, priority, queue, task) {
             this.link = link;
             this.id = id;
@@ -413,17 +417,17 @@ module RichardsTYPEDVERSION {
             // }
         }
 
-        /*@ setRunning : (this:Self<Mutable>) : {void | true} */
+        /*@ setRunning : (this:MSelf) : {void | true} */
         public setRunning () {
             this.state = STATE_RUNNING;
         }
 
-        /*@ markAsNotHeld : (this:Self<Mutable>) : {void | true} */
+        /*@ markAsNotHeld : (this:MSelf) : {void | true} */
         public markAsNotHeld () {
             this.state = this.state & STATE_NOT_HELD;
         }
 
-        /*@ markAsHeld : (this:Self<Mutable>) : {void | true} */
+        /*@ markAsHeld : (this:MSelf) : {void | true} */
         public markAsHeld () {
             this.state = this.state | STATE_HELD;
         }
@@ -432,12 +436,12 @@ module RichardsTYPEDVERSION {
             return (this.state & STATE_HELD) !== 0 || (this.state === STATE_SUSPENDED);
         }
 
-        /*@ markAsSuspended : (this:Self<Mutable>) : {void | true} */
+        /*@ markAsSuspended : (this:MSelf) : {void | true} */
         public markAsSuspended () {
             this.state = this.state | STATE_SUSPENDED;
         }
 
-        /*@ markAsRunnable : (this:Self<Mutable>) : {void | true} */
+        /*@ markAsRunnable : (this:MSelf) : {void | true} */
         public markAsRunnable () {
             this.state = this.state | STATE_RUNNABLE;
         }
@@ -445,7 +449,7 @@ module RichardsTYPEDVERSION {
         /**
          * Runs this task, if it is ready to be run, and returns the next task to run.
          */
-        /*@ run : (this:Self<Mutable>) : {MTaskControlBlock + null | true} */
+        /*@ run : (this:MSelf) : {MTaskControlBlock + null | true} */
         public run () {
             //ORIG:
             // if (!(this.state === STATE_SUSPENDED_RUNNABLE)) {
@@ -491,15 +495,15 @@ module RichardsTYPEDVERSION {
 
     class Task {
         constructor() {}
-        /*@ run : /\ (this:Self<Mutable>, packet: MPacket) : { MTaskControlBlock + null | true }
-                  /\ (this:Self<Mutable>) : { MTaskControlBlock + null | true } */
+        /*@ run : /\ (this:MSelf, packet: MPacket) : { MTaskControlBlock + null | true }
+                  /\ (this:MSelf) : { MTaskControlBlock + null | true } */
         public run(packet:Packet) : TaskControlBlock {
             throw "Abstract method";
         }
     }
 
     class IdleTask extends Task {
-        /*@ scheduler : Scheduler<Mutable> */
+        /*@ scheduler : MScheduler */
         public scheduler;
         /*@ v1 : bitvector32 */
         public v1;
@@ -513,7 +517,7 @@ module RichardsTYPEDVERSION {
          * @param {int} count the number of times this task should be scheduled
          * @constructor
          */
-        /*@ new(scheduler:Scheduler<Mutable>, v1:bitvector32, count:number) => {IdleTask<M> | true} */
+        /*@ new(scheduler:MScheduler, v1:bitvector32, count:number) => {IdleTask<M> | true} */
         constructor(scheduler, v1, count) {
             super();
             this.scheduler = scheduler;
@@ -521,8 +525,8 @@ module RichardsTYPEDVERSION {
             this.count = count;
         }
 
-        /*@ run : /\ (this:Self<Mutable>, packet: Packet<ReadOnly>) : { MTaskControlBlock + null | true }
-                  /\ (this:Self<Mutable>) : { MTaskControlBlock + null | true } */
+        /*@ run : /\ (this:MSelf, packet: Packet<ReadOnly>) : { MTaskControlBlock + null | true }
+                  /\ (this:MSelf) : { MTaskControlBlock + null | true } */
         public run(packet:Packet) : TaskControlBlock {
             this.count--;
             if (this.count === 0) return this.scheduler.holdCurrent();
@@ -542,7 +546,7 @@ module RichardsTYPEDVERSION {
     }
 
     class DeviceTask extends Task {
-        /*@ scheduler : Scheduler<Mutable> */
+        /*@ scheduler : MScheduler */
         public scheduler;
         /*@ v1 : MPacket + null */
         public v1 = null;
@@ -553,16 +557,16 @@ module RichardsTYPEDVERSION {
          * @param {Scheduler} scheduler the scheduler that manages this task
          * @constructor
          */
-        /*@ new /\ (scheduler:Scheduler<Mutable>, v1:MPacket + null) => {DeviceTask<M> | true} */
-                //\ (scheduler:Scheduler<Mutable>) => {DeviceTask<M> | true} */
+        /*@ new /\ (scheduler:MScheduler, v1:MPacket + null) => {DeviceTask<M> | true} */
+                //\ (scheduler:MScheduler) => {DeviceTask<M> | true} */
         constructor(scheduler, v1?) {
             super();
             this.scheduler = scheduler;
             this.v1 = v1;// if (arguments.length === 2) this.v1 = v1;
         }
 
-        /*@ run : /\ (this:Self<Mutable>, packet: MPacket) : { MTaskControlBlock + null | true }
-                  /\ (this:Self<Mutable>) : { MTaskControlBlock + null | true } */
+        /*@ run : /\ (this:MSelf, packet: MPacket) : { MTaskControlBlock + null | true }
+                  /\ (this:MSelf) : { MTaskControlBlock + null | true } */
         public run(packet:Packet) : TaskControlBlock {
             if (!packet) {
                 var v1 = this.v1;
@@ -582,7 +586,7 @@ module RichardsTYPEDVERSION {
     }
 
     class WorkerTask extends Task {
-        /*@ scheduler : Scheduler<Mutable> */
+        /*@ scheduler : MScheduler */
         public scheduler;
         /*@ v1 : natLT<NUMBER_OF_IDS> */
         public v1;
@@ -595,7 +599,7 @@ module RichardsTYPEDVERSION {
          * @param {int} v2 another seed used to specify how work packets are manipulated
          * @constructor
          */
-        /*@ new(scheduler:Scheduler<Mutable>, v1:natLT<NUMBER_OF_IDS>, v2:nat) => WorkerTask<M> */
+        /*@ new(scheduler:MScheduler, v1:natLT<NUMBER_OF_IDS>, v2:nat) => WorkerTask<M> */
         constructor(scheduler, v1, v2) {
             super();
             this.scheduler = scheduler;
@@ -603,8 +607,8 @@ module RichardsTYPEDVERSION {
             this.v2 = v2;
         }
 
-        /*@ run : /\ (this:Self<Mutable>, packet: MPacket) : { MTaskControlBlock + null | true }
-                  /\ (this:Self<Mutable>) : { MTaskControlBlock + null | true } */
+        /*@ run : /\ (this:MSelf, packet: MPacket) : { MTaskControlBlock + null | true }
+                  /\ (this:MSelf) : { MTaskControlBlock + null | true } */
         public run(packet:Packet) : TaskControlBlock {
             if (!packet) {
                 return this.scheduler.suspendCurrent();
@@ -631,7 +635,7 @@ module RichardsTYPEDVERSION {
     }
 
     class HandlerTask extends Task {
-        /*@ scheduler : Scheduler<Mutable> */
+        /*@ scheduler : MScheduler */
         public scheduler;
         /*@ v1 : MPacket + null */
         public v1 = null;
@@ -643,8 +647,8 @@ module RichardsTYPEDVERSION {
          * @param {Scheduler} scheduler the scheduler that manages this task
          * @constructor
          */
-        /*@ new /\ (scheduler:Scheduler<Mutable>, v1:MPacket + null, v2:MPacket + null) => {HandlerTask<M> | true} */
-                //\ (scheduler:Scheduler<Mutable>) => {HandlerTask<M> | true} */
+        /*@ new /\ (scheduler:MScheduler, v1:MPacket + null, v2:MPacket + null) => {HandlerTask<M> | true} */
+                //\ (scheduler:MScheduler) => {HandlerTask<M> | true} */
         constructor(scheduler, v1?, v2?) {
             super();
             this.scheduler = scheduler;
@@ -654,8 +658,8 @@ module RichardsTYPEDVERSION {
             // }
         }
 
-        /*@ run : /\ (this:Self<Mutable>, packet: MPacket) : { MTaskControlBlock + null | true }
-                  /\ (this:Self<Mutable>) : { MTaskControlBlock + null | true } */
+        /*@ run : /\ (this:MSelf, packet: MPacket) : { MTaskControlBlock + null | true }
+                  /\ (this:MSelf) : { MTaskControlBlock + null | true } */
         public run(packet:Packet) : TaskControlBlock {
             if (packet) {
                 if (packet.kind === KIND_WORK) {
@@ -732,7 +736,7 @@ module RichardsTYPEDVERSION {
          * Add this packet to the end of a worklist, and return the worklist.
          * @param {Packet} queue the worklist to add this packet to
          */
-        /*@ addTo : (this: MPacket, queue: MPacket + null) : {MPacket | true} */
+        /*@ addTo : (this: MPacket, queue: MPacket + null) : MPacket */
         public addTo(queue:Packet) : Packet {
             this.link = null;
             if (!queue) return this;

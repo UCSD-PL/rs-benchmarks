@@ -15,6 +15,10 @@
 // Variable used to hold a number that can be used to verify that
 // the scene was ray traced correctly.
 
+/*@ alias MVector = Vector<Mutable> */
+/*@ alias MColor = Color<Mutable> */
+/*@ alias IColor = Color<Immutable> */
+/*@ alias MIntersectionInfo = IntersectionInfo<Mutable> */
 
 //TODO: move this stuff to prelude?
 /*@ qualif Bot(s:Str,v:a): hasProperty(s,v) */
@@ -63,7 +67,7 @@ module VERSION {
                 this.blue = blue;
             }
 
-            /*@ add : (c1:Color<ReadOnly>, c2:Color<ReadOnly>) : {Color<Mutable> | true} */
+            /*@ add : forall M1 M2 . (c1:Color<M1>, c2:Color<M2>) : {MColor | true} */
             public static add(c1:Color, c2:Color) {
                 var result = new Color(0, 0, 0);
 
@@ -74,7 +78,7 @@ module VERSION {
                 return result;
             }
 
-            /*@ addScalar : (c1:Color<ReadOnly>, s:number) : {Color<Mutable> | true} */
+            /*@ addScalar : forall M . (c1:Color<M>, s:number) : {MColor | true} */
             public static addScalar(c1:Color, s:number) {
                 var result = new Color(0, 0, 0);
 
@@ -88,7 +92,7 @@ module VERSION {
             }
 
 
-            /*@ subtract : (c1:Color<ReadOnly>, c2:Color<ReadOnly>) : {Color<Mutable> | true} */
+            /*@ subtract : forall M1 M2 . (c1:Color<M1>, c2:Color<M2>) : {MColor | true} */
             public static subtract(c1:Color, c2:Color) {
                 var result = new Color(0, 0, 0);
 
@@ -99,7 +103,7 @@ module VERSION {
                 return result;
             }
 
-            /*@ multiply : (c1:Color<ReadOnly>, c2:Color<ReadOnly>) : {Color<Mutable> | true} */
+            /*@ multiply : forall M1 M2 . (c1:Color<M1>, c2:Color<M2>) : {MColor | true} */
             public static multiply(c1:Color, c2:Color) {
                 var result = new Color(0, 0, 0);
 
@@ -110,7 +114,7 @@ module VERSION {
                 return result;
             }
 
-            /*@ multiplyScalar : (c1:Color<ReadOnly>, f:number) : {Color<Mutable> | true} */
+            /*@ multiplyScalar : forall M . (c1:Color<M>, f:number) : {MColor | true} */
             public static multiplyScalar(c1:Color, f:number) {
                 var result = new Color(0, 0, 0);
 
@@ -122,7 +126,7 @@ module VERSION {
             }
 
 
-            /*@ divideFactor : (c1:Color<ReadOnly>, f:{number | v != 0}) : {Color<Mutable> | true} */
+            /*@ divideFactor : forall M . (c1:Color<M>, f:{number | v != 0}) : {MColor | true} */
             public static divideFactor(c1:Color, f:number) {
                 var result = new Color(0, 0, 0);
 
@@ -133,20 +137,20 @@ module VERSION {
                 return result;
             }
 
-            /*@ limit : (this:Color<Mutable>) : {void | true} */
+            /*@ limit : (this:MColor) : {void | true} */
             public limit() {
                 this.red = (this.red > 0) ? ((this.red > 1) ? 1 : this.red) : 0;
                 this.green = (this.green > 0) ? ((this.green > 1) ? 1 : this.green) : 0;
                 this.blue = (this.blue > 0) ? ((this.blue > 1) ? 1 : this.blue) : 0;
             }
 
-            /*@ distance : (color:Color<ReadOnly>) : {number | true} */
+            /*@ distance : forall M . (color:Color<M>) : {number | true} */
             public distance(color:Color) {
                 var d = Math.abs(this.red - color.red) + Math.abs(this.green - color.green) + Math.abs(this.blue - color.blue);
                 return d;
             }
 
-            /*@ blend : (c1:Color<ReadOnly>, c2:Color<ReadOnly>, w:number) : {Color<Mutable> | true} */
+            /*@ blend : forall M1 M2 . (c1:Color<M1>, c2:Color<M2>, w:number) : {MColor | true} */
             public static blend(c1:Color, c2:Color, w:number) {
                 var result = new Color(0, 0, 0);
                 result = Color.add(
@@ -173,13 +177,13 @@ module VERSION {
         }
 
         export class Light {
-            /*@ position : Vector<Mutable> */
+            /*@ position : MVector */
             public position:Vector;
-            /*@ color : Color<Immutable> */
+            /*@ color : IColor */
             public color:Color;
             public intensity:number=10;
 
-            /*@ new(position:Vector<Mutable>, color:Color<Immutable>, intensity:number) => {Light<M> | true} */
+            /*@ new(position:MVector, color:IColor, intensity:number) => {Light<M> | true} */
             constructor(position:Vector, color:Color, intensity?) {
                 this.position = position;
                 this.color = color;
@@ -206,14 +210,14 @@ module VERSION {
                 this.z = z;
             }
 
-            /*@ copy : (this:Vector<Mutable>, vector:Vector<ReadOnly>) : {void | true} */
+            /*@ copy : forall M . (this:MVector, vector:Vector<M>) : {void | true} */
             public copy(vector:Vector) {
                 this.x = vector.x;
                 this.y = vector.y;
                 this.z = vector.z;
             }
 
-            /*@ normalize : forall M . () : {Vector<M> | true} */
+            /*@ normalize : forall M . () : Vector<M> */
             public normalize() {
                 var m = this.magnitude();
                 if (m === 0) throw new Error("Cannot normalize the 0-vector!");
@@ -227,7 +231,7 @@ module VERSION {
                 return Math.sqrt((x * x) + (y * y) + (z * z));
             }
 
-            /*@ cross : forall M . (w:Vector<ReadOnly>) : {Vector<M> | true} */
+            /*@ cross : forall M1 M . (w:Vector<M1>) : {Vector<M> | true} */
             public cross(w:Vector) {
                 return new Vector(
                         -this.z * w.y + this.y * w.z,
@@ -235,28 +239,28 @@ module VERSION {
                         -this.y * w.x + this.x * w.y);
             }
 
-            /*@ dot : (w:Vector<ReadOnly>) : {number | true} */
+            /*@ dot : forall M . (w:Vector<M>) : {number | true} */
             public dot(w:Vector) {
                 return this.x * w.x + this.y * w.y + this.z * w.z;
             }
 
-            /*@ add : forall M . (v:Vector<ReadOnly>, w:Vector<ReadOnly>) : {Vector<M> | true} */
+            /*@ add : forall M1 M2 M . (v:Vector<M1>, w:Vector<M2>) : {Vector<M> | true} */
             public static add(v:Vector, w:Vector) {
                 return new Vector(w.x + v.x, w.y + v.y, w.z + v.z);
             }
 
-            /*@ subtract : forall M . (v:Vector<ReadOnly>, w:Vector<ReadOnly>) : {Vector<M> | true} */
+            /*@ subtract : forall M1 M2 M . (v:Vector<M1>, w:Vector<M2>) : {Vector<M> | true} */
             public static subtract(v:Vector, w:Vector) {
                 if (!w || !v) throw 'Vectors must be defined [' + v + ',' + w + ']';
                 return new Vector(v.x - w.x, v.y - w.y, v.z - w.z);
             }
 
-            /*@ multiplyVector : forall M . (v:Vector<ReadOnly>, w:Vector<ReadOnly>) : {Vector<M> | true} */
+            /*@ multiplyVector : forall M1 M2 M . (v:Vector<M1>, w:Vector<M2>) : {Vector<M> | true} */
             public static multiplyVector(v:Vector, w:Vector) {
                 return new Vector(v.x * w.x, v.y * w.y, v.z * w.z);
             }
 
-            /*@ multiplyScalar : forall M . (v:Vector<ReadOnly>, w:number) : {Vector<M> | true} */
+            /*@ multiplyScalar : forall M1 M . (v:Vector<M1>, w:number) : {Vector<M> | true} */
             public static multiplyScalar(v:Vector, w:number) {
                 return new Vector(v.x * w, v.y * w, v.z * w);
             }
@@ -267,12 +271,12 @@ module VERSION {
         }
 
         export class Ray {
-            /*@ position : Vector<Mutable> */
+            /*@ position : MVector */
             public position:Vector;
-            /*@ direction : Vector<Mutable> */
+            /*@ direction : MVector */
             public direction:Vector;
 
-            /*@ new(position:Vector<Mutable>, direction:Vector<Mutable>) => {Ray<M> | true} */
+            /*@ new(position:MVector, direction:MVector) => {Ray<M> | true} */
             constructor(position:Vector, direction:Vector) {
                 this.position = position;
                 this.direction = direction;
@@ -325,7 +329,7 @@ module VERSION {
                 this.hasTexture = hasTexture;
             }
 
-            /*@ getColor : (u:number, v:number) : {Color<Immutable> | true} */
+            /*@ getColor : (u:number, v:number) : {IColor | true} */
             public getColor(u:number, v:number) : Color {
                 throw "Abstract method";
             }
@@ -346,13 +350,13 @@ module VERSION {
         export class Solid extends BaseMaterial {
             public color:Color;
 
-            /*@ new(color:Color<Immutable>, reflection:number, refraction:number, transparency:number, gloss:number) => {Solid<M> | true} */
+            /*@ new(color:IColor, reflection:number, refraction:number, transparency:number, gloss:number) => {Solid<M> | true} */
             constructor(color:Color, reflection:number, refraction:number, transparency:number, gloss:number) {
                 super(gloss, transparency, reflection, refraction, false);
                 this.color = color;
             }
 
-            /*@ getColor : (u:number, v:number) : {Color<Immutable> | true} */
+            /*@ getColor : (u:number, v:number) : {IColor | true} */
             public getColor(u:number, v:number) : Color {
                 return this.color;
             }
@@ -367,7 +371,7 @@ module VERSION {
             public colorOdd:Color;
             public density:number = 1/2;
 
-            /*@ new(colorEven:Color<Immutable>, colorOdd:Color<Immutable>, reflection:number, transparency:number, gloss:number, density:number) => {Chessboard<M> | true} */
+            /*@ new(colorEven:IColor, colorOdd:IColor, reflection:number, transparency:number, gloss:number, density:number) => {Chessboard<M> | true} */
             constructor(colorEven:Color, colorOdd:Color, 
                         reflection:number, 
                         transparency:number, 
@@ -379,7 +383,7 @@ module VERSION {
                 this.density = density;
             }
 
-            /*@ getColor : (u:number, v:number) : {Color<Immutable> | true} */
+            /*@ getColor : (u:number, v:number) : {IColor | true} */
             public getColor(u:number, v:number) : Color {
                 var t = this.wrapUp(u * this.density) * this.wrapUp(v * this.density);
 
@@ -395,17 +399,17 @@ module VERSION {
         }
 
         export class Shape {
-            /*@ position : Vector<Mutable> */
+            /*@ position : MVector */
             public position:Vector;
             public material:BaseMaterial;
 
-            /*@ new(position:Vector<Mutable>, material:BaseMaterial<Immutable>) => {Shape<M> | true} */
+            /*@ new(position:MVector, material:BaseMaterial<Immutable>) => {Shape<M> | true} */
             constructor(position:Vector, material:BaseMaterial) {
                 this.position = position;
                 this.material = material;
             }
 
-            /*@ intersect : (ray:Ray<ReadOnly>) : {IntersectionInfo<Mutable> | true} */
+            /*@ intersect : forall M . (ray:Ray<M>) : {MIntersectionInfo | true} */
             public intersect(ray:Ray) : IntersectionInfo {
                 throw "Abstract method";
             }
@@ -414,13 +418,13 @@ module VERSION {
         export class Sphere extends Shape {
             public radius:number;
 
-            /*@ new(position:Vector<Mutable>, radius:number, material:BaseMaterial<Immutable>) => {Sphere<M> | true} */
+            /*@ new(position:MVector, radius:number, material:BaseMaterial<Immutable>) => {Sphere<M> | true} */
             constructor(position:Vector, radius:number, material:BaseMaterial) {
                 super(position, material);
                 this.radius = radius;
             }
 
-            /*@ intersect : (ray:Ray<ReadOnly>) : {IntersectionInfo<Mutable> | true} */
+            /*@ intersect : forall M . (ray:Ray<M>) : {MIntersectionInfo | true} */
             public intersect(ray:Ray) : IntersectionInfo {
                 var info = new IntersectionInfo(false, 0, null, null, null, null, null);
                 info.shape = <Shape>this;
@@ -463,13 +467,13 @@ module VERSION {
         export class Plane extends Shape {
             public d:number;
 
-            /*@ new(position:Vector<Mutable>, d:number, material:BaseMaterial<Immutable>) => {Plane<M> | true} */
+            /*@ new(position:MVector, d:number, material:BaseMaterial<Immutable>) => {Plane<M> | true} */
             constructor(position:Vector, d:number, material:BaseMaterial) {
                 super(position, material);
                 this.d = d;
             }
 
-            /*@ intersect : (ray:Ray<ReadOnly>) : {IntersectionInfo<Mutable> | true} */
+            /*@ intersect : forall M . (ray:Ray<M>) : {MIntersectionInfo | true} */
             public intersect(ray:Ray) : IntersectionInfo {
                 var info = new IntersectionInfo(false, 0, null, null, null, null, null);
 
@@ -518,11 +522,11 @@ module VERSION {
             public hitCount = 0;
             /*@ shape : Shape<ReadOnly>? */
             public shape = null;
-            /*@ position : Vector<Mutable>? */
+            /*@ position : MVector? */
             public position = null;
-            /*@ normal : Vector<Mutable>? */
+            /*@ normal : MVector? */
             public normal = null;
-            /*@ color : Color<Immutable>? */
+            /*@ color : IColor? */
             public color = null;
             /*@ distance : number? */
             public distance = null;
@@ -530,9 +534,9 @@ module VERSION {
             /*@ new(isHit:boolean,
                     hitCount:number,
                     shape:Shape<Immutable>?,
-                    position:Vector<Mutable>?,
-                    normal:Vector<Mutable>?,
-                    color:Color<Immutable>?,
+                    position:MVector?,
+                    normal:MVector?,
+                    color:IColor?,
                     distance:number?) => {IntersectionInfo<M> | true} */
             constructor(isHit?, hitCount?, shape?, position?, normal?, color?, distance?) {
                 this.isHit = isHit;
@@ -544,7 +548,7 @@ module VERSION {
                 this.distance = distance;
             }
 
-            /*@ initialize : (this:IntersectionInfo<Mutable>) : {void | true} */
+            /*@ initialize : (this:MIntersectionInfo) : {void | true} */
             public initialize() {
                 this.color = new Color(0, 0, 0);
             }
@@ -560,14 +564,14 @@ module VERSION {
             public equator:Vector;
             public screen:Vector;
 
-            /*@ position : Vector<Mutable> */
+            /*@ position : MVector */
             public position:Vector;
-            /*@ lookAt : Vector<Mutable> */
+            /*@ lookAt : MVector */
             public lookAt:Vector;
-            /*@ up : Vector<Mutable> */
+            /*@ up : MVector */
             public up:Vector;
 
-            /*@ new(position:Vector<Mutable>, lookAt:Vector<Mutable>, up:Vector<Mutable>) => {Camera<M> | true} */
+            /*@ new(position:MVector, lookAt:MVector, up:MVector) => {Camera<M> | true} */
             constructor(position:Vector,
                         lookAt:Vector,
                         up:Vector) {
@@ -604,11 +608,11 @@ module VERSION {
         }
 
         export class Background {
-            /*@ color : Color<Mutable> */
+            /*@ color : MColor */
             public color:Color;
             public ambience:number = 0;
 
-            /*@ new(color:Color<Mutable>, ambience:number) => {Background<M> | true} */
+            /*@ new(color:MColor, ambience:number) => {Background<M> | true} */
             constructor(color:Color, ambience?) {
                 this.color = color;
                 this.ambience = ambience;
@@ -653,7 +657,7 @@ module VERSION {
                 /* TODO: dynamically include other scripts */
             }
 
-            /*@ setPixel : (x:number, y:number, color:Color<ReadOnly>) : {void | true} */
+            /*@ setPixel : forall M . (x:number, y:number, color:Color<M>) : {void | true} */
             public setPixel(x, y, color:Color) {
                 var pxW, pxH;
                 pxW = this.options.pixelWidth;
@@ -671,7 +675,7 @@ module VERSION {
                 }
             }
 
-            /*@ renderScene : (this:Engine<Mutable>, scene:Scene<ReadOnly>, canvas:HTMLCanvasElement<ReadOnly>?) : {void | true} */
+            /*@ renderScene : forall M1 M2 . (this:Engine<Mutable>, scene:Scene<M1>, canvas:HTMLCanvasElement<M2>?) : {void | true} */
             public renderScene(scene:Scene, canvas:HTMLCanvasElement) {
                 checkNumber = 0;
                 /* Get canvas */
@@ -701,7 +705,7 @@ module VERSION {
                 }
             }
 
-            /*@ getPixelColor : (ray:Ray<ReadOnly>, scene:Scene<ReadOnly>) : {Color<Mutable> | true} */
+            /*@ getPixelColor : forall M1 M2 . (ray:Ray<M1>, scene:Scene<M2>) : {MColor | true} */
             public getPixelColor(ray:Ray, scene:Scene) {
                 var info = this.testIntersection(ray, scene, null);
                 if (info.isHit) {
@@ -711,10 +715,10 @@ module VERSION {
                 return scene.background.color;
             }
 
-            /*@ testIntersection : (ray:Ray<ReadOnly>, scene:Scene<ReadOnly>, exclude:Shape<ReadOnly>?) : {IntersectionInfo<Mutable> | true} */
+            /*@ testIntersection : forall M1 M2 M3 . (ray:Ray<M1>, scene:Scene<M2>, exclude:Shape<M3>?) : {MIntersectionInfo | true} */
             public testIntersection(ray:Ray, scene:Scene, exclude?:Shape) : IntersectionInfo {
                 var hits = 0;
-                /*@ best :: IntersectionInfo<Mutable> */
+                /*@ best :: MIntersectionInfo */
                 var best = new IntersectionInfo(false, 0, null, null, null, null, null);
                 best.distance = 2000;
 
@@ -734,7 +738,7 @@ module VERSION {
                 return best;
             }
 
-            /*@ getReflectionRay : forall M . (P:Vector<Mutable>, N:Vector<ReadOnly>, V:Vector<ReadOnly>) : {Ray<M> | true} */
+            /*@ getReflectionRay : forall M1 M2 M . (P:MVector, N:Vector<M1>, V:Vector<M2>) : {Ray<M> | true} */
             public getReflectionRay(P:Vector, N:Vector, V:Vector) {
                 var c1 = -N.dot(V);
                 var R1 = Vector.add(
@@ -744,7 +748,7 @@ module VERSION {
                 return new Ray(P, R1);
             }
 
-            /*@ rayTrace : (info:IntersectionInfo<ReadOnly>, ray:Ray<ReadOnly>, scene:Scene<ReadOnly>, depth:number) : {Color<Mutable> | true} */
+            /*@ rayTrace : forall M1 M2 M3 . (info:IntersectionInfo<M1>, ray:Ray<M2>, scene:Scene<M3>, depth:number) : {MColor | true} */
             public rayTrace(info:IntersectionInfo, ray:Ray, scene:Scene, depth:number) {
                 var infoColor = info.color;
                 var infoShape = info.shape;

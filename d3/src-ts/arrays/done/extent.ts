@@ -4,7 +4,9 @@
 //     ensures that no 'undefined' or 'null' 
 //     or such in the array
 
-/*@ d3_extent_1 :: forall T . ({IArray<T> | 0 < len v}) => #pair[T] */
+/*@ alias NonEmptyIArray<T> = {IArray<T> | 0 < len v} */
+
+/*@ d3_extent_1 :: forall T . (NonEmptyIArray<T>) => #pair[T] */
 function d3_extent_1<T>(array: T[]): T[]{
   var i = 0,
       n = array.length,
@@ -24,7 +26,7 @@ function d3_extent_1<T>(array: T[]): T[]{
 
 };
 
-/*@ d3_extent_2 :: forall T U . ({IArray<T> | 0 < len v}, f: (x:T, i:number) => U) => #pair[U] */
+/*@ d3_extent_2 :: forall T U . (NonEmptyIArray<T>, f: (x:T, i:number) => U) => #pair[U] */
 function d3_extent_2<T, U>(array: T[], f:(T, number) => U): U[] {
   var i = 0,
       n = array.length,
@@ -44,8 +46,8 @@ function d3_extent_2<T, U>(array: T[], f:(T, number) => U): U[] {
 };
 
 d3.extent = function(array: any, f?:any):any 
-/*@ <anonymous> /\ forall T U . ({IArray<T> | 0 < len v}, f: (x:T, i:number) => U) => #pair[U] 
-                /\ forall T   . ({IArray<T> | 0 < len v}) => #pair[T] 
+/*@ <anonymous> /\ forall T U . (NonEmptyIArray<T>, f: (x:T, i:number) => U) => #pair[U] 
+                /\ forall T   . (NonEmptyIArray<T>) => #pair[T] 
  */
 {
   if (arguments.length === 1) {
